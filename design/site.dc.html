@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#E4E4E4;font-family:'Geist',system-ui,sans-serif;color:#151515;-webkit-font-smoothing:antialiased}
+a{color:#151515;text-decoration:none}a:hover{color:#6B6B6B}
+input,textarea,select,button{font-family:inherit}
+*{box-sizing:border-box}
+</style>
+</helmet>
+
+<sc-if value="{{ showSwitch }}" hint-placeholder-val="{{ true }}">
+  <div style="position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:200;display:flex;gap:2px;background:#151515;border-radius:14px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.2)">
+    <button onClick="{{ viewDesktop }}" style="border:0;cursor:pointer;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:500;background:{{ dBg }};color:{{ dFg }}">Desktop</button>
+    <button onClick="{{ viewMobile }}" style="border:0;cursor:pointer;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:500;background:{{ mBg }};color:{{ mFg }}">Mobile</button>
+  </div>
+</sc-if>
+<sc-if value="{{ showFrame }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100vh;background:#D9D9D9;display:flex;flex-direction:column;align-items:center;padding:64px 16px 24px;gap:14px;overflow:hidden">
+    <div style="width:{{ phoneW }};height:{{ phoneH }};flex:none">
+      <div style="width:421px;height:880px;transform-origin:0 0;transform:scale({{ phoneScale }});position:relative;background:#1A1A1A;border-radius:68px;padding:14px;box-shadow:0 0 0 2px #3A3A3A, 0 0 0 5px #111, 0 30px 80px rgba(0,0,0,.35)">
+        <div style="position:relative;width:393px;height:852px;border-radius:55px;overflow:hidden;background:#EFEFEF">
+          <div style="position:absolute;left:0;right:0;top:0;height:54px;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:6px 34px 0 44px;font-size:17px;font-weight:600;color:#151515;background:#EFEFEF">
+            <span>9:41</span>
+            <span style="display:flex;gap:6px;align-items:center">
+              <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="#151515"></rect><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="#151515"></rect><rect x="10" y="3" width="3" height="9" rx="1" fill="#151515"></rect><rect x="15" y="0" width="3" height="12" rx="1" fill="#151515"></rect></svg>
+              <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5l2.4-2.9a3.6 3.6 0 00-4.8 0zM3.6 6.3a6.6 6.6 0 018.8 0l1.4-1.7a8.8 8.8 0 00-11.6 0zM.4 2.5a11.2 11.2 0 0115.2 0L16 2A12 12 0 000 2z" fill="#151515"></path></svg>
+              <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#151515" opacity=".4"></rect><rect x="2" y="2" width="20" height="9" rx="2" fill="#151515"></rect><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="#151515" opacity=".4"></path></svg>
+            </span>
+          </div>
+          <div style="position:absolute;left:50%;top:11px;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000;z-index:4"></div>
+          <iframe src="{{ frameSrc }}" title="iPhone preview" style="position:absolute;left:0;top:54px;width:393px;height:798px;border:0;display:block;background:#EFEFEF"></iframe>
+          <div style="position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#151515;z-index:4;pointer-events:none"></div>
+        </div>
+      </div>
+    </div>
+    <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">iPhone 16 Pro · 393 × 852</span>
+  </div>
+</sc-if>
+<sc-if value="{{ showSite }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:1480px;margin:0 auto;padding:clamp(0px,1.4vw,16px)">
+<div style="background:#EFEFEF;border-radius:clamp(0px,2.6vw,36px);padding:clamp(10px,1.6vw,20px);display:flex;flex-direction:column;gap:clamp(12px,1.6vw,20px);min-height:100vh">
+
+<header style="display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:8px;z-index:20">
+  <nav style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border-radius:20px;padding:8px clamp(10px,1.6vw,22px) 8px 10px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0">
+    <a href="#" onClick="{{ goHome }}" style="display:flex;align-items:center;padding:8px 14px 8px 8px">
+      <img src="assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block">
+    </a>
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+    <a href="#how" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">How it works</a>
+    <a href="#pricing" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">Pricing</a>
+    <a href="#cases" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">Cases</a>
+    <a href="#faq" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">FAQ</a>
+    <a href="byereviews Blog.dc.html" style="padding:8px 12px;font-size:15px;color:#555">Guides</a>
+    <a href="#" onClick="{{ goPortal }}" style="padding:8px 12px;font-size:15px;color:#151515;font-weight:500">Log in</a>
+    </sc-if>
+  </nav>
+  <div style="display:flex;align-items:center;gap:8px">
+    <sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ toggleMenu }}" aria-label="Menu" style="width:52px;height:52px;border:0;cursor:pointer;background:#FFFFFF;border-radius:18px;display:flex;align-items:center;justify-content:center;flex:none">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="{{ burgerPath }}" stroke="#151515" stroke-width="1.8" stroke-linecap="round"></path></svg>
+      </button>
+    </sc-if>
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+    <button onClick="{{ goOrder }}" style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border:0;border-radius:18px;padding:6px 16px 6px 6px;cursor:pointer;font-size:15px;font-weight:500;color:#151515;white-space:nowrap">
+      <span style="width:40px;height:40px;flex:none;background:#151515;border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      {{ headerCta }}
+    </button>
+    </sc-if>
+  </div>
+</header>
+<sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:300;background:#151515;color:#FFFFFF;padding:18px 20px 20px;display:flex;flex-direction:column;gap:4px;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:24px">
+      <a href="#" onClick="{{ closeMenuHome }}" style="display:flex;align-items:center;padding:8px 0"><img src="assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block;filter:invert(1)"></a>
+      <button onClick="{{ toggleMenu }}" aria-label="Close menu" style="width:52px;height:52px;border:0;cursor:pointer;background:#2A2A2A;border-radius:18px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"></path></svg></button>
+    </div>
+    <sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="5">
+      <a href="{{ m.href }}" onClick="{{ m.go }}" style="display:flex;justify-content:space-between;align-items:center;padding:14px 4px;border-bottom:1px solid #2A2A2A;font-size:30px;font-weight:500;letter-spacing:-.03em;color:#FFFFFF">{{ m.label }}<span style="font-size:18px;color:#6B6B6B">→</span></a>
+    </sc-for>
+    <button onClick="{{ goOrder }}" style="margin-top:auto;height:60px;border:0;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:18px;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 20px">Remove a review<span style="width:44px;height:44px;background:#151515;border-radius:14px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
+    <span style="text-align:center;font-size:12px;color:#8A8A8A;padding-top:8px">No upfront payment · pay only for removed reviews</span>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+
+<section data-screen-label="Hero" style="position:relative;border-radius:32px;overflow:hidden;min-height:clamp(640px,88vh,820px);background:#0E0E0E;color:#FFFFFF;display:flex;flex-direction:column;justify-content:space-between;gap:32px;padding:clamp(36px,6vw,72px) clamp(20px,4.4vw,56px) clamp(24px,3vw,40px)">
+  <div style="position:absolute;inset:0;z-index:0;background:#0E0E0E">
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><video src="assets/video/hero-desktop.mp4" poster="assets/video/hero-desktop-poster.webp" ref="{{ vidRef }}" autoplay="" muted="" loop="" playsinline="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"></video></sc-if>
+    <sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}"><video src="assets/video/hero-mobile.mp4" poster="assets/video/hero-mobile-poster.webp" ref="{{ vidRef }}" autoplay="" muted="" loop="" playsinline="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"></video></sc-if>
+  </div>
+  <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:{{ heroOverlay }}"></div>
+  <div style="position:relative;z-index:2;display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;align-items:flex-start">
+    <div style="max-width:760px;display:flex;flex-direction:column;gap:28px">
+      <h1 style="margin:0;font-weight:500;font-size:clamp(40px,6.2vw,92px);line-height:.98;letter-spacing:-.045em;text-wrap:balance">
+        <span style="color:#7A7A7A;display:block">One fake review is costing you customers.</span>
+        <span style="color:#FFFFFF;display:block">Get it removed.</span>
+      </h1>
+    </div>
+    
+  </div>
+  <div style="position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;color:#fff">
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+      <button onClick="{{ goOrder }}" style="display:flex;align-items:center;gap:22px;background:#FFFFFF;color:#151515;border:0;border-radius:22px;padding:6px 30px 6px 6px;cursor:pointer;font-size:18px;font-weight:500">
+        <span style="width:64px;height:56px;background:#151515;border-radius:17px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        Remove a review
+      </button>
+      <span style="font-size:15px;color:#B5B5B5">No upfront payment</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <span style="background:rgba(255,255,255,.08);color:#FFFFFF;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 16px;font-size:14px;font-weight:500">Trustpilot ★ 4.9</span>
+      <span style="background:rgba(255,255,255,.08);color:#FFFFFF;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 16px;font-size:14px;font-weight:500">No cure, no pay</span>
+      <span style="background:rgba(255,255,255,.08);color:#FFFFFF;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 16px;font-size:14px;font-weight:500">Profile stays intact</span>
+    </div>
+  </div>
+</section>
+
+<section id="how" data-screen-label="How it works" style="padding:clamp(56px,8vw,96px) clamp(6px,2.6vw,36px) clamp(24px,3vw,40px);display:flex;flex-direction:column;gap:clamp(28px,4vw,48px)">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap">
+    <h2 style="margin:0;font-weight:500;font-size:clamp(36px,4.4vw,64px);line-height:1;letter-spacing:-.04em;max-width:760px"><span style="color:#9E9E9E">How it works.</span> Three steps, one of them is yours.</h2>
+    <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">// avg. 2 minutes to submit</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:16px">
+    <div style="background:#FFFFFF;border-radius:28px;padding:10px;display:flex;flex-direction:column;gap:18px">
+      <div style="border-radius:20px;aspect-ratio:4/3;background:#E6E6E6 url('assets/img/step-1-pick.png') center/cover"></div>
+      <div style="padding:6px 16px 20px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">01</span>
+        <h3 style="margin:0;font-size:24px;font-weight:500;letter-spacing:-.02em">Pick the reviews</h3>
+        <p style="margin:0;font-size:16px;line-height:1.5;color:#555;text-wrap:pretty">Find your business, then tap the reviews you want gone. As many as you need.</p>
+      </div>
+    </div>
+    <div style="background:#FFFFFF;border-radius:28px;padding:10px;display:flex;flex-direction:column;gap:18px">
+      <div style="border-radius:20px;aspect-ratio:4/3;background:#E6E6E6 url('assets/img/step-2-check.png') center/cover"></div>
+      <div style="padding:6px 16px 20px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">02</span>
+        <h3 style="margin:0;font-size:24px;font-weight:500;letter-spacing:-.02em">We check &amp; remove it</h3>
+        <p style="margin:0;font-size:16px;line-height:1.5;color:#555;text-wrap:pretty">We assess each review against Google's policies and pursue removal through the official channels.</p>
+      </div>
+    </div>
+    <div style="background:#151515;color:#fff;border-radius:28px;padding:10px;display:flex;flex-direction:column;gap:18px">
+      <div style="border-radius:20px;aspect-ratio:4/3;background:#E6E6E6 url('assets/img/step-3-pay.png') center/cover"></div>
+      <div style="padding:6px 16px 20px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#8A8A8A">03</span>
+        <h3 style="margin:0;font-size:24px;font-weight:500;letter-spacing:-.02em">Pay only for what's gone</h3>
+        <p style="margin:0;font-size:16px;line-height:1.5;color:#B5B5B5;text-wrap:pretty">Once a review is removed, you get a confirmation and a payment link — for exactly those reviews.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Can / can't" style="padding:clamp(24px,3vw,40px) clamp(6px,2.6vw,36px);display:grid;grid-template-columns:minmax(0,1fr);gap:16px">
+  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(22px,3.4vw,40px);display:flex;flex-direction:column;gap:clamp(16px,2.4vw,28px)">
+    <h3 style="margin:0;font-size:clamp(26px,2.6vw,32px);font-weight:500;letter-spacing:-.03em">What we can remove</h3>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <sc-for list="{{ canList }}" as="c" hint-placeholder-count="4">
+        <div style="display:flex;gap:16px;padding:16px 0;border-top:1px solid #E6E6E6;align-items:flex-start">
+          <span style="flex:none;width:26px;height:26px;border-radius:50%;background:#151515;display:flex;align-items:center;justify-content:center;margin-top:1px"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:17px;font-weight:500">{{ c.t }}</span><span style="font-size:15px;color:#6B6B6B;line-height:1.45">{{ c.d }}</span></div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" data-screen-label="Pricing" style="padding:clamp(56px,8vw,96px) clamp(6px,2.6vw,36px) clamp(24px,3vw,40px);display:flex;flex-direction:column;gap:40px">
+  <h2 style="margin:0;font-weight:500;font-size:clamp(36px,4.4vw,64px);line-height:1;letter-spacing:-.04em;max-width:900px"><span style="color:#9E9E9E">Priced per review.</span> Charged only when it's gone.</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:16px">
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(24px,3vw,36px);display:flex;flex-direction:column;gap:clamp(12px,1.6vw,20px);min-height:clamp(240px,26vw,320px)">
+      <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">// recent review</span>
+      <span style="font-size:clamp(64px,7vw,88px);font-weight:500;letter-spacing:-.05em;line-height:1">{{ priceRecent }}</span>
+      <span style="font-size:18px">Posted within the last 4 weeks</span>
+      <span style="margin-top:auto;font-size:15px;color:#6B6B6B;line-height:1.5">Per removed review. Fresh reviews move through Google's process fastest.</span>
+    </div>
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(24px,3vw,36px);display:flex;flex-direction:column;gap:clamp(12px,1.6vw,20px);min-height:clamp(240px,26vw,320px)">
+      <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">// older review</span>
+      <span style="font-size:clamp(64px,7vw,88px);font-weight:500;letter-spacing:-.05em;line-height:1">{{ priceOlder }}</span>
+      <span style="font-size:18px">Older than 4 weeks</span>
+      <span style="margin-top:auto;font-size:15px;color:#6B6B6B;line-height:1.5">Per removed review. Older reviews need more documentation — we still take them on.</span>
+    </div>
+    <div style="background:#151515;color:#fff;border-radius:28px;padding:clamp(24px,3vw,36px);display:flex;flex-direction:column;gap:clamp(12px,1.6vw,20px);min-height:clamp(240px,26vw,320px)">
+      <span style="width:56px;height:56px;border-radius:16px;background:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      <span style="font-size:32px;font-weight:500;letter-spacing:-.03em;line-height:1.1">No cure, no pay.</span>
+      <span style="font-size:15px;color:#B5B5B5;line-height:1.55">No upfront payment, no retainer. You're invoiced only for reviews that are actually removed — payable on the day of removal.</span>
+      <span style="font-size:15px;color:#FFFFFF;line-height:1.55">Volume discount: 2 reviews −5% · 3–5 reviews −10% · 6+ reviews −15%.</span>
+      <span style="margin-top:auto;font-family:'Geist Mono',monospace;font-size:13px;color:#8A8A8A;line-height:1.6">e.g. 2 recent + 1 older removed<br>= {{ exampleTotal }}</span>
+    </div>
+  </div>
+</section>
+
+<section id="cases" data-screen-label="Cases" style="padding:clamp(56px,8vw,96px) clamp(6px,2.6vw,36px) clamp(24px,3vw,40px);display:flex;flex-direction:column;gap:40px">
+  <h2 style="margin:0;font-weight:500;font-size:clamp(36px,4.4vw,64px);line-height:1;letter-spacing:-.04em;max-width:900px"><span style="color:#9E9E9E">Thousands of reviews</span> deleted.</h2>
+  <div style="display:flex;flex-direction:column;gap:12px">
+  <div ref="{{ caseRef0 }}" onMouseEnter="{{ pause0 }}" onMouseLeave="{{ resume0 }}" style="overflow:hidden;margin:0 calc(-1 * clamp(6px,2.6vw,36px));padding:0 clamp(6px,2.6vw,36px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)">
+    <div style="display:flex;gap:12px;width:max-content;align-items:stretch;will-change:transform">
+    <sc-for list="{{ caseRow0 }}" as="k" hint-placeholder-count="6">
+      <div style="flex:none;width:min(300px,74vw);background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B;line-height:1.4">{{ k.biz }}</span><span style="flex:none;font-size:12px;background:#EFEFEF;border-radius:9px;padding:5px 9px">{{ k.reason }}</span></div>
+        <p style="margin:0;font-size:15px;line-height:1.45;color:#9E9E9E;text-decoration:line-through;text-wrap:pretty">"{{ k.quote }}"</p>
+        <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;padding-top:12px;border-top:1px solid #E6E6E6">
+          <div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:24px;font-weight:500;letter-spacing:-.04em">{{ k.days }}</span><span style="font-size:13px;color:#6B6B6B">to removal</span></div>
+          <span style="font-size:13px;color:#151515">{{ k.rating }}</span>
+        </div>
+      </div>
+    </sc-for>
+    </div>
+  </div>
+  <div ref="{{ caseRef1 }}" onMouseEnter="{{ pause1 }}" onMouseLeave="{{ resume1 }}" style="overflow:hidden;margin:0 calc(-1 * clamp(6px,2.6vw,36px));padding:0 clamp(6px,2.6vw,36px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)">
+    <div style="display:flex;gap:12px;width:max-content;align-items:stretch;will-change:transform">
+    <sc-for list="{{ caseRow1 }}" as="k" hint-placeholder-count="6">
+      <div style="flex:none;width:min(300px,74vw);background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B;line-height:1.4">{{ k.biz }}</span><span style="flex:none;font-size:12px;background:#EFEFEF;border-radius:9px;padding:5px 9px">{{ k.reason }}</span></div>
+        <p style="margin:0;font-size:15px;line-height:1.45;color:#9E9E9E;text-decoration:line-through;text-wrap:pretty">"{{ k.quote }}"</p>
+        <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;padding-top:12px;border-top:1px solid #E6E6E6">
+          <div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:24px;font-weight:500;letter-spacing:-.04em">{{ k.days }}</span><span style="font-size:13px;color:#6B6B6B">to removal</span></div>
+          <span style="font-size:13px;color:#151515">{{ k.rating }}</span>
+        </div>
+      </div>
+    </sc-for>
+    </div>
+  </div>
+  <div ref="{{ caseRef2 }}" onMouseEnter="{{ pause2 }}" onMouseLeave="{{ resume2 }}" style="overflow:hidden;margin:0 calc(-1 * clamp(6px,2.6vw,36px));padding:0 clamp(6px,2.6vw,36px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)">
+    <div style="display:flex;gap:12px;width:max-content;align-items:stretch;will-change:transform">
+    <sc-for list="{{ caseRow2 }}" as="k" hint-placeholder-count="6">
+      <div style="flex:none;width:min(300px,74vw);background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B;line-height:1.4">{{ k.biz }}</span><span style="flex:none;font-size:12px;background:#EFEFEF;border-radius:9px;padding:5px 9px">{{ k.reason }}</span></div>
+        <p style="margin:0;font-size:15px;line-height:1.45;color:#9E9E9E;text-decoration:line-through;text-wrap:pretty">"{{ k.quote }}"</p>
+        <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;padding-top:12px;border-top:1px solid #E6E6E6">
+          <div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:24px;font-weight:500;letter-spacing:-.04em">{{ k.days }}</span><span style="font-size:13px;color:#6B6B6B">to removal</span></div>
+          <span style="font-size:13px;color:#151515">{{ k.rating }}</span>
+        </div>
+      </div>
+    </sc-for>
+    </div>
+  </div>
+  </div>
+  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(24px,3.4vw,40px);display:flex;flex-wrap:wrap;justify-content:space-between;gap:clamp(16px,3vw,40px);align-items:flex-end">
+    <p style="margin:0;flex:1 1 480px;font-size:clamp(21px,2.4vw,32px);line-height:1.3;letter-spacing:-.02em;text-wrap:pretty">"A competitor left us a one-star review from an account with no history. It was gone in 24 hours, and we paid once — after it disappeared."</p>
+    <span style="font-size:15px;color:#6B6B6B">— Owner, dental practice</span>
+  </div>
+</section>
+
+<section id="faq" data-screen-label="FAQ" style="padding:clamp(56px,8vw,96px) clamp(6px,2.6vw,36px) clamp(24px,3vw,40px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:40px;align-items:start">
+  <h2 style="margin:0;font-weight:500;font-size:clamp(36px,4.4vw,64px);line-height:1;letter-spacing:-.04em"><span style="color:#9E9E9E">Questions,</span> answered.</h2>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="6">
+      <div style="background:#FFFFFF;border-radius:22px;overflow:hidden">
+        <button onClick="{{ f.toggle }}" style="width:100%;border:0;background:transparent;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:clamp(18px,2vw,22px) clamp(18px,2vw,26px);text-align:left;font-size:clamp(16px,1.5vw,18px);font-weight:500;color:#151515">{{ f.q }}<span style="flex:none;font-size:22px;font-weight:300;color:#6B6B6B">{{ f.sign }}</span></button>
+        <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:0 clamp(18px,2vw,26px) 22px;font-size:16px;line-height:1.55;color:#555;text-wrap:pretty">{{ f.a }}</p></sc-if>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<section data-screen-label="CTA" style="margin:clamp(32px,4vw,56px) 0 0;background:#151515;color:#fff;border-radius:clamp(24px,2.6vw,32px);padding:clamp(36px,5.4vw,72px) clamp(22px,4.4vw,56px);display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap">
+  <h2 style="margin:0;font-weight:500;font-size:clamp(36px,4.6vw,68px);line-height:1;letter-spacing:-.04em;max-width:760px"><span style="color:#6B6B6B">That review doesn't have to stay.</span> Send it to us.</h2>
+  <button onClick="{{ goOrder }}" style="display:flex;align-items:center;gap:22px;background:#FFFFFF;color:#151515;border:0;border-radius:22px;padding:6px 30px 6px 6px;cursor:pointer;font-size:18px;font-weight:500">
+    <span style="width:64px;height:56px;background:#151515;border-radius:17px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+    Submit a review
+  </button>
+</section>
+<sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">
+  <button onClick="{{ goOrder }}" style="position:fixed;left:8px;right:8px;bottom:8px;z-index:50;height:60px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:20px;box-shadow:0 8px 30px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 20px;font-size:16px;font-weight:500">
+    <span style="display:flex;flex-direction:column;align-items:flex-start;gap:1px"><span>Remove a review</span><span style="font-size:12px;font-weight:400;color:#B5B5B5">No upfront payment</span></span>
+    <span style="width:44px;height:44px;background:#FFFFFF;border-radius:14px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+  </button>
+</sc-if>
+
+</sc-if>
+
+<sc-if value="{{ isSuccess }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Order success" style="position:relative;min-height:calc(100vh - 140px);display:flex;align-items:center;justify-content:center;padding:clamp(24px,5vw,64px) 0;overflow:hidden">
+  <div style="position:absolute;inset:0;z-index:1;pointer-events:none">{{ confetti }}</div>
+  <sc-if value="{{ mailOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMail }}" style="position:fixed;inset:0;z-index:150;background:rgba(21,21,21,.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:12px">
+      <div onClick="{{ stop }}" style="width:100%;max-width:520px;background:#FFFFFF;border-radius:24px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.3)">
+        <div style="padding:16px 20px;border-bottom:1px solid #EFEFEF;display:flex;flex-direction:column;gap:4px;font-size:13px;color:#6B6B6B">
+          <div style="display:flex;justify-content:space-between"><span><strong style="color:#151515">byereviews</strong> &lt;hello@byereviews.com&gt;</span><button onClick="{{ closeMail }}" style="border:0;background:transparent;cursor:pointer;font-size:18px">×</button></div>
+          <span>To: {{ email }}</span>
+          <span style="color:#151515;font-size:15px;font-weight:500">Your byereviews account · order {{ orderId }}</span>
+        </div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:14px;font-size:15px;line-height:1.55;color:#333">
+          <img src="assets/byereviews-logo.png" alt="byereviews" style="height:20px;width:auto;align-self:flex-start">
+          <span>Hi {{ firstName }}, thanks for your order. We've created your personal dashboard where you can follow every review live.</span>
+          <div style="background:#F4F4F4;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;font-size:14px">
+            <span><span style="color:#6B6B6B">Login:</span> {{ email }}</span>
+            <span><span style="color:#6B6B6B">Password:</span> <span style="font-family:'Geist Mono',monospace;color:#151515">{{ portalPassword }}</span></span>
+          </div>
+          <button onClick="{{ openPortalAuto }}" style="align-self:flex-start;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:500">Log in to your dashboard</button>
+          <span style="font-size:13px;color:#8A8A8A">No payment is due until a review is removed.</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+    
+      <div style="position:relative;z-index:2;width:100%;max-width:620px;background:#FFFFFF;border-radius:32px;padding:clamp(24px,4vw,48px);display:flex;flex-direction:column;gap:18px;align-items:stretch;box-shadow:0 30px 80px rgba(0,0,0,.08)">
+        <span style="width:64px;height:64px;border-radius:20px;background:#151515;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        <h1 style="margin:0;font-size:clamp(36px,4vw,48px);font-weight:500;letter-spacing:-.04em;line-height:1">Order received.</h1>
+        <p style="margin:0;font-size:18px;line-height:1.5;color:#555;max-width:560px">We've sent a confirmation to <strong style="color:#151515;font-weight:500">{{ email }}</strong>. We'll email you as soon as work starts. Nothing is charged until a review is actually removed.</p>
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">// order {{ orderId }}</span>
+        <div style="background:#151515;color:#fff;border-radius:22px;padding:20px;display:flex;gap:14px;align-items:flex-start;margin-top:6px">
+          <span style="flex:none;width:44px;height:44px;border-radius:14px;background:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3" stroke="#151515" stroke-width="1.8"></rect><path d="M4 7l8 6 8-6" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+            <span style="font-size:17px;font-weight:500">{{ successTitle }}</span>
+            <span style="font-size:14px;color:#B5B5B5;line-height:1.5">{{ successText }}</span>
+            <sc-if value="{{ isNewAccount }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openMail }}" style="align-self:flex-start;margin-top:6px;border:0;background:#2A2A2A;color:#fff;cursor:pointer;border-radius:10px;padding:8px 12px;font-size:13px">Preview the email (demo)</button></sc-if>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+          <button onClick="{{ openPortalAuto }}" style="display:flex;align-items:center;justify-content:space-between;background:#151515;color:#fff;border:0;border-radius:20px;padding:6px 6px 6px 22px;cursor:pointer;font-size:17px;font-weight:500;height:64px">Open my dashboard<span style="width:52px;height:52px;background:#FFFFFF;border-radius:15px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
+          <button onClick="{{ goHome }}" style="border:0;cursor:pointer;background:transparent;border-radius:16px;padding:12px 20px;font-size:15px;font-weight:500;color:#6B6B6B">Back to home</button>
+        </div>
+      </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Login" style="padding:clamp(40px,8vw,96px) 0;display:flex;justify-content:center">
+  <div style="width:100%;max-width:440px;background:#FFFFFF;border-radius:28px;padding:clamp(24px,4vw,40px);display:flex;flex-direction:column;gap:16px">
+    <h1 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Your</span> dashboard.</h1>
+    <p style="margin:0;font-size:15px;color:#6B6B6B;line-height:1.5">Use the login details from your order confirmation email.</p>
+    <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Email</label><input type="email" value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Password</label><input type="password" value="{{ loginPass }}" onChange="{{ onLoginPass }}" onKeyDown="{{ onLoginKey }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"></div>
+    <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#6B6B6B">Email or password doesn't match.</span></sc-if>
+    <button onClick="{{ doLogin }}" style="height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:18px;font-size:16px;font-weight:500">Log in</button>
+    <button onClick="{{ fillDemo }}" style="border:0;background:transparent;cursor:pointer;font-size:14px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">Use demo account</button>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isPortal }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Customer dashboard" style="padding:clamp(20px,4vw,48px) clamp(0px,1.2vw,16px) 24px;display:flex;flex-direction:column;gap:16px;max-width:1100px;width:100%;margin:0 auto">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:0 4px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">// order {{ pOrderId }} · {{ pBiz }}</span>
+      <h1 style="margin:0;font-size:clamp(34px,4.4vw,56px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Hi {{ pFirst }},</span> here's your status.</h1>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onClick="{{ newOrder }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:500">+ New order</button>
+      <button onClick="{{ logout }}" style="border:0;cursor:pointer;background:transparent;border-radius:14px;padding:12px 10px;font-size:14px;font-weight:500;color:#6B6B6B">Log out</button>
+    </div>
+  </div>
+
+  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;align-self:flex-start">
+    <sc-for list="{{ pTabs }}" as="tb" hint-placeholder-count="2">
+      <button onClick="{{ tb.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:10px 18px;font-size:14px;font-weight:500;display:flex;gap:8px;align-items:center;background:{{ tb.bg }};color:{{ tb.fg }}">{{ tb.label }}<sc-if value="{{ tb.hasDot }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:{{ tb.dotBg }};color:{{ tb.dotFg }};font-size:11px;display:flex;align-items:center;justify-content:center">{{ tb.dot }}</span></sc-if></button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ pTabOverview }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column;gap:16px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:10px">
+    <div style="background:#FFFFFF;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;color:#6B6B6B">Removed</span><span style="font-size:48px;font-weight:500;letter-spacing:-.04em;line-height:1">{{ pRemoved }}<span style="color:#9E9E9E;font-size:24px"> / {{ pTotal }}</span></span></div>
+    <div style="background:#FFFFFF;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;color:#6B6B6B">In progress</span><span style="font-size:48px;font-weight:500;letter-spacing:-.04em;line-height:1">{{ pProgress }}</span></div>
+    <div style="background:#FFFFFF;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;color:#6B6B6B">Google rating</span><span style="font-size:48px;font-weight:500;letter-spacing:-.04em;line-height:1">{{ pRatingNow }}<span style="color:#9E9E9E;font-size:20px"> from {{ pRatingBefore }}</span></span></div>
+    <div style="background:#151515;color:#fff;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:14px;color:#B5B5B5">{{ pPayLabel }}</span>
+      <span style="font-size:40px;font-weight:500;letter-spacing:-.04em;line-height:1">{{ pDue }}</span>
+      <sc-if value="{{ pCanPay }}" hint-placeholder-val="{{ false }}"><button onClick="{{ scrollPay }}" style="height:44px;border:0;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;font-size:15px;font-weight:500">Pay now</button></sc-if>
+      <sc-if value="{{ pPaid }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;display:flex;gap:6px;align-items:center"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Paid — thank you</span></sc-if>
+    </div>
+  </div>
+
+  <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:18px">
+    <span style="font-size:18px;font-weight:500">Progress</span>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+      <sc-for list="{{ pSteps }}" as="st" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="height:6px;border-radius:3px;display:block;background:{{ st.bar }}"></span>
+          <span style="font-size:clamp(12px,1.3vw,15px);font-weight:500;color:{{ st.fg }}">{{ st.label }}</span>
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A">{{ st.date }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 4px 4px"><span style="font-size:18px;font-weight:500">Active</span><span style="min-width:24px;height:24px;padding:0 8px;border-radius:12px;background:#151515;color:#fff;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center">{{ pActiveCount }}</span></div>
+    <sc-for list="{{ pActive }}" as="r" hint-placeholder-count="2">
+      <div style="background:#FFFFFF;border-radius:22px;padding:16px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+        <span style="width:40px;height:40px;border-radius:50%;background:#6B6B6B;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500">{{ r.initial }}</span>
+        <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:15px;font-weight:500">{{ r.name }} <span style="color:#6B6B6B;font-weight:400;font-size:13px">· {{ r.stars }} ★ · {{ r.when }}</span></span>
+          <span style="font-size:14px;line-height:1.45;color:{{ r.textCol }};text-decoration:{{ r.deco }}">{{ r.text }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto">
+          <span style="font-size:13px;font-weight:500;border-radius:10px;padding:6px 10px;display:flex;gap:6px;align-items:center;background:{{ r.badgeBg }};color:{{ r.badgeFg }};border:1px solid {{ r.badgeBd }}">{{ r.status }}</span>
+          <span style="font-size:13px;color:#6B6B6B">{{ r.priceNote }}</span>
+        </div>
+      </div>
+    </sc-for>
+    <sc-if value="{{ pActiveEmpty }}" hint-placeholder-val="{{ false }}"><div style="background:#FFFFFF;border-radius:22px;padding:18px;font-size:14px;color:#8A8A8A">Nothing here yet.</div></sc-if>
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 4px 4px"><span style="font-size:18px;font-weight:500">Done</span><span style="min-width:24px;height:24px;padding:0 8px;border-radius:12px;background:#151515;color:#fff;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center">{{ pDoneCount }}</span></div>
+    <sc-for list="{{ pDone }}" as="r" hint-placeholder-count="2">
+      <div style="background:#FFFFFF;border-radius:22px;padding:16px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+        <span style="width:40px;height:40px;border-radius:50%;background:#6B6B6B;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500">{{ r.initial }}</span>
+        <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:15px;font-weight:500">{{ r.name }} <span style="color:#6B6B6B;font-weight:400;font-size:13px">· {{ r.stars }} ★ · {{ r.when }}</span></span>
+          <span style="font-size:14px;line-height:1.45;color:{{ r.textCol }};text-decoration:{{ r.deco }}">{{ r.text }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto">
+          <span style="font-size:13px;font-weight:500;border-radius:10px;padding:6px 10px;display:flex;gap:6px;align-items:center;background:{{ r.badgeBg }};color:{{ r.badgeFg }};border:1px solid {{ r.badgeBd }}">{{ r.status }}</span>
+          <span style="font-size:13px;color:#6B6B6B">{{ r.priceNote }}</span>
+        </div>
+      </div>
+    </sc-for>
+    <sc-if value="{{ pDoneEmpty }}" hint-placeholder-val="{{ false }}"><div style="background:#FFFFFF;border-radius:22px;padding:18px;font-size:14px;color:#8A8A8A">Nothing here yet.</div></sc-if>
+  </div>
+
+  <sc-if value="{{ pHasInvoice }}" hint-placeholder-val="{{ false }}">
+  <div ref="{{ payRef }}" style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:18px;font-weight:500">Invoice</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ pInvoiceNo }} · due {{ pDueDate }}</span></div>
+    <sc-for list="{{ pLines }}" as="l" hint-placeholder-count="1">
+      <div style="display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:10px 0;border-top:1px solid #EFEFEF"><span>{{ l.label }}</span><span>{{ l.amount }}</span></div>
+    </sc-for>
+    <sc-if value="{{ pHasDisc }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:space-between;font-size:15px;font-weight:500;padding:10px 0;border-top:1px solid #EFEFEF"><span>Volume discount {{ pDiscPct }}</span><span>{{ pDiscAmt }}</span></div></sc-if>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-top:14px;border-top:1px solid #E4E4E4">
+      <div style="display:flex;flex-direction:column"><span style="font-size:14px;color:#6B6B6B">Total</span><span style="font-size:36px;font-weight:500;letter-spacing:-.04em;line-height:1.05">{{ pInvTotal }}</span></div>
+      <sc-if value="{{ pCanPay }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;flex:1 1 280px;justify-content:flex-end">
+          <button onClick="{{ payNow }}" style="flex:1 1 140px;height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;font-size:16px;font-weight:500">Apple Pay</button>
+          <button onClick="{{ payNow }}" style="flex:1 1 140px;height:56px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:16px;font-size:16px;font-weight:500">Pay by card</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ pPaid }}" hint-placeholder-val="{{ false }}"><span style="font-size:15px;font-weight:500;background:#151515;color:#fff;border-radius:12px;padding:10px 14px">✓ Paid</span></sc-if>
+    </div>
+    <span style="font-size:12px;color:#8A8A8A">Secure payment via Stripe. You're only billed for removed reviews.</span>
+  </div>
+  </sc-if>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ pTabSupport }}" hint-placeholder-val="{{ false }}">
+  <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span style="font-size:18px;font-weight:500">Support</span><span style="font-size:13px;color:#6B6B6B;display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#151515;display:block"></span>Usually replies within 2 hours</span></div>
+    <div style="display:flex;flex-direction:column;gap:8px;min-height:280px;max-height:52vh;overflow:auto">
+      <sc-for list="{{ pMsgs }}" as="m" hint-placeholder-count="1">
+        <div style="display:flex;justify-content:{{ m.justify }}">
+          <div style="max-width:80%;border-radius:18px;padding:12px 14px;font-size:15px;line-height:1.45;background:{{ m.bg }};color:{{ m.fg }}">{{ m.text }}<span style="display:block;margin-top:4px;font-size:11px;opacity:.6">{{ m.meta }}</span></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <textarea value="{{ supportDraft }}" onChange="{{ onSupportDraft }}" onKeyDown="{{ onSupportKey }}" rows="2" placeholder="Write a message…" style="flex:1;min-width:0;border:0;background:#F4F4F4;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;resize:none"></textarea>
+      <button onClick="{{ sendSupport }}" aria-label="Send" style="flex:none;width:52px;height:52px;border:0;cursor:pointer;background:#151515;border-radius:16px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+    </div>
+  </div>
+  </sc-if>
+
+  <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500">Account</span><span style="font-size:14px;color:#6B6B6B;word-break:break-all">{{ pEmail }}</span></div>
+    <span style="font-size:14px;color:#6B6B6B;line-height:1.5">We email you at every step. Questions? Reply to any of our emails.</span>
+  </div>
+</section>
+<sc-if value="{{ pShowChatFab }}" hint-placeholder-val="{{ false }}">
+  <button onClick="{{ openSupport }}" aria-label="Chat with support" style="position:fixed;right:16px;bottom:16px;z-index:70;width:60px;height:60px;border:0;cursor:pointer;background:#151515;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 5.5A2.5 2.5 0 016.5 3h11A2.5 2.5 0 0120 5.5v8a2.5 2.5 0 01-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 014 14.5z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+    <sc-if value="{{ pUnread }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-4px;right:-4px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;color:#151515;border:2px solid #151515;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">1</span></sc-if>
+  </button>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ isOrder }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Order wizard" style="padding:clamp(20px,4vw,48px) clamp(0px,1.2vw,16px) 24px;display:grid;grid-template-columns:{{ gridCols }};justify-content:center;gap:20px;align-items:start">
+  <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-width:560px">
+      <sc-for list="{{ stepTabs }}" as="s" hint-placeholder-count="4">
+        <button onClick="{{ s.go }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px clamp(8px,1.2vw,16px);font-size:clamp(12px,1.2vw,14px);font-weight:500;display:flex;gap:6px;align-items:center;justify-content:center;background:{{ s.bg }};color:{{ s.fg }}"><span style="font-family:'Geist Mono',monospace;font-size:12px;opacity:.7">0{{ s.n }}</span>{{ s.label }}</button>
+      </sc-for>
+    </div>
+
+
+    <sc-if value="{{ showStep1 }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:8px 4px"><h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Find your</span> business.</h1></div>
+      <div style="background:#FFFFFF;border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input value="{{ bizQuery }}" onChange="{{ onBizQuery }}" onKeyDown="{{ onBizKey }}" placeholder="Business name or Google profile link" style="flex:1;min-width:220px;border:0;background:#F4F4F4;border-radius:14px;padding:16px 18px;font-size:16px;outline:none">
+          <button onClick="{{ findBiz }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:16px 22px;font-size:15px;font-weight:500">Find</button>
+        </div>
+        <sc-if value="{{ bizLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#F4F4F4;border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px"><span style="width:48px;height:48px;border-radius:12px;background:#E4E4E4;flex:none"></span><div style="flex:1;display:flex;flex-direction:column;gap:8px"><span style="height:10px;width:40%;background:#E4E4E4;border-radius:5px;display:block"></span><span style="height:10px;width:60%;background:#E4E4E4;border-radius:5px;display:block"></span></div><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#8A8A8A">searching google…</span></div>
+        </sc-if>
+        <sc-if value="{{ bizFound }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#F4F4F4;border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <span style="width:48px;height:48px;border-radius:12px;background:#151515;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500">{{ bizInitial }}</span>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:17px;font-weight:500">{{ bizName }}</span><span style="font-size:13px;color:#6B6B6B">{{ bizMeta }}</span></div>
+            <span style="font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#151515" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Found</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ bizNotFound }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#F4F4F4;border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:500">No profile found</span><span style="font-size:13px;color:#6B6B6B">No problem — just paste the reviews directly.</span></div>
+            <button onClick="{{ goManual }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:500">Add reviews by link</button>
+          </div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ showSkip }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ goManual }}" style="align-self:flex-start;border:0;background:transparent;cursor:pointer;padding:4px;font-size:14px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">Can't find your business? Add reviews by link</button>
+      </sc-if>
+    </sc-if>
+
+    <sc-if value="{{ showStep2 }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ manualOnly }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:8px 4px">
+        <h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Paste the reviews</span> that should go.</h1>
+        <button onClick="{{ openHelp }}" style="border:0;cursor:pointer;background:#FFFFFF;border-radius:14px;padding:6px 16px 6px 6px;font-size:14px;font-weight:500;color:#151515;display:flex;gap:10px;align-items:center"><span style="width:32px;height:32px;border-radius:10px;background:#151515;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 1.5v9l7-4.5z" fill="#fff"></path></svg></span>How to find the review link</button>
+      </div>
+      </sc-if>
+      <sc-if value="{{ hasProfile }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:8px 4px">
+        <h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Tap the reviews</span> that should go.</h1>
+        <span style="font-size:14px;color:#6B6B6B">{{ bizName }} · {{ selCount }} selected</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;background:#FFFFFF;border-radius:14px;padding:4px;gap:2px">
+          <button onClick="{{ filterLow }}" style="border:0;cursor:pointer;border-radius:10px;padding:9px 14px;font-size:14px;font-weight:500;background:{{ fLowBg }};color:{{ fLowFg }}">1–3 ★</button>
+          <button onClick="{{ filterAll }}" style="border:0;cursor:pointer;border-radius:10px;padding:9px 14px;font-size:14px;font-weight:500;background:{{ fAllBg }};color:{{ fAllFg }}">All</button>
+        </div>
+        <input value="{{ revSearch }}" onChange="{{ onRevSearch }}" placeholder="Search name or text" style="flex:1;min-width:180px;border:0;background:#FFFFFF;border-radius:14px;padding:13px 16px;font-size:15px;outline:none">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <sc-for list="{{ profileReviews }}" as="p" hint-placeholder-count="5">
+          <button onClick="{{ p.toggle }}" style="cursor:{{ p.cursor }};text-align:left;width:100%;background:#FFFFFF;border-radius:20px;padding:16px;display:flex;gap:14px;align-items:flex-start;border:2px solid {{ p.border }};opacity:{{ p.opacity }};font-size:14px;color:#151515">
+            <span style="flex:none;width:26px;height:26px;border-radius:8px;margin-top:6px;display:flex;align-items:center;justify-content:center;background:{{ p.boxBg }};border:1.5px solid {{ p.boxBd }}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            <span style="width:38px;height:38px;border-radius:50%;background:#6B6B6B;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500">{{ p.initial }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+              <span style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span style="font-size:15px;font-weight:500">{{ p.name }}</span><span style="font-size:13px;font-weight:500">{{ p.tag }}</span></span>
+              <span style="font-size:13px;color:#6B6B6B"><span style="color:#151515;letter-spacing:1px">{{ p.starsOn }}</span><span style="color:#C8C8C8;letter-spacing:1px">{{ p.starsOff }}</span> · {{ p.when }}</span>
+              <span style="font-size:14px;line-height:1.45;color:#333;text-wrap:pretty">{{ p.textShown }}</span>
+            </span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}"><div style="background:#FFFFFF;border-radius:20px;padding:24px;font-size:15px;color:#6B6B6B;text-align:center">No reviews match.</div></sc-if>
+      </div>
+      </sc-if>
+      <div style="background:#FFFFFF;border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:10px">
+        <sc-if value="{{ hasProfile }}" hint-placeholder-val="{{ true }}"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <button onClick="{{ toggleManual }}" style="border:0;background:transparent;cursor:pointer;font-size:15px;font-weight:500;color:#151515;padding:8px 4px">{{ manualLabel }}</button>
+          <sc-if value="{{ showManual }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openHelp }}" style="border:0;cursor:pointer;background:#F4F4F4;border-radius:14px;padding:6px 16px 6px 6px;font-size:14px;font-weight:500;color:#151515;display:flex;gap:10px;align-items:center"><span style="width:32px;height:32px;border-radius:10px;background:#151515;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 1.5v9l7-4.5z" fill="#fff"></path></svg></span>How to find the review link</button></sc-if>
+        </div></sc-if>
+        <sc-if value="{{ showManual }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px">
+      <sc-for list="{{ reviewItems }}" as="r" hint-placeholder-count="1">
+        <div style="background:#FAFAFA;border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="flex:none;width:40px;height:40px;border-radius:12px;background:{{ r.badgeBg }};color:{{ r.badgeFg }};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500">{{ r.badge }}</span>
+            <input value="{{ r.value }}" onChange="{{ r.onValue }}" placeholder="Paste review link or text" style="flex:1;min-width:0;border:0;background:#F4F4F4;border-radius:14px;padding:14px 16px;font-size:16px;outline:none">
+            <sc-if value="{{ r.canRemove }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.remove }}" aria-label="Remove" style="flex:none;width:40px;height:40px;border:0;cursor:pointer;background:transparent;border-radius:12px;color:#8A8A8A;font-size:20px">×</button></sc-if>
+          </div>
+          <sc-if value="{{ r.isLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-left:50px;background:#F4F4F4;border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px">
+              <span style="width:36px;height:36px;border-radius:50%;background:#E4E4E4;flex:none"></span>
+              <div style="flex:1;display:flex;flex-direction:column;gap:8px"><span style="height:10px;width:40%;background:#E4E4E4;border-radius:5px;display:block"></span><span style="height:10px;width:80%;background:#E4E4E4;border-radius:5px;display:block"></span></div>
+              <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#8A8A8A">finding review…</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ r.isFound }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-left:50px;background:#F4F4F4;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="width:36px;height:36px;border-radius:50%;background:#151515;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500">{{ r.pInitial }}</span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:500">{{ r.pName }}</span><span style="font-size:12px;color:#6B6B6B">{{ r.pMeta }}</span></div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><span style="font-size:14px;letter-spacing:1px">{{ r.pStarsOn }}<span style="color:#C8C8C8">{{ r.pStarsOff }}</span></span><span style="font-size:12px;color:#6B6B6B">{{ r.pWhen }}</span></div>
+              </div>
+              <p style="margin:0;font-size:15px;line-height:1.5;color:#333;text-wrap:pretty">{{ r.pText }}</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:10px;border-top:1px solid #E4E4E4">
+                <span style="font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#151515" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Review found</span>
+                <button onClick="{{ r.clear }}" style="border:0;background:transparent;cursor:pointer;font-size:13px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">Not this one?</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ r.needsName }}" hint-placeholder-val="{{ false }}">
+            <div style="padding-left:50px"><input value="{{ r.name }}" onChange="{{ r.onName }}" placeholder="Reviewer's name" style="width:100%;border:0;background:#F4F4F4;border-radius:14px;padding:12px 16px;font-size:15px;outline:none"></div>
+          </sc-if>
+          <div style="padding-left:50px;display:flex;gap:6px;flex-wrap:wrap">
+            <button onClick="{{ r.setRecent }}" style="cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-size:14px;display:flex;gap:8px;background:{{ r.recentBg }};color:{{ r.recentFg }}">Last 4 weeks<span style="font-weight:500">{{ priceRecent }}</span></button>
+            <button onClick="{{ r.setOlder }}" style="cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-size:14px;display:flex;gap:8px;background:{{ r.olderBg }};color:{{ r.olderFg }}">Older<span style="font-weight:500">{{ priceOlder }}</span></button>
+          </div>
+        </div>
+      </sc-for>
+      <button onClick="{{ addReview }}" style="border:1px dashed #9E9E9E;background:transparent;cursor:pointer;border-radius:22px;padding:18px;font-size:16px;font-weight:500;color:#151515">+ Add another link</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showStep3 }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:8px 4px"><h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Where should we</span> reach you?</h1><sc-if value="{{ hasAuto }}" hint-placeholder-val="{{ false }}"><p style="margin:10px 0 0;font-size:15px;color:#555">Business details filled in from your Google profile — just add your name and email.</p></sc-if></div>
+      <div style="background:#FFFFFF;border-radius:28px;padding:clamp(18px,2.4vw,28px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px">
+        <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Full name</label><input value="{{ name }}" onChange="{{ onName }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Email</label><input type="email" value="{{ email }}" onChange="{{ onEmail }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"><sc-if value="{{ emailKnown }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#151515;background:#EFEFEF;border-radius:12px;padding:10px 12px;line-height:1.45;display:flex;gap:8px;align-items:flex-start"><span style="font-weight:600">✓</span><span><strong style="font-weight:500">Welcome back!</strong> You already have an account — this order will be added to your dashboard. Use your existing login.</span></span></sc-if></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500;display:flex;justify-content:space-between;gap:8px"><span>Company</span><sc-if value="{{ autoCompany }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:500;color:#6B6B6B">✓ from Google</span></sc-if></label><input value="{{ company }}" onChange="{{ onCompany }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500;display:flex;justify-content:space-between;gap:8px"><span>Phone <span style="color:#8A8A8A;font-weight:400">— optional</span></span><sc-if value="{{ autoPhone }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:500;color:#6B6B6B">✓ from Google</span></sc-if></label><input value="{{ phone }}" onChange="{{ onPhone }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500;display:flex;justify-content:space-between;gap:8px"><span>Street address</span><sc-if value="{{ autoStreet }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:500;color:#6B6B6B">✓ from Google</span></sc-if></label><input value="{{ street }}" onChange="{{ onStreet }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500;display:flex;justify-content:space-between;gap:8px"><span>ZIP &amp; city</span><sc-if value="{{ autoCity }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:500;color:#6B6B6B">✓ from Google</span></sc-if></label><input value="{{ city }}" onChange="{{ onCity }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Country <span style="color:#8A8A8A;font-weight:400">— billed in {{ currency }}</span></label><select value="{{ country }}" onChange="{{ onCountry }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"><sc-for list="{{ countries }}" as="c" hint-placeholder-count="0"><option value="{{ c }}">{{ c }}</option></sc-for></select></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showStep4 }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:8px 4px"><h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">One last look.</span> Nothing is charged today.</h1></div>
+      <div style="background:#151515;color:#fff;border-radius:28px;padding:clamp(22px,2.6vw,32px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:24px">
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#8A8A8A">01</span><span style="font-size:18px;font-weight:500">No upfront payment</span><span style="font-size:14px;color:#B5B5B5;line-height:1.5">You pay nothing to place this order.</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#8A8A8A">02</span><span style="font-size:18px;font-weight:500">Billed per removal</span><span style="font-size:14px;color:#B5B5B5;line-height:1.5">{{ priceRecent }} (≤ 4 weeks) or {{ priceOlder }} (older), only for reviews actually removed.</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#8A8A8A">03</span><span style="font-size:18px;font-weight:500">Due on removal day</span><span style="font-size:14px;color:#B5B5B5;line-height:1.5">You'll receive a secure payment link with the removal confirmation.</span></div>
+      </div>
+      <div style="background:#FFFFFF;border-radius:28px;padding:clamp(18px,2.4vw,28px);display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;gap:12px;font-size:15px"><span style="color:#6B6B6B">Contact</span><span>{{ name }} · {{ email }}</span></div>
+        <div style="display:flex;justify-content:space-between;gap:12px;font-size:15px"><span style="color:#6B6B6B">Country</span><span>{{ country }} · {{ currency }}</span></div>
+        <label style="display:flex;gap:12px;align-items:flex-start;cursor:pointer;padding-top:14px;border-top:1px solid #E6E6E6;font-size:15px;line-height:1.5">
+          <input type="checkbox" checked="{{ agree }}" onChange="{{ onAgree }}" style="width:20px;height:20px;accent-color:#151515;margin-top:2px;flex:none">
+          <span>I agree to the <a href="#" style="text-decoration:underline">Terms</a> and have read the <a href="#" style="text-decoration:underline">Right of Withdrawal</a>. I understand I'm only charged for reviews that are removed.</span>
+        </label>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showNavDesk }}" hint-placeholder-val="{{ true }}">
+      <div style="position:sticky;bottom:12px;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;pointer-events:none">
+        <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ back }}" style="pointer-events:auto;border:0;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:18px;padding:16px 22px;font-size:15px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.08)">Back</button></sc-if>
+        <span style="flex:1"></span>
+        <button onClick="{{ next }}" style="pointer-events:auto;display:flex;align-items:center;gap:18px;background:#151515;color:#FFFFFF;border:0;border-radius:20px;padding:5px 24px 5px 5px;cursor:pointer;font-size:16px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:{{ nextOpacity }}">
+          <span style="width:52px;height:46px;background:#FFFFFF;border-radius:15px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          {{ nextLabel }}
+        </button>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ showAside }}" hint-placeholder-val="{{ false }}">
+  <aside style="position:{{ asidePos }};top:96px;background:#FFFFFF;border-radius:28px;padding:10px;display:flex;flex-direction:column;gap:10px">
+    <div style="padding:20px 18px 8px;display:flex;flex-direction:column;gap:14px">
+      <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">// your order</span>
+      <div style="display:flex;justify-content:space-between;font-size:15px"><span>Recent (≤ 4 weeks) × {{ nRecent }}</span><span>{{ subRecent }}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:15px"><span>Older (&gt; 4 weeks) × {{ nOlder }}</span><span>{{ subOlder }}</span></div>
+    </div>
+    <div style="padding:0 18px 8px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;font-size:15px;padding-top:12px;border-top:1px solid #E6E6E6"><span style="color:#6B6B6B">Subtotal</span><span>{{ subtotal }}</span></div>
+      <sc-if value="{{ hasDiscount }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:space-between;font-size:15px;font-weight:500"><span>Volume discount {{ discountPct }}</span><span>{{ discountAmt }}</span></div></sc-if>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:0 8px">
+      <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="4">
+        <div style="border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;background:{{ t.bg }};color:{{ t.fg }}"><span style="font-family:'Geist Mono',monospace;font-size:11px;opacity:.75">{{ t.n }}</span><span style="font-size:13px;font-weight:500">{{ t.p }}</span></div>
+      </sc-for>
+    </div>
+    <div style="background:#151515;color:#fff;border-radius:20px;padding:20px 18px;display:flex;flex-direction:column;gap:6px">
+      <span style="font-size:14px;color:#B5B5B5">Total if every review is removed</span>
+      <span style="font-size:48px;font-weight:500;letter-spacing:-.04em;line-height:1.05">{{ total }}</span>
+      <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#8A8A8A">// avg. {{ perReview }} per review · {{ zero }} due today</span>
+    </div>
+    <sc-if value="{{ hasNextTier }}" hint-placeholder-val="{{ true }}"><button onClick="{{ goSelect }}" style="border:1px dashed #9E9E9E;background:transparent;cursor:pointer;border-radius:16px;padding:12px;font-size:14px;color:#151515">{{ nextTierText }}</button></sc-if>
+    <p style="margin:0;padding:8px 18px 14px;font-size:13px;line-height:1.5;color:#6B6B6B">Reviews that don't qualify (e.g. star-only ratings without text) are cancelled free of charge.</p>
+  </aside>
+  </sc-if>
+  <sc-if value="{{ showNavMob }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:8px;right:8px;bottom:8px;z-index:50;background:#FFFFFF;border-radius:24px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:8px;display:flex;flex-direction:column;gap:6px">
+      <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#6B6B6B;padding:4px 8px 0">{{ error }}</span></sc-if>
+      <div style="display:flex;align-items:center;gap:8px">
+        <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ back }}" aria-label="Back" style="flex:none;width:52px;height:52px;border:0;cursor:pointer;background:#EFEFEF;border-radius:16px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M13 8H4M7.5 4l-4 4 4 4" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></sc-if>
+        <sc-if value="{{ showAside }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-width:0;display:flex;flex-direction:column;padding:0 6px"><span style="font-size:20px;font-weight:500;letter-spacing:-.03em;line-height:1.1">{{ total }}</span><span style="font-size:12px;color:#6B6B6B">{{ zero }} due today</span></div></sc-if>
+        <button onClick="{{ next }}" style="flex:1;height:52px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px;opacity:{{ nextOpacity }}">{{ nextLabel }}<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ helpOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeHelp }}" style="position:fixed;inset:0;background:rgba(21,21,21,.55);backdrop-filter:blur(6px);z-index:100;display:flex;align-items:center;justify-content:center;padding:clamp(8px,2vw,20px)">
+      <div onClick="{{ stop }}" style="background:#EFEFEF;border-radius:clamp(22px,3vw,32px);padding:clamp(12px,2vw,20px);display:flex;flex-direction:column;gap:14px;width:720px;max-width:100%;max-height:calc(100vh - 16px);overflow:auto">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">step {{ helpNum }} of 6</span>
+            <span style="font-size:clamp(22px,3vw,28px);font-weight:500;letter-spacing:-.03em;line-height:1.1">{{ helpCaption }}</span>
+          </div>
+          <button onClick="{{ closeHelp }}" aria-label="Close" style="flex:none;width:40px;height:40px;border:0;border-radius:12px;background:#FFFFFF;cursor:pointer;font-size:20px">×</button>
+        </div>
+        <div style="background:#FFFFFF;border-radius:18px;overflow:hidden">
+          <div style="height:30px;background:#F4F4F4;display:flex;align-items:center;gap:6px;padding:0 12px"><span style="width:9px;height:9px;border-radius:50%;background:#D2D2D2;display:block"></span><span style="width:9px;height:9px;border-radius:50%;background:#D2D2D2;display:block"></span><span style="width:9px;height:9px;border-radius:50%;background:#D2D2D2;display:block"></span><span style="margin-left:12px;font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A">{{ helpUrl }}</span></div>
+          <div style="height:{{ helpH }};overflow:hidden"><div style="position:relative;width:660px;height:400px;overflow:hidden;font-size:12px;color:#151515;transform-origin:0 0;transform:scale({{ helpScale }})">
+            <sc-if value="{{ hs0 }}" hint-placeholder-val="{{ true }}">
+              <div style="position:absolute;left:16px;top:12px;width:380px;height:40px;border-radius:20px;box-shadow:0 1px 6px rgba(0,0,0,.14);display:flex;align-items:center;padding:0 16px;font-size:14px;gap:8px;background:#fff"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#777" stroke-width="1.6"></circle><path d="M11 11l3 3" stroke="#777" stroke-width="1.6" stroke-linecap="round"></path></svg><span>{{ typed }}<span style="display:inline-block;width:1.5px;height:15px;background:#151515;vertical-align:middle;margin-left:1px"></span></span></div>
+              <div style="position:absolute;left:16px;top:70px;width:360px;display:flex;flex-direction:column;gap:14px"><span style="height:10px;width:60%;background:#EEE;border-radius:5px;display:block"></span><span style="height:120px;background:#EEF1EC;border-radius:12px;display:block"></span><span style="height:10px;width:80%;background:#EEE;border-radius:5px;display:block"></span><span style="height:10px;width:50%;background:#EEE;border-radius:5px;display:block"></span></div>
+              <sc-if value="{{ tap }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;left:400px;top:66px;width:244px;border:1px solid #E2E2E2;border-radius:16px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:8px">
+                  <span style="font-size:16px;font-weight:500">Your Business</span><span style="font-size:11px;color:#6B6B6B">4.2 ★ (128) · Restaurant</span>
+                  <div style="display:flex;gap:6px"><span style="padding:5px 10px;border-radius:12px;border:1px solid #151515;font-size:11px">Overview</span><span style="padding:5px 10px;border-radius:12px;background:#F1F1F1;font-size:11px">Reviews</span></div>
+                  <span style="height:110px;border-radius:10px;background:#E4E4E4;display:block"></span>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="padding:5px 10px;border-radius:12px;border:1px solid #DDD;font-size:11px">Website</span><span style="padding:5px 10px;border-radius:12px;border:1px solid #DDD;font-size:11px">Directions</span><span style="padding:5px 10px;border-radius:12px;border:1px solid #DDD;font-size:11px">Share</span></div>
+                </div>
+              </sc-if>
+            </sc-if>
+            <sc-if value="{{ hs1 }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;left:16px;top:12px;width:380px;height:40px;border-radius:20px;box-shadow:0 1px 6px rgba(0,0,0,.14);display:flex;align-items:center;padding:0 16px;font-size:14px;gap:8px;background:#fff"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#777" stroke-width="1.6"></circle><path d="M11 11l3 3" stroke="#777" stroke-width="1.6" stroke-linecap="round"></path></svg><span>Your Business</span></div>
+              <div style="position:absolute;left:16px;top:70px;width:360px;display:flex;flex-direction:column;gap:14px"><span style="height:10px;width:60%;background:#EEE;border-radius:5px;display:block"></span><span style="height:120px;background:#EEF1EC;border-radius:12px;display:block"></span><span style="height:10px;width:80%;background:#EEE;border-radius:5px;display:block"></span><span style="height:10px;width:50%;background:#EEE;border-radius:5px;display:block"></span></div>
+              <div style="position:absolute;left:400px;top:66px;width:244px;border:1px solid #E2E2E2;border-radius:16px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:11px;color:#6B6B6B">Reviews</span>
+                <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">S</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Sarah Klein</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">5/5</strong> · a year ago</span><span style="font-size:11px;color:#333">Lovely staff, great food…</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+                <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">U</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Uta L.</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">5/5</strong> · a year ago</span><span style="font-size:11px;color:#333">Worth a visit!</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+                <span style="margin-top:4px;padding:10px;border-radius:14px;text-align:center;font-size:12px;font-weight:500;background:{{ seeAllBg }};color:{{ seeAllFg }}">See all reviews ›</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hs2 }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;left:16px;top:12px;width:380px;height:40px;border-radius:20px;box-shadow:0 1px 6px rgba(0,0,0,.14);display:flex;align-items:center;padding:0 16px;font-size:14px;gap:8px;background:#fff"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#777" stroke-width="1.6"></circle><path d="M11 11l3 3" stroke="#777" stroke-width="1.6" stroke-linecap="round"></path></svg><span>Your Business reviews</span></div>
+              <div style="position:absolute;left:16px;top:66px;width:360px;display:flex;flex-direction:column">
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">S</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Sarah Klein</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">5/5</strong> · a year ago</span><span style="font-size:11px;color:#333">Lovely staff, great food and music.</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;background:{{ targetBg }};"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">M</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Mark T.</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">1/5</strong> · 2 weeks ago</span><span style="font-size:11px;color:#333">Never been here but heard it's terrible. Avoid!</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">B</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Bille</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">4/5</strong> · 23 hours ago</span><span style="font-size:11px;color:#333">Very tasty, not everything on the menu was available.</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">L</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Lena M.</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">5/5</strong> · a week ago</span><span style="font-size:11px;color:#333">Wonderful evening, great value for money.</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+</div>
+            </sc-if>
+            <sc-if value="{{ hs3 }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;left:16px;top:12px;width:380px;height:40px;border-radius:20px;box-shadow:0 1px 6px rgba(0,0,0,.14);display:flex;align-items:center;padding:0 16px;font-size:14px;gap:8px;background:#fff"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#777" stroke-width="1.6"></circle><path d="M11 11l3 3" stroke="#777" stroke-width="1.6" stroke-linecap="round"></path></svg><span>Your Business reviews</span></div>
+              <div style="position:absolute;left:16px;top:66px;width:360px;display:flex;flex-direction:column">
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">S</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Sarah Klein</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">5/5</strong> · a year ago</span><span style="font-size:11px;color:#333">Lovely staff, great food and music.</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;background:#EDEDED;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">M</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Mark T.</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">1/5</strong> · 2 weeks ago</span><span style="font-size:11px;color:#333">Never been here but heard it's terrible. Avoid!</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">B</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Bille</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">4/5</strong> · 23 hours ago</span><span style="font-size:11px;color:#333">Very tasty, not everything on the menu was available.</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">L</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Lena M.</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">5/5</strong> · a week ago</span><span style="font-size:11px;color:#333">Wonderful evening, great value for money.</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+</div>
+              <div style="position:absolute;left:400px;top:66px;width:244px;border:1px solid #E2E2E2;border-radius:16px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;color:#555">←</span><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center">M</span><div style="display:flex;flex-direction:column"><span style="font-size:12px;font-weight:500">Mark T.</span><span style="font-size:10px;color:#6B6B6B">2 reviews</span></div></div>
+                <span style="font-size:12px">★<span style="color:#CCC">★★★★</span> <span style="color:#6B6B6B;font-size:11px">2 weeks ago</span></span>
+                <span style="font-size:13px;line-height:1.4">Never been here but heard it's terrible. Avoid!</span>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px"><span style="font-size:14px;color:#777">♡</span><span style="width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;border:2px solid {{ shareBorder }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6" stroke="#151515" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hs4 }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;left:16px;top:12px;width:380px;height:40px;border-radius:20px;box-shadow:0 1px 6px rgba(0,0,0,.14);display:flex;align-items:center;padding:0 16px;font-size:14px;gap:8px;background:#fff"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#777" stroke-width="1.6"></circle><path d="M11 11l3 3" stroke="#777" stroke-width="1.6" stroke-linecap="round"></path></svg><span>Your Business reviews</span></div>
+              <div style="position:absolute;left:16px;top:66px;width:360px;display:flex;flex-direction:column">
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">S</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Sarah Klein</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">5/5</strong> · a year ago</span><span style="font-size:11px;color:#333">Lovely staff, great food and music.</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;background:#EDEDED;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">M</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Mark T.</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">1/5</strong> · 2 weeks ago</span><span style="font-size:11px;color:#333">Never been here but heard it's terrible. Avoid!</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">B</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Bille</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">4/5</strong> · 23 hours ago</span><span style="font-size:11px;color:#333">Very tasty, not everything on the menu was available.</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+  <div style="display:flex;gap:10px;padding:10px 8px;border-bottom:1px solid #EEE;border-radius:10px;"><span style="width:28px;height:28px;border-radius:50%;background:#6B6B6B;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">L</span><div style="flex:1;display:flex;flex-direction:column;gap:3px"><span style="font-size:12px;font-weight:500">Lena M.</span><span style="font-size:11px;color:#6B6B6B"><strong style="color:#151515">5/5</strong> · a week ago</span><span style="font-size:11px;color:#333">Wonderful evening, great value for money.</span></div><span style="font-size:14px;color:#777">⋮</span></div>
+</div>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.28)"></div>
+              <div style="position:absolute;left:150px;top:110px;width:360px;background:#fff;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 10px 30px rgba(0,0,0,.2)">
+                <div style="display:flex;justify-content:space-between"><span style="font-size:16px;font-weight:500">Share</span><span style="font-size:14px">×</span></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #DDD;border-radius:22px;padding:10px 14px"><span style="font-size:12px">https://share.google/EyEDzUy…</span><span style="font-size:12px;font-weight:500;padding:4px 8px;border-radius:8px;background:{{ copyBg }};color:{{ copyFg }}">⧉ Copy link</span></div>
+                <div style="display:flex;gap:18px"><span style="width:28px;height:28px;border-radius:50%;background:#EEE;display:block"></span><span style="width:28px;height:28px;border-radius:50%;background:#EEE;display:block"></span><span style="width:28px;height:28px;border-radius:50%;background:#EEE;display:block"></span><span style="width:28px;height:28px;border-radius:50%;background:#EEE;display:block"></span></div>
+              </div>
+              <sc-if value="{{ tap }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:#151515;color:#fff;border-radius:10px;padding:9px 14px;font-size:12px">Link copied</div></sc-if>
+            </sc-if>
+            <sc-if value="{{ hs5 }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:0;background:#EFEFEF;padding:24px 28px;display:flex;flex-direction:column;gap:12px">
+                <span style="font-size:26px;font-weight:500;letter-spacing:-.03em"><span style="color:#9E9E9E">Which reviews</span> should go?</span>
+                <div style="background:#fff;border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;gap:10px;align-items:center"><span style="width:32px;height:32px;border-radius:10px;background:#151515;color:#fff;display:flex;align-items:center;justify-content:center">✓</span><span style="flex:1;min-height:40px;background:#F4F4F4;border-radius:12px;padding:11px 14px;font-size:13px">{{ pasted }}</span></div>
+                  <sc-if value="{{ tap }}" hint-placeholder-val="{{ false }}"><div style="margin-left:42px;background:#F4F4F4;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500">Mark T. · ★ · 2 weeks ago</span><span style="font-size:12px;color:#333">Never been here but heard it's terrible. Avoid!</span><span style="font-size:11px;font-weight:500">✓ Review found</span></div></sc-if>
+                </div>
+              </div>
+            </sc-if>
+            <svg width="22" height="22" viewBox="0 0 24 24" style="position:absolute;pointer-events:none;transition:left .9s cubic-bezier(.5,0,.2,1), top .9s cubic-bezier(.5,0,.2,1);left:{{ tapX }};top:{{ tapY }};filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))"><path d="M4 2l15 11-6.5 1 3.8 7.2-2.6 1.4-3.8-7.3L4 20z" fill="#151515" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"></path></svg>
+            <span style="position:absolute;width:30px;height:30px;margin:-10px 0 0 -10px;border-radius:50%;border:2px solid #151515;pointer-events:none;transition:opacity .3s, transform .3s;left:{{ tapX }};top:{{ tapY }};opacity:{{ ringOpacity }};transform:scale({{ ringScale }})"></span>
+          </div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:{{ helpCols }};gap:6px">
+          <sc-for list="{{ helpSteps }}" as="h" hint-placeholder-count="6">
+            <button onClick="{{ h.go }}" style="border:0;cursor:pointer;text-align:left;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:1.3;background:{{ h.bg }};color:{{ h.fg }}"><span style="font-family:'Geist Mono',monospace;font-size:11px;opacity:.7">0{{ h.n }}</span>{{ h.short }}</button>
+          </sc-for>
+        </div>
+        <button onClick="{{ closeHelp }}" style="display:flex;align-items:center;justify-content:center;gap:10px;background:#151515;color:#fff;border:0;border-radius:16px;padding:16px;cursor:pointer;font-size:15px;font-weight:500">Got it — paste my link</button>
+      </div>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<footer style="margin-top:clamp(16px,3vw,40px);padding:clamp(28px,3vw,40px) clamp(10px,2.6vw,36px) {{ footerPadB }};display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;border-top:1px solid #DCDCDC">
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:360px">
+    <img src="assets/byereviews-logo.png" alt="byereviews" style="height:24px;width:auto;display:block;align-self:flex-start">
+    <span style="font-size:14px;color:#6B6B6B;line-height:1.5">Removal of individual false, unfair or policy-violating Google reviews. Not affiliated with Google.</span>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:14px">
+    <a href="#">Imprint</a><a href="#">Terms</a><a href="#">Right of Withdrawal</a><a href="#">Privacy</a>
+  </div>
+</footer>
+
+</div>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  newReview() { return { id: Math.random().toString(36).slice(2), value: '', name: '', age: 'recent', status: 'idle', preview: null }; }
+  pool = [
+    { name: 'Mark T.', meta: 'Local Guide · 2 reviews', stars: 1, when: '2 weeks ago', recent: true, text: "Never been here but heard it's terrible. Avoid at all costs!!" },
+    { name: 'Sarah K.', meta: '1 review', stars: 1, when: '5 days ago', recent: true, text: 'Rude staff, overpriced and dirty. Go to the place across the street instead.' },
+    { name: 'D. Miller', meta: 'Local Guide · 4 reviews', stars: 1, when: '3 months ago', recent: false, text: 'Complete scam. The owner is a criminal who rips people off.' },
+    { name: 'Alex R.', meta: '3 reviews', stars: 2, when: '7 months ago', recent: false, text: 'Worst experience of my life. Never again, zero stars if I could.' }
+  ];
+  timers = {};
+  caseRefs = [React.createRef(), React.createRef(), React.createRef()];
+  caseOff = [0, 0, 0]; casePaused = [false, false, false]; caseDir = [-0.35, 0.28, -0.42];
+  componentDidMount() {
+    if (location.hash === '#order') this.setState({ view: 'order' });
+    if (location.hash === '#login') this.setState({ view: 'login' });
+    this.onResize = () => { const w = window.innerWidth || document.documentElement.clientWidth; if (w) this.setState({ vw: w, vh: window.innerHeight || this.state.vh }); };
+    window.addEventListener('resize', this.onResize); this.onResize();
+    requestAnimationFrame(this.onResize); this.rsT = setTimeout(this.onResize, 300);
+    if (window.ResizeObserver) { this.ro = new ResizeObserver(this.onResize); this.ro.observe(document.documentElement); }
+    const tick = () => {
+      this.caseRefs.forEach((r, i) => {
+        const el = r.current; if (!el) return;
+        const track = el.querySelector('div'); if (!track) return;
+        const half = track.scrollWidth / 2; if (!half) return;
+        if (!this.casePaused[i]) this.caseOff[i] += this.caseDir[i];
+        if (this.caseOff[i] <= -half) this.caseOff[i] += half;
+        if (this.caseOff[i] > 0) this.caseOff[i] -= half;
+        track.style.transform = 'translateX(' + this.caseOff[i] + 'px)';
+      });
+      this.caseRaf = requestAnimationFrame(tick);
+    };
+    this.caseRaf = requestAnimationFrame(tick);
+  }
+  profilePool = [
+    ['Mark T.', 1, 12, "Never been here but heard it's terrible. Avoid at all costs!!"],
+    ['Sarah K.', 1, 5, 'Rude staff, overpriced and dirty. Go to the place across the street instead.'],
+    ['Jonas B.', 1, 19, ''],
+    ['D. Miller', 1, 95, 'Complete scam. The owner is a criminal who rips people off.'],
+    ['Alex R.', 2, 210, 'Worst experience of my life. Never again, zero stars if I could.'],
+    ['Priya N.', 3, 40, 'Food was okay but we waited 40 minutes for a table.'],
+    ['Tom W.', 1, 3, 'Fake place. Photos are stolen from another restaurant.'],
+    ['Kevin L.', 2, 380, 'Staff told me the kitchen is filthy. Disgusting.'],
+    ['Maria G.', 1, 150, ''],
+    ['Chris P.', 3, 22, 'Nice location, portions a bit small for the price.'],
+    ['Lena M.', 5, 8, 'Wonderful evening, great value for money.'],
+    ['Uta L.', 5, 365, 'Worth a visit. We will definitely come back!'],
+    ['Bille', 4, 1, 'Very tasty, not everything on the menu was available.'],
+    ['Sam O.', 5, 60, 'Best pasta in town, lovely owners.']
+  ].map(([name, stars, days, text], i) => ({ id: 'p' + i, name, stars, days, text }));
+  autofill() {
+    const b = this.state.biz; if (!b) return;
+    this.setState(s => ({ company: s.company || b.name, street: s.street || b.street, city: s.city || b.city, phone: s.phone || b.phone,
+      country: b.country, cur: this.EU.includes(b.country) ? 'EUR' : 'USD', auto: { company: !s.company, street: !s.street, city: !s.city, phone: !s.phone } }));
+  }
+  whenFor(d) { return d < 7 ? (d === 1 ? '1 day ago' : d + ' days ago') : d < 28 ? Math.round(d / 7) + ' weeks ago' : d < 365 ? Math.round(d / 30) + ' months ago' : 'a year ago'; }
+  findBiz() {
+    const q = (this.state.bizQuery || '').trim(); if (!q) return this.setState({ tried: true });
+    clearTimeout(this.bizT); this.setState({ bizStatus: 'loading' });
+    const name = this.isUrl(q) ? 'Osteria da Anna' : q.replace(/\b\w/g, c => c.toUpperCase());
+    const miss = /notfound|unknown|xyz/i.test(q);
+    this.bizT = setTimeout(() => this.setState(miss ? { bizStatus: 'notfound', biz: null } : { bizStatus: 'found', biz: { name, meta: '4.2 ★ (128 reviews) · 214 W Lake St, Chicago', street: '214 W Lake St', city: '60606 Chicago, IL', phone: '+1 312 555 0147', country: 'United States' } }, () => this.autofill()), 1200);
+  }
+  helpSteps = [['Search your business on Google', 'Search business'], ['Click “See all reviews”', 'See all reviews'], ['Find the review in the list', 'Find the review'], ['Click it, then the share icon', 'Click share'], ['Click “Copy link”', 'Copy link'], ['Paste it here — done', 'Paste here']];
+  tapPos = [['300px', '30px'], ['520px', '322px'], ['200px', '150px'], ['612px', '262px'], ['476px', '162px'], ['360px', '96px']];
+  componentWillUnmount() { window.removeEventListener('resize', this.onResize); clearTimeout(this.rsT); if (this.ro) this.ro.disconnect(); cancelAnimationFrame(this.caseRaf); clearInterval(this.helpTimer); clearInterval(this.tapTimer); clearTimeout(this.tapT); Object.values(this.timers).forEach(clearTimeout); }
+  startHelp() { clearInterval(this.helpTimer); clearInterval(this.tapTimer); clearTimeout(this.tapT); const tapLoop = () => { clearTimeout(this.tapT); this.tapT = setTimeout(() => this.setState({ tap: true }), 1400); }; tapLoop(); this.helpTimer = setInterval(() => { this.setState(s => ({ helpStep: (s.helpStep + 1) % 6, tap: false })); tapLoop(); }, 3400); }
+  lookup(id, value) {
+    clearTimeout(this.timers[id]);
+    const p = this.pool[[...value].reduce((a, c) => a + c.charCodeAt(0), 0) % this.pool.length];
+    this.upd(id, { value, status: 'loading', preview: null });
+    this.timers[id] = setTimeout(() => this.upd(id, { status: 'found', preview: p, age: p.recent ? 'recent' : 'older' }), 1100);
+  }
+  isUrl(v) { return /^https?:\/\/\S+$/i.test((v || '').trim()) || /^(share\.google|maps\.app\.goo\.gl|g\.page|goo\.gl|www\.google\.)/i.test((v || '').trim()); }
+  state = { vw: (typeof window !== 'undefined' && window.innerWidth) || undefined, view: 'home', cur: this.guessCur(), step: 1, reviews: [this.newReview()], bizQuery: '', bizStatus: 'idle', biz: null, selected: {}, revFilter: 'low', revSearch: '', showManual: false, profileUrl: '', country: this.guessCur() === 'EUR' ? 'Germany' : 'United States', name: '', email: '', company: '', phone: '', street: '', city: '', auto: {}, agree: false, submitted: false, orderId: '', faqOpen: 0, tried: false, helpOpen: false, helpStep: 0, tap: false };
+  EU = ['Austria','Belgium','Bulgaria','Croatia','Cyprus','Czech Republic','Denmark','Estonia','Finland','France','Germany','Greece','Hungary','Ireland','Italy','Latvia','Lithuania','Luxembourg','Malta','Netherlands','Poland','Portugal','Romania','Slovakia','Slovenia','Spain','Sweden'];
+  guessCur() { try { const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; const nonEU = ['London','Zurich','Oslo','Istanbul','Moscow','Kiev','Kyiv','Belgrade','Minsk','Sarajevo','Skopje','Tirane','Chisinau','Podgorica','Guernsey','Jersey','Isle_of_Man','Gibraltar','Reykjavik']; return tz.startsWith('Europe/') && !nonEU.some(c => tz.includes(c)) ? 'EUR' : 'USD'; } catch (e) { return 'USD'; } }
+  countries = ['United States','United Kingdom','Canada','Australia','Switzerland','Austria','Belgium','Bulgaria','Croatia','Cyprus','Czech Republic','Denmark','Estonia','Finland','France','Germany','Greece','Hungary','Ireland','Italy','Latvia','Lithuania','Luxembourg','Malta','Netherlands','Poland','Portugal','Romania','Slovakia','Slovenia','Spain','Sweden','Other country'];
+  discountRate(n) { return n >= 6 ? 0.15 : n >= 3 ? 0.10 : n === 2 ? 0.05 : 0; }
+  fmt(n) { return this.state.cur === 'EUR' ? `${n.toLocaleString('en-US')} €` : `$${n.toLocaleString('en-US')}`; }
+  upd(id, patch) { this.setState(s => ({ reviews: s.reviews.map(r => r.id === id ? { ...r, ...patch } : r) })); }
+  valid(r) { return this.isUrl(r.value) || (r.value.trim().length >= 3 && r.name.trim()); }
+  stepValid(step) {
+    const s = this.state;
+    if (step === 1) return s.bizStatus === 'found' || s.bizStatus === 'manual';
+    if (step === 2) return this.selectedList().length + s.reviews.filter(r => this.valid(r)).length > 0;
+    if (step === 3) return s.name.trim() && /\S+@\S+\.\S+/.test(s.email) && !!s.country;
+    if (step === 4) return s.agree;
+    return true;
+  }
+  selectedList() { return this.profilePool.filter(p => this.state.selected[p.id]); }
+
+  errorFor(step) {
+    return ['', 'Find your business first.', 'Select at least one review.', 'Enter your name and a valid email.', 'Please accept the Terms to submit.'][step];
+  }
+  go = (view) => (e) => { if (e && e.preventDefault && view === 'order') e.preventDefault(); this.setState({ view }); window.scrollTo({ top: 0 }); };
+  vidRef = el => { if (!el) return; el.muted = true; el.defaultMuted = true; el.playsInline = true; el.setAttribute('muted', ''); el.setAttribute('playsinline', ''); el.playbackRate = 0.6; el.defaultPlaybackRate = 0.6; el.onplay = () => { el.playbackRate = 0.6; }; const p = el.play(); if (p && p.catch) p.catch(() => {}); };
+  Confetti = () => {
+    const E = React.createElement, ref = React.useRef(null);
+    React.useEffect(() => {
+      const cv = ref.current; if (!cv) return; const ctx = cv.getContext('2d');
+      const fit = () => { cv.width = cv.offsetWidth * 2; cv.height = cv.offsetHeight * 2; }; fit();
+      const cols = ['#151515', '#151515', '#6B6B6B', '#9E9E9E', '#C8C8C8', '#FFFFFF'];
+      const P = Array.from({ length: 160 }, () => ({ x: cv.width / 2 + (Math.random() - .5) * cv.width * .3, y: cv.height * .45, vx: (Math.random() - .5) * 38, vy: -Math.random() * 42 - 14, r: Math.random() * Math.PI, vr: (Math.random() - .5) * .4, w: 10 + Math.random() * 14, hh: 6 + Math.random() * 10, c: cols[Math.floor(Math.random() * cols.length)], star: Math.random() < .18 }));
+      let raf, t0 = performance.now();
+      const star = (w) => { ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5 - Math.PI / 2, rr = i % 2 ? w * .22 : w * .5; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); };
+      const loop = now => {
+        const el = (now - t0) / 1000; ctx.clearRect(0, 0, cv.width, cv.height);
+        P.forEach(p => { p.vy += 1.1; p.vx *= .985; p.vy *= .985; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+          ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.max(0, 1 - Math.max(0, el - 3) / 1.5); ctx.fillStyle = p.c;
+          if (p.c === '#FFFFFF') { ctx.strokeStyle = '#D2D2D2'; ctx.lineWidth = 1.5; }
+          if (p.star) star(p.w * 1.6); else { ctx.fillRect(-p.w / 2, -p.hh / 2, p.w, p.hh); if (p.c === '#FFFFFF') ctx.strokeRect(-p.w / 2, -p.hh / 2, p.w, p.hh); }
+          ctx.restore(); });
+        if (el < 4.6) raf = requestAnimationFrame(loop);
+      };
+      raf = requestAnimationFrame(loop);
+      return () => cancelAnimationFrame(raf);
+    }, []);
+    return E('canvas', { ref, style: { width: '100%', height: '100%', display: 'block' } });
+  };
+  payRef = React.createRef(); supportRef = React.createRef();
+  portalVals() {
+    const s = this.state, fmt = n => this.fmt(n);
+    const demo = !s.submitted || s.portalUser === 'demo';
+    const src = demo ? [
+      { name: 'Mark T.', stars: 1, days: 12, text: "Never been here but heard it's terrible. Avoid at all costs!!" },
+      { name: 'D. Miller', stars: 1, days: 95, text: 'Complete scam. The owner is a criminal who rips people off.' },
+      { name: 'Tom W.', stars: 1, days: 3, text: 'Fake place. Photos are stolen from another restaurant.' },
+      { name: 'Jonas B.', stars: 1, days: 19, text: '' }
+    ] : [...this.selectedList(), ...s.reviews.filter(r => this.valid(r)).map(r => ({ name: (r.preview && r.preview.name) || r.name || 'Review', stars: (r.preview && r.preview.stars) || 1, days: r.age === 'recent' ? 10 : 60, text: (r.preview && r.preview.text) || (this.isUrl(r.value) ? r.value : r.value) }))];
+    const statuses = ['removed', 'progress', 'submitted'];
+    const paid = !!s.portalPaid;
+    const items = src.map((p, i) => {
+      const st = !p.text ? 'cancelled' : demo ? statuses[i % 3] : (i === 0 ? 'progress' : 'submitted');
+      const price = p.days <= 28 ? 90 : 125;
+      const map = { removed: ['✓ Removed', '#151515', '#FFFFFF', '#151515'], progress: ['In progress', '#FFFFFF', '#151515', '#151515'], submitted: ['Submitted', '#EFEFEF', '#555', '#EFEFEF'], cancelled: ['Not eligible', '#FFFFFF', '#8A8A8A', '#D2D2D2'] }[st];
+      return { initial: p.name[0], name: p.name, stars: p.stars, when: this.whenFor(p.days), text: p.text || 'Star rating only — no text', st, price,
+        textCol: st === 'removed' ? '#9E9E9E' : st === 'cancelled' ? '#8A8A8A' : '#333', deco: st === 'removed' ? 'line-through' : 'none',
+        status: map[0], badgeBg: map[1], badgeFg: map[2], badgeBd: map[3],
+        priceNote: st === 'removed' ? (paid ? 'Paid ' + fmt(price) : fmt(price) + ' due') : st === 'cancelled' ? 'Cancelled · free' : fmt(price) + ' if removed' };
+    });
+    const removed = items.filter(i => i.st === 'removed'), n = removed.length;
+    const sub = removed.reduce((a, i) => a + i.price, 0), due = Math.round(sub * (1 - this.discountRate(n)));
+    const inProg = items.filter(i => i.st === 'progress').length;
+    const phase = n > 0 ? (paid ? 4 : 3) : inProg > 0 ? 2 : 1;
+    const d0 = new Date(s.orderedAt || Date.now() - 86400000 * 2), fd = k => new Date(d0.getTime() + k * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const name = demo ? 'Anna Rossi' : (s.name || 'there');
+    const rate = this.discountRate(n), discAmt = Math.round(sub * rate);
+    const msgs = s.supportMsgs || [{ from: 'team', text: 'Hi ' + name.split(' ')[0] + ', welcome! We\'ve started on your reviews. Message us here anytime.', meta: 'byereviews team · ' + fd(0) }];
+    const scrollTo = r => { const el = r.current; if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' }); };
+    const send = () => { const t = (s.supportDraft || '').trim(); if (!t) return; const next = [...msgs, { from: 'me', text: t, meta: 'You · just now' }];
+      this.setState({ supportMsgs: next, supportDraft: '' });
+      clearTimeout(this.supT); this.supT = setTimeout(() => this.setState(st => ({ supportMsgs: [...(st.supportMsgs || next), { from: 'team', text: 'Thanks for your message — a team member will get back to you shortly.', meta: 'byereviews team · just now' }] })), 1400); };
+    return {
+      loginLabel: s.portalIn ? 'Dashboard' : 'Log in',
+      isLogin: s.view === 'login', isPortal: s.view === 'portal', isSuccess: s.view === 'success',
+      confetti: s.view === 'success' ? React.createElement(this.Confetti, { key: s.confettiKey }) : null,
+      goPortal: e => { e && e.preventDefault && e.preventDefault(); this.setState({ view: s.portalIn ? 'portal' : 'login', menuOpen: false }); window.scrollTo({ top: 0 }); },
+      openPortalAuto: () => { this.setState({ view: 'login', mailOpen: false, loginEmail: s.email, loginPass: '', loginError: false }); window.scrollTo({ top: 0 }); },
+      isNewAccount: !!s.newAccount, mailOpen: !!s.mailOpen, openMail: () => this.setState({ mailOpen: true }), closeMail: () => this.setState({ mailOpen: false }),
+      firstName: (s.name || '').split(' ')[0] || 'there',
+      successTitle: s.newAccount ? 'Your login details are on the way' : 'Added to your existing account',
+      successText: s.newAccount ? 'We\'ve created your personal dashboard and emailed your login details to ' + s.email + '.' : 'Log in with your existing details for ' + s.email + ' to follow this order.',
+      emailKnown: !!this.accounts()[(s.email || '').trim().toLowerCase()] && /\S+@\S+\.\S+/.test(s.email || ''),
+      portalPassword: s.portalPassword || '',
+      loginEmail: s.loginEmail || '', loginPass: s.loginPass || '', loginError: !!s.loginError,
+      onLoginEmail: e => this.setState({ loginEmail: e.target.value, loginError: false }), onLoginPass: e => this.setState({ loginPass: e.target.value, loginError: false }),
+      fillDemo: () => this.setState({ loginEmail: 'demo@byereviews.com', loginPass: 'demo', loginError: false }),
+      doLogin: () => this.doLogin(), onLoginKey: e => { if (e.key === 'Enter') this.doLogin(); },
+      logout: () => this.setState({ view: 'login', portalIn: false, loginPass: '' }),
+      pOrderId: demo ? 'BR-48213' : s.orderId, pBiz: demo ? 'Osteria da Anna' : (s.biz ? s.biz.name : s.company || 'Your business'),
+      pFirst: name.split(' ')[0], pEmail: demo ? 'demo@byereviews.com' : s.email,
+      pRemoved: n, pTotal: items.filter(i => i.st !== 'cancelled').length, pProgress: inProg,
+      pRatingBefore: '4.2', pRatingNow: (4.2 + Math.min(0.6, n * 0.3)).toFixed(1),
+      pDue: fmt(paid ? 0 : due), pPayLabel: paid ? 'Nothing due' : n ? 'Due today' + (n > 1 ? ' · incl. volume discount' : '') : 'Nothing due yet',
+      pCanPay: !paid && n > 0, pPaid: paid && n > 0, payNow: () => this.setState({ portalPaid: true }),
+      pSteps: [['Order received', fd(0)], ['In review', phase >= 2 ? fd(0) : '—'], ['Removed', phase >= 3 ? fd(1) : '—'], ['Paid', phase >= 4 ? 'today' : '—']].map(([label, date], i) => ({ label, date, bar: i < phase ? '#151515' : '#E4E4E4', fg: i < phase ? '#151515' : '#8A8A8A' })),
+      pReviews: items,
+      pActive: items.filter(i => i.st === 'progress' || i.st === 'submitted'), pDone: items.filter(i => i.st === 'removed' || i.st === 'cancelled'),
+      pActiveCount: items.filter(i => i.st === 'progress' || i.st === 'submitted').length, pDoneCount: items.filter(i => i.st === 'removed' || i.st === 'cancelled').length,
+      pActiveEmpty: !items.some(i => i.st === 'progress' || i.st === 'submitted'), pDoneEmpty: !items.some(i => i.st === 'removed' || i.st === 'cancelled'),
+      pHasInvoice: n > 0, pInvoiceNo: 'INV-' + (demo ? '48213' : String(s.orderId || '').replace('BR-', '')), pDueDate: fd(1),
+      pLines: removed.map(i => ({ label: i.name + ' · ' + (i.price === 90 ? '≤ 4 weeks' : '> 4 weeks'), amount: fmt(i.price) })),
+      pHasDisc: rate > 0, pDiscPct: Math.round(rate * 100) + '%', pDiscAmt: '– ' + fmt(discAmt), pInvTotal: fmt(due),
+      ...(() => { const tab = s.portalTab || 'overview', unread = msgs.length > (s.seenMsgs || 0) && tab !== 'support' && msgs[msgs.length - 1].from === 'team';
+        const go = t => { this.setState({ portalTab: t, seenMsgs: t === 'support' ? 999 : s.seenMsgs }); window.scrollTo({ top: 0 }); };
+        return { pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pShowChatFab: tab !== 'support', pUnread: unread, openSupport: () => go('support'),
+          pTabs: [['overview', 'Overview'], ['support', 'Support']].map(([k, label]) => ({ label, go: () => go(k), bg: tab === k ? '#151515' : 'transparent', fg: tab === k ? '#FFFFFF' : '#555',
+            hasDot: k === 'support' && unread, dot: '1', dotBg: '#151515', dotFg: '#FFFFFF' })) }; })(),
+      payRef: this.payRef, supportRef: this.supportRef, scrollPay: () => scrollTo(this.payRef), scrollSupport: () => scrollTo(this.supportRef),
+      pMsgs: msgs.map(m => ({ ...m, justify: m.from === 'me' ? 'flex-end' : 'flex-start', bg: m.from === 'me' ? '#151515' : '#F4F4F4', fg: m.from === 'me' ? '#FFFFFF' : '#151515' })),
+      supportDraft: s.supportDraft || '', onSupportDraft: e => this.setState({ supportDraft: e.target.value }),
+      onSupportKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }, sendSupport: send,
+      newOrder: () => { this.setState({ view: 'order', step: s.biz ? 2 : 1, submitted: false, selected: {}, reviews: [this.newReview()], agree: false, tried: false, showManual: false }); window.scrollTo({ top: 0 }); }
+    };
+  }
+  accounts() { try { return JSON.parse(localStorage.getItem('br-accounts') || '{}'); } catch (e) { return {}; } }
+  saveAccount(em, data) { try { const a = this.accounts(); a[em] = { ...(a[em] || {}), ...data }; localStorage.setItem('br-accounts', JSON.stringify(a)); } catch (e) {} }
+  doLogin() {
+    const s = this.state, em = (s.loginEmail || '').trim().toLowerCase(), pw = s.loginPass || '';
+    if (em === 'demo@byereviews.com' && pw === 'demo') return this.setState({ view: 'portal', portalIn: true, portalUser: 'demo' });
+    const acc = this.accounts()[em];
+    if (acc && pw === acc.password) return this.setState({ view: 'portal', portalIn: true, portalUser: s.submitted && em === (s.email || '').trim().toLowerCase() ? 'me' : 'demo' });
+    this.setState({ loginError: true });
+  }
+  inFrame = typeof location !== 'undefined' && new URLSearchParams(location.search).has('frame');
+  renderVals() {
+    const dev = this.state.device || (typeof localStorage !== 'undefined' && localStorage.getItem('br-device')) || 'desktop';
+    const setDev = d => { try { localStorage.setItem('br-device', d); } catch (e) {} this.setState({ device: d }); };
+    const framed = !this.inFrame && dev === 'mobile';
+    const pScale = Math.min(1, ((this.state.vh || 900) - 120) / 880);
+    const sw = { phoneScale: pScale.toFixed(3), phoneW: Math.round(421 * pScale) + 'px', phoneH: Math.round(880 * pScale) + 'px', showSwitch: !this.inFrame, showFrame: framed, showSite: !framed, frameSrc: location.pathname + '?frame=1',
+      viewDesktop: () => setDev('desktop'), viewMobile: () => setDev('mobile'),
+      dBg: dev === 'desktop' ? '#FFFFFF' : 'transparent', dFg: dev === 'desktop' ? '#151515' : '#B5B5B5',
+      mBg: dev === 'mobile' ? '#FFFFFF' : 'transparent', mFg: dev === 'mobile' ? '#151515' : '#B5B5B5' };
+    const mobV = (this.state.vw || 1200) < 760;
+    sw.heroOverlay = mobV ? 'linear-gradient(180deg, rgba(14,14,14,.92) 0%, rgba(14,14,14,.7) 40%, rgba(14,14,14,.2) 70%, rgba(14,14,14,.85) 100%)' : 'linear-gradient(90deg, rgba(14,14,14,.95) 0%, rgba(14,14,14,.75) 38%, rgba(14,14,14,0) 62%)';
+    sw.vidRef = this.vidRef;
+    Object.assign(sw, this.portalVals());
+    const menuOpen = !!this.state.menuOpen && mobV;
+    sw.menuOpen = menuOpen; sw.toggleMenu = () => this.setState({ menuOpen: !this.state.menuOpen });
+    sw.burgerPath = 'M3 6h14M3 14h14'; sw.closeMenuHome = e => { e && e.preventDefault && e.preventDefault(); this.setState({ menuOpen: false, view: 'home' }); window.scrollTo({ top: 0 }); };
+    sw.menuItems = [['How it works', '#how'], ['Pricing', '#pricing'], ['Cases', '#cases'], ['FAQ', '#faq'], ['Guides', 'byereviews Blog.dc.html'], ['Log in', '#']].map(([label, href]) => ({ label, href, go: e => { if (label === 'Log in') { e && e.preventDefault && e.preventDefault(); this.setState({ menuOpen: false, view: this.state.portalIn ? 'portal' : 'login' }); window.scrollTo({ top: 0 }); } else this.setState({ menuOpen: false, view: 'home' }); } }));
+    const v = { ...this.renderBase(), ...sw }, c = v.cases, dbl = a => [...a, ...a].map((k, i) => ({ ...k, key: i }));
+    return { ...v, caseRow0: dbl(c.slice(0, 12)), caseRow1: dbl(c.slice(12, 24)), caseRow2: dbl(c.slice(24, 36)) };
+  }
+  renderBase() {
+    const s = this.state;
+    const valid = s.reviews.filter(r => this.valid(r));
+    const sel = this.selectedList(), man = s.reviews.filter(r => this.valid(r));
+    const nRecent = sel.filter(p => p.days <= 28).length + man.filter(r => r.age === 'recent').length;
+    const nOlder = sel.filter(p => p.days > 28).length + man.filter(r => r.age === 'older').length;
+    const q = s.revSearch.trim().toLowerCase();
+    const shown = this.profilePool.filter(p => (s.revFilter === 'all' || p.stars <= 3) && (!q || (p.name + ' ' + p.text).toLowerCase().includes(q))).sort((a, b) => a.stars - b.stars || a.days - b.days);
+    const nAll = nRecent + nOlder, rate = this.discountRate(nAll);
+    const subtotal = nRecent * 90 + nOlder * 125, discountAmt = Math.round(subtotal * rate), totalAmt = subtotal - discountAmt;
+    const nextTier = nAll < 2 ? [2, 5] : nAll < 3 ? [3, 10] : nAll < 6 ? [6, 15] : null;
+    const on = { bg: '#151515', fg: '#FFFFFF', bd: '#151515' }, off = { bg: '#F7F7F7', fg: '#151515', bd: '#D2D2D2' };
+    const labels = ['Business', 'Reviews', 'Contact', 'Confirm'];
+    const vw = s.vw || 1200, mob = vw < 760;
+    const ok = this.stepValid(s.step);
+    return {
+      isHome: s.view === 'home', isOrder: s.view === 'order',
+      goHome: (e) => { this.setState({ view: 'home' }); },
+      goOrder: (e) => { e && e.preventDefault && e.preventDefault(); this.setState({ view: 'order', menuOpen: false }); window.scrollTo({ top: 0 }); },
+      setUSD: () => this.setState({ cur: 'USD' }), setEUR: () => this.setState({ cur: 'EUR' }),
+      usdBg: s.cur === 'USD' ? '#151515' : 'transparent', usdFg: s.cur === 'USD' ? '#fff' : '#555',
+      eurBg: s.cur === 'EUR' ? '#151515' : 'transparent', eurFg: s.cur === 'EUR' ? '#fff' : '#555',
+      priceRecent: this.fmt(90), priceOlder: this.fmt(125), exampleTotal: this.fmt(2 * 90 + 125), zero: this.fmt(0),
+      canList: [
+        { t: 'Fake reviews', d: 'No real visit, bought reviews, bot or duplicate accounts.' },
+        { t: 'Policy violations', d: 'Spam, off-topic, conflicts of interest, hate or harassment.' },
+        { t: 'Defamatory claims', d: 'Untrue statements of fact that damage your reputation.' },
+        { t: 'Competitor attacks', d: 'Reviews left by rivals or people acting on their behalf.' }
+      ],
+      cantList: [
+        { t: 'Honest criticism', d: 'Genuine experiences, even negative ones, stay where they are.' },
+        { t: 'Star-only ratings', d: 'Ratings without text give Google nothing to act on.' },
+        { t: 'Your whole profile', d: 'We remove single reviews — never reset or delete your listing.' }
+      ],
+      cases: [
+        ['Restaurant · Chicago', 'Fake account', 'Food poisoning, worst place in town. Never again.', 6, '4.1 → 4.4'],
+        ['Law firm · London', 'Defamation', 'These lawyers are criminals who steal from clients.', 14, '4.3 → 4.6'],
+        ['Dental clinic · Munich', 'Competitor', 'Unprofessional, dirty, go to the clinic next door instead.', 9, '4.5 → 4.8'],
+        ['Hair salon · Austin', 'No visit', 'Rude staff, ruined my hair. Zero stars if I could.', 5, '4.6 → 4.8'],
+        ['Car dealer · Phoenix', 'Fake account', 'Scammers. They sell stolen cars.', 11, '3.9 → 4.3'],
+        ['Hotel · Barcelona', 'Off-topic', 'The city is overrated and the airport is a mess.', 4, '4.2 → 4.3'],
+        ['Plumber · Manchester', 'Competitor', 'Call a real plumber, these guys flooded my house.', 8, '4.4 → 4.7'],
+        ['Physiotherapy · Vienna', 'Conflict of interest', 'Former employee: the owner is a fraud.', 12, '4.5 → 4.9'],
+        ['Coffee shop · Seattle', 'Spam', 'Visit my channel for real coffee reviews!!!', 3, '4.7 → 4.8'],
+        ['Real estate agency · Miami', 'Defamation', 'They launder money through their listings.', 17, '4.0 → 4.5'],
+        ['Veterinary clinic · Dublin', 'No visit', 'Killed my friend\'s dog. Stay away.', 10, '4.3 → 4.6'],
+        ['Gym · Toronto', 'Duplicate account', 'Dirty equipment. Dirty equipment. Dirty equipment.', 5, '4.2 → 4.4'],
+        ['Bakery · Amsterdam', 'Fake account', 'Found glass in my bread. Disgusting.', 7, '4.6 → 4.8'],
+        ['Roofing company · Denver', 'Competitor', 'Overpriced cowboys, use anyone else.', 13, '4.1 → 4.5'],
+        ['Tattoo studio · Berlin', 'Harassment', 'The artist is a disgusting person, everyone knows it.', 6, '4.7 → 4.9'],
+        ['Accountant · Sydney', 'Defamation', 'They commit tax fraud for their clients.', 19, '4.2 → 4.7'],
+        ['Pizzeria · Naples', 'No visit', 'Heard from a friend it\'s the worst pizza in Italy.', 4, '4.4 → 4.6'],
+        ['Cosmetic clinic · Los Angeles', 'Fake account', 'Botched my face, doctor has no license.', 15, '4.0 → 4.4'],
+        ['Moving company · Chicago', 'Competitor', 'Broke everything, then demanded double. Criminals.', 9, '3.8 → 4.2'],
+        ['Yoga studio · Lisbon', 'Off-topic', 'Parking in this street is impossible.', 3, '4.8 → 4.9'],
+        ['Auto repair · Houston', 'Fake account', 'They put used parts in and charge for new.', 10, '4.1 → 4.4'],
+        ['Kindergarten · Zurich', 'Defamation', 'Children are neglected and hit here.', 21, '4.3 → 4.8'],
+        ['Optician · Paris', 'Spam', 'Better glasses online at my shop, link in bio.', 2, '4.5 → 4.6'],
+        ['Wedding venue · Florence', 'Conflict of interest', 'Ex-partner of the owner: avoid this place.', 12, '4.6 → 4.9'],
+        ['IT services · Frankfurt', 'Competitor', 'Incompetent, they lost all our data.', 8, '4.2 → 4.5'],
+        ['Florist · Brooklyn', 'No visit', 'Dead flowers delivered, never again.', 6, '4.5 → 4.7'],
+        ['Orthodontist · Atlanta', 'Fake account', 'Ruined my kid\'s teeth, total quack.', 11, '4.4 → 4.8'],
+        ['Hostel · Prague', 'Duplicate account', 'Bed bugs everywhere. Bed bugs everywhere.', 5, '4.0 → 4.2'],
+        ['Cleaning service · Melbourne', 'Harassment', 'The owner is a thief and a liar.', 9, '4.3 → 4.6'],
+        ['Steakhouse · Dallas', 'Competitor', 'Frozen meat, microwaved. Go down the road instead.', 7, '4.2 → 4.5'],
+        ['Driving school · Hamburg', 'Defamation', 'Instructors take bribes for passing.', 16, '4.1 → 4.6'],
+        ['Pet groomer · San Diego', 'No visit', 'My neighbour\'s cat came back injured.', 4, '4.6 → 4.8'],
+        ['Law firm · New York', 'Fake account', 'Lost my case on purpose, bribed by the other side.', 18, '4.0 → 4.4'],
+        ['Boutique · Milan', 'Spam', 'Cheap copies of these bags on my website.', 3, '4.5 → 4.6'],
+        ['Chiropractor · Vancouver', 'Competitor', 'Nearly broke my neck. Dangerous amateur.', 10, '4.3 → 4.7'],
+        ['Bar · Edinburgh', 'Off-topic', 'Scotland is always raining, 1 star.', 2, '4.4 → 4.5']
+      ].map(([biz, reason, quote, d, rating]) => ({ biz, reason, quote, days: d + ' days', rating: rating + ' ★' })),
+      caseCount: 36,
+      caseRef0: this.caseRefs[0], caseRef1: this.caseRefs[1], caseRef2: this.caseRefs[2],
+      pause0: () => { this.casePaused[0] = true; }, resume0: () => { this.casePaused[0] = false; },
+      pause1: () => { this.casePaused[1] = true; }, resume1: () => { this.casePaused[1] = false; },
+      pause2: () => { this.casePaused[2] = true; }, resume2: () => { this.casePaused[2] = false; },
+      faqs: [
+        { q: 'What does it cost?', a: `${this.fmt(90)} per review posted within the last 4 weeks, ${this.fmt(125)} per older review. You pay only for reviews that are actually removed.` },
+        { q: 'How long does it take?', a: 'Most removals complete within 1–3 weeks. Older or more complex reviews can take longer; we keep you updated by email.' },
+        { q: 'Is it legal?', a: 'Yes. We only use Google\'s official reporting and legal-removal channels, and only for reviews that violate Google\'s policies or the law.' },
+        { q: 'What if it fails?', a: 'Then you pay nothing for that review. No cure, no pay — there is no upfront fee and no retainer.' },
+        { q: 'Which reviews qualify?', a: 'Fake, policy-violating or defamatory reviews with text. Genuine criticism and star-only ratings without text don\'t qualify — we cancel those free of charge.' },
+        { q: 'Does my profile stay intact?', a: 'Yes. Only the reviews you submit are targeted. Your listing and every other review remain untouched.' }
+      ].map((f, i) => ({ ...f, open: s.faqOpen === i, sign: s.faqOpen === i ? '–' : '+', toggle: () => this.setState({ faqOpen: s.faqOpen === i ? -1 : i }) })),
+      stepTabs: labels.map((label, i) => {
+        const n = i + 1, active = n === s.step && !s.submitted, done = n < s.step || s.submitted;
+        return { n, label, bg: active ? '#151515' : done ? '#FFFFFF' : 'transparent', fg: active ? '#fff' : done ? '#151515' : '#8A8A8A',
+          go: () => { if (!s.submitted && n <= s.step) this.setState({ step: n }); } };
+      }),
+      submitted: s.submitted, orderId: s.orderId,
+      showStep1: !s.submitted && s.step === 1, showStep2: !s.submitted && s.step === 2, showStep3: !s.submitted && s.step === 3, showStep4: !s.submitted && s.step === 4, showNav: !s.submitted && !(s.step === 1 && s.bizStatus !== 'found'),
+      showNavDesk: !mob && !s.submitted && !(s.step === 1 && s.bizStatus !== 'found'),
+      showNavMob: mob && !s.submitted && !(s.step === 1 && s.bizStatus !== 'found'),
+      helpOpen: s.helpOpen, stop: e => e.stopPropagation(),
+      openHelp: () => { this.setState({ helpOpen: true, helpStep: 0, tap: false }); this.startHelp(); },
+      closeHelp: () => { clearInterval(this.helpTimer); clearInterval(this.tapTimer); this.setState({ helpOpen: false }); },
+      hs0: s.helpStep === 0, hs1: s.helpStep === 1, hs2: s.helpStep === 2, hs3: s.helpStep === 3, hs4: s.helpStep === 4, hs5: s.helpStep === 5, tap: s.tap,
+      helpNum: s.helpStep + 1, helpCaption: this.helpSteps[s.helpStep][0],
+      helpUrl: s.helpStep === 5 ? 'byereviews.com/order' : 'google.com/search',
+      typed: s.tap ? 'Your Business' : 'Your Bus',
+      seeAllBg: s.tap ? '#151515' : '#F1F1F1', seeAllFg: s.tap ? '#FFFFFF' : '#151515',
+      targetBg: s.tap ? '#EDEDED' : 'transparent',
+      shareBorder: s.tap ? '#151515' : 'transparent',
+      copyBg: s.tap ? '#151515' : 'transparent', copyFg: s.tap ? '#FFFFFF' : '#151515',
+      pasted: s.tap ? 'https://share.google/EyEDzUyuuIWqIOCfG' : '',
+      tapX: this.tapPos[s.helpStep][0], tapY: this.tapPos[s.helpStep][1],
+      ringOpacity: s.tap ? 1 : 0, ringScale: s.tap ? 1 : 0.4,
+      helpSteps: this.helpSteps.map(([label, short], i) => ({ n: i + 1, short, bg: i === s.helpStep ? '#151515' : '#FFFFFF', fg: i === s.helpStep ? '#FFFFFF' : '#6B6B6B', go: () => { this.setState({ helpStep: i, tap: false }); this.startHelp(); } })),
+      reviewItems: s.reviews.map((r, i) => {
+        const url = this.isUrl(r.value), ok = this.valid(r), rec = r.age === 'recent';
+        const p = r.preview || {};
+        return { ...r, canRemove: s.reviews.length > 1, needsName: !url && r.value.trim().length > 0,
+          isLoading: url && r.status === 'loading', isFound: url && r.status === 'found',
+          pName: p.name, pMeta: p.meta, pWhen: p.when, pText: p.text, pInitial: (p.name || ' ')[0], pStarsOn: '★'.repeat(p.stars || 0), pStarsOff: '★'.repeat(5 - (p.stars || 0)),
+          clear: () => this.upd(r.id, { value: '', status: 'idle', preview: null }),
+          badge: ok ? '✓' : String(i + 1), badgeBg: ok ? '#151515' : '#EFEFEF', badgeFg: ok ? '#FFFFFF' : '#6B6B6B',
+          remove: () => this.setState(st => ({ reviews: st.reviews.filter(x => x.id !== r.id) })),
+          onValue: e => { const v = e.target.value; if (this.isUrl(v) && v.trim() !== r.value.trim()) this.lookup(r.id, v); else this.upd(r.id, { value: v, status: this.isUrl(v) ? r.status : 'idle' }); }, onName: e => this.upd(r.id, { name: e.target.value }),
+          setRecent: () => this.upd(r.id, { age: 'recent' }), setOlder: () => this.upd(r.id, { age: 'older' }),
+          recentBg: rec ? '#151515' : '#F4F4F4', recentFg: rec ? '#FFFFFF' : '#555', olderBg: rec ? '#F4F4F4' : '#151515', olderFg: rec ? '#555' : '#FFFFFF' };
+      }),
+      addReview: () => this.setState(st => ({ reviews: [...st.reviews, this.newReview()] })),
+      showAside: s.submitted || s.step > 1, gridCols: mob ? 'minmax(0,1fr)' : (s.submitted || s.step > 1) ? 'minmax(0,1fr) 360px' : 'minmax(0,760px)',
+      mobile: mob, desktop: !mob, headerCta: vw < 400 ? 'Start' : 'Remove a review', asidePos: mob ? 'static' : 'sticky',
+      footerPadB: mob ? '96px' : '24px', hasError: !!(s.tried && !ok),
+      navInfo: s.tried && !ok ? this.errorFor(s.step) : s.step === 2 ? (sel.length + man.length) + ' selected · ' + this.fmt(totalAmt) : '',
+      helpScale: Math.min(1, (Math.min(vw, 720) - (mob ? 42 : 40)) / 660).toFixed(3), helpH: Math.round(400 * Math.min(1, (Math.min(vw, 720) - (mob ? 42 : 40)) / 660)) + 'px',
+      helpCols: mob ? 'repeat(3,minmax(0,1fr))' : 'repeat(6,minmax(0,1fr))',
+      goSelect: () => this.setState({ step: 2, view: 'order' }),
+      bizQuery: s.bizQuery, onBizQuery: e => this.setState({ bizQuery: e.target.value, bizStatus: 'idle' }),
+      onBizKey: e => { if (e.key === 'Enter') this.findBiz(); }, findBiz: () => this.findBiz(),
+      bizLoading: s.bizStatus === 'loading', bizFound: s.bizStatus === 'found', bizNotFound: s.bizStatus === 'notfound',
+      showSkip: s.bizStatus !== 'notfound', hasProfile: s.bizStatus !== 'manual', manualOnly: s.bizStatus === 'manual',
+      goManual: () => { clearTimeout(this.bizT); this.setState({ bizStatus: 'manual', biz: null, selected: {}, showManual: true, step: 2, tried: false }); window.scrollTo({ top: 0 }); },
+      bizName: s.biz ? s.biz.name : '', bizMeta: s.biz ? s.biz.meta : '', bizInitial: s.biz ? s.biz.name[0] : '',
+      selCount: sel.length,
+      filterLow: () => this.setState({ revFilter: 'low' }), filterAll: () => this.setState({ revFilter: 'all' }),
+      fLowBg: s.revFilter === 'low' ? '#151515' : 'transparent', fLowFg: s.revFilter === 'low' ? '#fff' : '#555',
+      fAllBg: s.revFilter === 'all' ? '#151515' : 'transparent', fAllFg: s.revFilter === 'all' ? '#fff' : '#555',
+      revSearch: s.revSearch, onRevSearch: e => this.setState({ revSearch: e.target.value }),
+      noResults: shown.length === 0,
+      profileReviews: shown.map(p => {
+        const on = !!s.selected[p.id], noText = !p.text;
+        return { ...p, initial: p.name[0], when: this.whenFor(p.days), starsOn: '★'.repeat(p.stars), starsOff: '★'.repeat(5 - p.stars),
+          textShown: noText ? 'Star rating only — no text, can\'t be removed' : p.text,
+          tag: noText ? '' : on ? '✓ ' + this.fmt(p.days <= 28 ? 90 : 125) : this.fmt(p.days <= 28 ? 90 : 125),
+          border: on ? '#151515' : 'transparent', opacity: noText ? 0.5 : 1, cursor: noText ? 'not-allowed' : 'pointer',
+          boxBg: on ? '#151515' : '#FFFFFF', boxBd: on ? '#151515' : '#C8C8C8',
+          toggle: () => { if (noText) return; this.setState(st => ({ selected: { ...st.selected, [p.id]: !st.selected[p.id] } })); } };
+      }),
+      showManual: s.showManual || s.bizStatus === 'manual', toggleManual: () => this.setState({ showManual: !s.showManual }),
+      manualLabel: s.showManual ? '– Hide' : '+ Review not listed? Add it by link',
+      profileUrl: s.profileUrl, onProfile: e => this.setState({ profileUrl: e.target.value }),
+      countries: this.countries, country: s.country, currency: s.cur,
+      onCountry: e => { const c = e.target.value; this.setState({ country: c, cur: this.EU.includes(c) ? 'EUR' : 'USD' }); },
+      name: s.name, email: s.email, company: s.company, phone: s.phone,
+      onName: e => this.setState({ name: e.target.value }), onEmail: e => this.setState({ email: e.target.value }),
+      onCompany: e => this.setState({ company: e.target.value, auto: { ...s.auto, company: false } }), onPhone: e => this.setState({ phone: e.target.value, auto: { ...s.auto, phone: false } }),
+      street: s.street, city: s.city,
+      onStreet: e => this.setState({ street: e.target.value, auto: { ...s.auto, street: false } }), onCity: e => this.setState({ city: e.target.value, auto: { ...s.auto, city: false } }),
+      autoCompany: !!s.auto.company, autoPhone: !!s.auto.phone, autoStreet: !!s.auto.street, autoCity: !!s.auto.city,
+      hasAuto: !!(s.auto.company || s.auto.street || s.auto.city),
+      agree: s.agree, onAgree: e => this.setState({ agree: e.target.checked }),
+      canBack: s.step > 1, back: () => this.setState({ step: s.step - 1, tried: false }),
+      error: s.tried && !ok ? this.errorFor(s.step) : '',
+      nextOpacity: ok ? 1 : 0.45,
+      nextLabel: s.step === 4 ? 'Submit order' : 'Continue',
+      next: () => {
+        if (!ok) return this.setState({ tried: true });
+        if (s.step < 4) { this.setState({ step: s.step + 1, tried: false }); window.scrollTo({ top: 0 }); }
+        else { const em = s.email.trim().toLowerCase(), existing = this.accounts()[em]; const chars = 'abcdefghjkmnpqrstuvwxyz23456789'; const pw = existing ? existing.password : Array.from({ length: 10 }, (_, i) => (i === 3 || i === 7) ? '-' : chars[Math.floor(Math.random() * chars.length)]).join('');
+          this.saveAccount(em, { password: pw, name: s.name }); this.setState({ newAccount: !existing }); this.setState({ submitted: true, view: 'success', confettiKey: Date.now(), orderId: 'BR-' + Math.floor(10000 + Math.random() * 89999), portalPassword: pw, orderedAt: Date.now() }); window.scrollTo({ top: 0 }); }
+      },
+      nRecent, nOlder, subRecent: this.fmt(nRecent * 90), subOlder: this.fmt(nOlder * 125),
+      subtotal: this.fmt(subtotal), hasDiscount: rate > 0, discountPct: Math.round(rate * 100) + '%', discountAmt: '– ' + this.fmt(discountAmt),
+      total: this.fmt(totalAmt), perReview: this.fmt(nAll ? Math.round(totalAmt / nAll) : 0),
+      hasNextTier: !!nextTier, nextTierText: nextTier ? `Add ${nextTier[0] - nAll} more for ${nextTier[1]}% off everything` : '',
+      tiers: [['1', '—'], ['2', '5%'], ['3–5', '10%'], ['6+', '15%']].map(([n, p], i) => ({ n, p, bg: [nAll <= 1, nAll === 2, nAll >= 3 && nAll <= 5, nAll >= 6][i] ? '#151515' : '#EFEFEF', fg: [nAll <= 1, nAll === 2, nAll >= 3 && nAll <= 5, nAll >= 6][i] ? '#FFFFFF' : '#555' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#E4E4E4;font-family:'Geist',system-ui,sans-serif;color:#151515;-webkit-font-smoothing:antialiased}
+a{color:#151515;text-decoration:none}a:hover{color:#6B6B6B}
+button,input{font-family:inherit}
+*{box-sizing:border-box}
+</style>
+</helmet>
+
+<div style="max-width:1480px;margin:0 auto;padding:clamp(0px,1.4vw,16px)">
+<div style="background:#EFEFEF;border-radius:clamp(0px,2.6vw,36px);padding:clamp(10px,1.6vw,20px);display:flex;flex-direction:column;gap:clamp(12px,1.6vw,20px);min-height:100vh">
+
+<header style="display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:8px;z-index:20">
+  <nav style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border-radius:20px;padding:8px clamp(10px,1.6vw,22px) 8px 10px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0">
+    <a href="byereviews Site.dc.html" style="display:flex;align-items:center;padding:8px 14px 8px 8px"><img src="assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block"></a>
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+    <a href="byereviews Site.dc.html#how" style="padding:8px 12px;font-size:15px;color:#555">How it works</a>
+    <a href="byereviews Site.dc.html#pricing" style="padding:8px 12px;font-size:15px;color:#555">Pricing</a>
+    <a href="byereviews Site.dc.html#cases" style="padding:8px 12px;font-size:15px;color:#555">Cases</a>
+    <a href="byereviews Site.dc.html#faq" style="padding:8px 12px;font-size:15px;color:#555">FAQ</a>
+    <a href="#" onClick="{{ goIndex }}" style="padding:8px 12px;font-size:15px;color:#151515;font-weight:500">Guides</a>
+    <a href="byereviews Site.dc.html#login" style="padding:8px 12px;font-size:15px;color:#151515;font-weight:500">Log in</a>
+    </sc-if>
+  </nav>
+  <div style="display:flex;align-items:center;gap:8px">
+    <sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ toggleMenu }}" aria-label="Menu" style="width:52px;height:52px;border:0;cursor:pointer;background:#FFFFFF;border-radius:18px;display:flex;align-items:center;justify-content:center;flex:none">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 6h14M3 14h14" stroke="#151515" stroke-width="1.8" stroke-linecap="round"></path></svg>
+      </button>
+    </sc-if>
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+    <a href="{{ ctaHref }}" style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border-radius:18px;padding:6px 16px 6px 6px;font-size:15px;font-weight:500;color:#151515;white-space:nowrap">
+      <span style="width:40px;height:40px;flex:none;background:#151515;border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      Remove a review
+    </a>
+    </sc-if>
+  </div>
+</header>
+<sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:300;background:#151515;color:#FFFFFF;padding:18px 20px 20px;display:flex;flex-direction:column;gap:4px;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:24px">
+      <a href="byereviews Site.dc.html" style="display:flex;align-items:center;padding:8px 0"><img src="assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block;filter:invert(1)"></a>
+      <button onClick="{{ toggleMenu }}" aria-label="Close menu" style="width:52px;height:52px;border:0;cursor:pointer;background:#2A2A2A;border-radius:18px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"></path></svg></button>
+    </div>
+    <sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="6">
+      <a href="{{ m.href }}" onClick="{{ m.go }}" style="display:flex;justify-content:space-between;align-items:center;padding:14px 4px;border-bottom:1px solid #2A2A2A;font-size:30px;font-weight:500;letter-spacing:-.03em;color:#FFFFFF">{{ m.label }}<span style="font-size:18px;color:#6B6B6B">→</span></a>
+    </sc-for>
+    <a href="{{ ctaHref }}" style="margin-top:auto;height:60px;background:#FFFFFF;color:#151515;border-radius:18px;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 20px">Remove a review<span style="width:44px;height:44px;background:#151515;border-radius:14px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></a>
+    <span style="text-align:center;font-size:12px;color:#8A8A8A;padding-top:8px">No upfront payment · pay only for removed reviews</span>
+  </div>
+</sc-if>
+
+<sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+  <div style="padding:80px 20px;display:flex;flex-direction:column;gap:16px;max-width:900px">
+    <span style="height:56px;width:70%;background:#E4E4E4;border-radius:14px;display:block"></span>
+    <span style="height:18px;width:50%;background:#E4E4E4;border-radius:9px;display:block"></span>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isIndex }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Blog index" style="padding:clamp(40px,7vw,88px) clamp(6px,2.6vw,36px) clamp(20px,3vw,32px);display:flex;flex-direction:column;gap:clamp(20px,3vw,32px)">
+  <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">// guides · updated {{ updated }}</span>
+  <h1 style="margin:0;font-weight:500;font-size:clamp(40px,6vw,88px);line-height:.98;letter-spacing:-.045em;max-width:1000px;text-wrap:balance"><span style="color:#9E9E9E">Bad Google review?</span> Here's every honest way to get it removed.</h1>
+  <p style="margin:0;font-size:clamp(17px,1.6vw,20px);line-height:1.5;color:#555;max-width:620px;text-wrap:pretty">Plain-English guides on Google's review policies, appeals, fake reviews and legal removal – written for business owners in the US, UK, Canada and Australia.</p>
+</section>
+
+<section style="padding:0 clamp(6px,2.6vw,36px);display:flex;flex-direction:column;gap:14px">
+  <a href="#" onClick="{{ featured.go }}" style="background:#151515;color:#FFFFFF;border-radius:32px;overflow:hidden;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr))">
+    <div style="min-height:clamp(220px,30vw,420px);background:#0E0E0E url('{{ featured.img }}') center/cover"></div>
+    <div style="padding:clamp(24px,4vw,48px);display:flex;flex-direction:column;gap:18px;justify-content:center">
+      <span style="align-self:flex-start;font-size:12px;font-weight:500;background:#FFFFFF;color:#151515;border-radius:9px;padding:6px 10px">{{ featured.cluster }} · start here</span>
+      <span style="font-size:clamp(28px,3.2vw,44px);font-weight:500;letter-spacing:-.035em;line-height:1.05;text-wrap:balance">{{ featured.title }}</span>
+      <span style="font-size:16px;line-height:1.55;color:#B5B5B5;text-wrap:pretty">{{ featured.lead }}</span>
+      <span style="font-size:15px;font-weight:500;display:flex;align-items:center;gap:10px">Read the guide · {{ featured.read }} min <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+    </div>
+  </a>
+
+  <div style="display:flex;gap:6px;flex-wrap:wrap;padding:10px 0 4px">
+    <sc-for list="{{ filters }}" as="f" hint-placeholder-count="6">
+      <button onClick="{{ f.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 14px;font-size:14px;font-weight:500;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}</button>
+    </sc-for>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:12px">
+    <sc-for list="{{ cards }}" as="c" hint-placeholder-count="6">
+      <a href="#" onClick="{{ c.go }}" style="background:#FFFFFF;border-radius:28px;padding:10px;display:flex;flex-direction:column;gap:14px">
+        <div style="aspect-ratio:16/9;border-radius:20px;background:#151515 url('{{ c.img }}') center/cover"></div>
+        <div style="padding:4px 12px 16px;display:flex;flex-direction:column;gap:10px;flex:1">
+          <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px"><span style="font-weight:500;background:#EFEFEF;border-radius:9px;padding:5px 9px">{{ c.cluster }}</span><span style="font-family:'Geist Mono',monospace;color:#6B6B6B;padding-top:5px">{{ c.read }} min</span></div>
+          <span style="font-size:20px;font-weight:500;letter-spacing:-.02em;line-height:1.2;text-wrap:balance">{{ c.title }}</span>
+          <span style="margin-top:auto;font-size:14px;font-weight:500;color:#6B6B6B">Read →</span>
+        </div>
+      </a>
+    </sc-for>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isArticle }}" hint-placeholder-val="{{ false }}">
+<article data-screen-label="Blog article" style="padding:clamp(28px,5vw,64px) clamp(6px,2.6vw,36px) 0;display:flex;flex-direction:column;gap:clamp(20px,3vw,28px)">
+  <div style="display:flex;gap:8px;align-items:center;font-size:14px;color:#6B6B6B;flex-wrap:wrap">
+    <a href="#" onClick="{{ goIndex }}" style="color:#6B6B6B">Guides</a><span>/</span><span>{{ a.cluster }}</span>
+  </div>
+  <h1 style="margin:0;font-weight:500;font-size:clamp(34px,4.6vw,64px);line-height:1.02;letter-spacing:-.04em;max-width:1000px;text-wrap:balance">{{ a.title }}</h1>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:#6B6B6B">
+    <span style="width:36px;height:36px;border-radius:50%;background:#151515;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500">{{ authorInitial }}</span>
+    <span><strong style="color:#151515;font-weight:500">{{ authorName }}</strong> · {{ authorRole }}</span>
+    <span>·</span><span>Last updated {{ updated }}</span><span>·</span><span>{{ a.read }} min read</span>
+  </div>
+  <div style="aspect-ratio:21/9;border-radius:clamp(20px,2.6vw,32px);background:#151515 url('{{ a.img }}') center/cover"></div>
+
+  <div style="display:grid;grid-template-columns:{{ articleCols }};gap:clamp(20px,3vw,48px);align-items:start">
+    <div style="display:flex;flex-direction:column;gap:28px;min-width:0;max-width:760px">
+      <div style="background:#FFFFFF;border-radius:24px;padding:clamp(20px,2.6vw,28px);display:flex;flex-direction:column;gap:10px;border-left:0">
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">SHORT ANSWER</span>
+        <p style="margin:0;font-size:clamp(18px,1.7vw,21px);line-height:1.5;letter-spacing:-.01em;text-wrap:pretty">{{ a.lead }}</p>
+      </div>
+
+      <sc-for list="{{ a.secs }}" as="sec" hint-placeholder-count="3">
+        <section id="{{ sec.id }}" style="display:flex;flex-direction:column;gap:16px">
+          <h2 style="margin:0;font-size:clamp(24px,2.4vw,32px);font-weight:500;letter-spacing:-.03em;line-height:1.15">{{ sec.h }}</h2>
+          <sc-for list="{{ sec.blocks }}" as="b" hint-placeholder-count="1">
+            <div>
+              <sc-if value="{{ b.isP }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:0;font-size:17px;line-height:1.7;color:#333;text-wrap:pretty"><sc-for list="{{ b.segs }}" as="g" hint-placeholder-count="1"><sc-if value="{{ g.isLink }}" hint-placeholder-val="{{ false }}"><a href="#" onClick="{{ g.go }}" style="color:#151515;font-weight:500;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px">{{ g.t }}</a></sc-if><sc-if value="{{ g.isText }}" hint-placeholder-val="{{ true }}"><span>{{ g.t }}</span></sc-if></sc-for></p>
+              </sc-if>
+              <sc-if value="{{ b.isUl }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ b.items }}" as="it" hint-placeholder-count="3">
+                    <div style="display:flex;gap:12px;align-items:flex-start;font-size:17px;line-height:1.6;color:#333">
+                      <span style="flex:none;width:6px;height:6px;border-radius:50%;background:#151515;margin-top:11px"></span>
+                      <span><sc-for list="{{ it.segs }}" as="g" hint-placeholder-count="1"><sc-if value="{{ g.isLink }}" hint-placeholder-val="{{ false }}"><a href="#" onClick="{{ g.go }}" style="color:#151515;font-weight:500;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px">{{ g.t }}</a></sc-if><sc-if value="{{ g.isText }}" hint-placeholder-val="{{ true }}"><span>{{ g.t }}</span></sc-if></sc-for></span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ b.isOl }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ b.items }}" as="it" hint-placeholder-count="3">
+                    <div style="display:flex;gap:14px;align-items:flex-start;background:#FFFFFF;border-radius:18px;padding:14px 16px;font-size:16px;line-height:1.55;color:#333">
+                      <span style="flex:none;width:28px;height:28px;border-radius:9px;background:#151515;color:#fff;font-family:'Geist Mono',monospace;font-size:12px;display:flex;align-items:center;justify-content:center">{{ it.num }}</span>
+                      <span style="padding-top:3px"><sc-for list="{{ it.segs }}" as="g" hint-placeholder-count="1"><sc-if value="{{ g.isLink }}" hint-placeholder-val="{{ false }}"><a href="#" onClick="{{ g.go }}" style="color:#151515;font-weight:500;text-decoration:underline;text-underline-offset:3px">{{ g.t }}</a></sc-if><sc-if value="{{ g.isText }}" hint-placeholder-val="{{ true }}"><span>{{ g.t }}</span></sc-if></sc-for></span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ b.isTable }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#FFFFFF;border-radius:20px;overflow:auto">
+                  <div style="display:grid;grid-template-columns:{{ b.cols }};min-width:{{ b.minW }}">
+                    <sc-for list="{{ b.head }}" as="th" hint-placeholder-count="3"><div style="padding:14px 16px;font-size:13px;font-weight:600;background:#151515;color:#fff">{{ th }}</div></sc-for>
+                    <sc-for list="{{ b.cells }}" as="td" hint-placeholder-count="6"><div style="padding:14px 16px;font-size:15px;line-height:1.45;border-top:1px solid #EFEFEF;color:#333;font-weight:{{ td.w }}">{{ td.t }}</div></sc-for>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ b.isShot }}" hint-placeholder-val="{{ false }}">
+                <div style="aspect-ratio:16/9;border:1.5px dashed #BDBDBD;border-radius:20px;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B;background:#F6F6F6">{{ b.text }}</div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <sc-if value="{{ sec.inlineCta }}" hint-placeholder-val="{{ false }}">
+            <a href="{{ ctaHref }}" style="margin-top:8px;background:#FFFFFF;border-radius:22px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+              <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:500">Want us to check your reviews?</span><span style="font-size:14px;color:#6B6B6B">Free audit · answer within 24 hours</span></span>
+              <span style="background:#151515;color:#fff;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:500">Free review audit →</span>
+            </a>
+          </sc-if>
+        </section>
+      </sc-for>
+
+      <section style="display:flex;flex-direction:column;gap:10px">
+        <h2 style="margin:0 0 6px;font-size:clamp(24px,2.4vw,32px);font-weight:500;letter-spacing:-.03em">FAQ</h2>
+        <sc-for list="{{ a.faqs }}" as="f" hint-placeholder-count="3">
+          <div style="background:#FFFFFF;border-radius:20px;overflow:hidden">
+            <button onClick="{{ f.toggle }}" style="width:100%;border:0;background:transparent;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 20px;text-align:left;font-size:16px;font-weight:500;color:#151515">{{ f.q }}<span style="flex:none;font-size:22px;font-weight:300;color:#6B6B6B">{{ f.sign }}</span></button>
+            <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:0 20px 20px;font-size:16px;line-height:1.6;color:#555">{{ f.a }}</p></sc-if>
+          </div>
+        </sc-for>
+      </section>
+
+      <div style="background:#FFFFFF;border-radius:24px;padding:20px;display:flex;gap:16px;align-items:flex-start">
+        <span style="flex:none;width:56px;height:56px;border-radius:50%;background:#151515;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:500">{{ authorInitial }}</span>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500">{{ authorName }}</span><span style="font-size:14px;color:#6B6B6B">{{ authorRole }}</span><span style="font-size:14px;color:#8A8A8A;line-height:1.5">{{ authorBio }}</span></div>
+      </div>
+
+      <div style="background:#151515;color:#FFFFFF;border-radius:28px;padding:clamp(24px,3.4vw,40px);display:flex;flex-direction:column;gap:16px">
+        <span style="font-size:clamp(24px,2.6vw,34px);font-weight:500;letter-spacing:-.03em;line-height:1.1">{{ ctaTitle }}</span>
+        <p style="margin:0;font-size:16px;line-height:1.6;color:#C8C8C8;text-wrap:pretty">{{ ctaText }}</p>
+        <a href="{{ ctaHref }}" style="align-self:flex-start;display:flex;align-items:center;gap:18px;background:#FFFFFF;color:#151515;border-radius:20px;padding:5px 22px 5px 5px;font-size:16px;font-weight:500">
+          <span style="width:52px;height:46px;background:#151515;border-radius:15px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          {{ ctaButton }}
+        </a>
+      </div>
+    </div>
+
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+    <aside style="position:sticky;top:100px;display:flex;flex-direction:column;gap:12px">
+      <div style="background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:4px">
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B;padding-bottom:8px">ON THIS PAGE</span>
+        <sc-for list="{{ a.toc }}" as="t" hint-placeholder-count="5">
+          <a href="#" onClick="{{ t.go }}" style="font-size:14px;line-height:1.4;padding:7px 0;color:#555;border-top:1px solid #F1F1F1">{{ t.h }}</a>
+        </sc-for>
+      </div>
+      <div style="background:#151515;color:#fff;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:20px;font-weight:500;letter-spacing:-.02em;line-height:1.2">Which of your reviews can go?</span>
+        <span style="font-size:14px;color:#B5B5B5;line-height:1.5">Free audit of your profile. Pay only for reviews we actually remove.</span>
+        <a href="{{ ctaHref }}" style="height:48px;background:#FFFFFF;color:#151515;border-radius:14px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center">Get my free audit →</a>
+      </div>
+    </aside>
+    </sc-if>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:14px;padding-top:clamp(24px,4vw,48px)">
+    <h2 style="margin:0;font-size:clamp(26px,3vw,40px);font-weight:500;letter-spacing:-.035em"><span style="color:#9E9E9E">Keep reading.</span> Related guides</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:12px">
+      <sc-for list="{{ a.related }}" as="c" hint-placeholder-count="3">
+        <a href="#" onClick="{{ c.go }}" style="background:#FFFFFF;border-radius:24px;padding:10px;display:flex;flex-direction:column;gap:12px">
+          <div style="aspect-ratio:16/9;border-radius:16px;background:#151515 url('{{ c.img }}') center/cover"></div>
+          <div style="padding:2px 10px 12px;display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;color:#6B6B6B">{{ c.cluster }} · {{ c.read }} min</span><span style="font-size:17px;font-weight:500;letter-spacing:-.02em;line-height:1.25">{{ c.title }}</span></div>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+</article>
+</sc-if>
+
+<section style="margin-top:clamp(24px,4vw,48px);background:#151515;color:#fff;border-radius:clamp(24px,2.6vw,32px);padding:clamp(32px,5vw,64px) clamp(22px,4.4vw,56px);display:flex;justify-content:space-between;align-items:flex-end;gap:28px;flex-wrap:wrap">
+  <h2 style="margin:0;font-weight:500;font-size:clamp(32px,4.2vw,60px);line-height:1;letter-spacing:-.04em;max-width:720px"><span style="color:#6B6B6B">Pay only when it's gone.</span> Start with a free audit.</h2>
+  <a href="{{ ctaHref }}" style="display:flex;align-items:center;gap:20px;background:#FFFFFF;color:#151515;border-radius:22px;padding:6px 26px 6px 6px;font-size:17px;font-weight:500">
+    <span style="width:60px;height:52px;background:#151515;border-radius:16px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+    Get my free review audit
+  </a>
+</section>
+
+<footer style="padding:clamp(28px,3vw,40px) clamp(10px,2.6vw,36px) {{ footerPadB }};display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;border-top:1px solid #DCDCDC">
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:360px">
+    <img src="assets/byereviews-logo.png" alt="byereviews" style="height:24px;width:auto;display:block;align-self:flex-start">
+    <span style="font-size:14px;color:#6B6B6B;line-height:1.5">Removal of individual false, unfair or policy-violating Google reviews. Not affiliated with Google.</span>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:14px"><a href="#">Imprint</a><a href="#">Terms</a><a href="#">Right of Withdrawal</a><a href="#">Privacy</a></div>
+</footer>
+
+<sc-if value="{{ mobileBar }}" hint-placeholder-val="{{ false }}">
+  <a href="{{ ctaHref }}" style="position:fixed;left:8px;right:8px;bottom:8px;z-index:50;height:60px;background:#151515;color:#fff;border-radius:20px;box-shadow:0 8px 30px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 20px;font-size:16px;font-weight:500">
+    <span style="display:flex;flex-direction:column;gap:1px"><span>Free review audit</span><span style="font-size:12px;font-weight:400;color:#B5B5B5">Answer within 24 hours</span></span>
+    <span style="width:44px;height:44px;background:#FFFFFF;border-radius:14px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+  </a>
+</sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { data: null, slug: null, filter: 'All', faqOpen: 0, vw: (typeof window !== 'undefined' && window.innerWidth) || 1200 };
+  componentDidMount() {
+    fetch('blog-posts.json').then(r => r.json()).then(data => this.setState({ data }));
+    this.onHash = () => { const s = decodeURIComponent((location.hash || '').replace(/^#\/?/, '')); this.setState({ slug: s || null, faqOpen: 0 }); };
+    window.addEventListener('hashchange', this.onHash); this.onHash();
+    this.onResize = () => { const w = window.innerWidth || document.documentElement.clientWidth; if (w) this.setState({ vw: w }); };
+    window.addEventListener('resize', this.onResize); requestAnimationFrame(this.onResize);
+  }
+  componentWillUnmount() { window.removeEventListener('hashchange', this.onHash); window.removeEventListener('resize', this.onResize); }
+  open(slug) { return e => { e && e.preventDefault && e.preventDefault(); location.hash = '/' + slug; window.scrollTo({ top: 0 }); }; }
+  segs(text, byN) {
+    const out = []; const re = /\[\[(\d+)\|([^\]]+)\]\]/g; let last = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > last) out.push({ t: text.slice(last, m.index), isText: true, isLink: false });
+      const p = byN[m[1]]; out.push({ t: m[2], isLink: true, isText: false, go: p ? this.open(p.slug) : () => {} });
+      last = re.lastIndex;
+    }
+    if (last < text.length) out.push({ t: text.slice(last), isText: true, isLink: false });
+    return out;
+  }
+  card(p) { return { ...p, go: this.open(p.slug) }; }
+  renderVals() {
+    const s = this.state, d = s.data, mob = s.vw < 760;
+    const base = {
+      desktop: !mob, mobile: mob, mobileBar: mob, footerPadB: mob ? '96px' : '24px',
+      ctaHref: 'byereviews Site.dc.html#order',
+      menuOpen: !!s.menuOpen && mob, toggleMenu: () => this.setState({ menuOpen: !s.menuOpen }),
+      menuItems: [['How it works', '#how'], ['Pricing', '#pricing'], ['Cases', '#cases'], ['FAQ', '#faq'], ['Guides', ''], ['Log in', '#login']].map(([label, h]) => ({ label, href: h === '' ? '#' : 'byereviews Site.dc.html' + h, go: h === '' ? e => { e.preventDefault(); history.pushState(null, '', location.pathname); this.setState({ slug: null, menuOpen: false }); window.scrollTo({ top: 0 }); } : () => {} })),
+      goIndex: e => { e && e.preventDefault && e.preventDefault(); history.pushState(null, '', location.pathname); this.setState({ slug: null }); window.scrollTo({ top: 0 }); },
+      loading: !d, isIndex: false, isArticle: false
+    };
+    if (!d) return base;
+    const byN = {}; d.posts.forEach(p => byN[p.n] = p);
+    const post = s.slug && d.posts.find(p => p.slug === s.slug);
+    const common = { ...base, updated: d.updated, authorName: d.author.name, authorRole: d.author.role, authorBio: d.author.bio, authorInitial: d.author.name[0],
+      ctaTitle: d.cta.title, ctaText: d.cta.text, ctaButton: d.cta.button };
+    if (!post) {
+      const clusters = ['All', ...d.posts.slice(1).map(p => p.cluster)];
+      const rest = d.posts.slice(1).filter(p => s.filter === 'All' || p.cluster === s.filter);
+      return { ...common, isIndex: true, featured: this.card(d.posts[0]), cards: rest.map(p => this.card(p)),
+        filters: clusters.map(label => ({ label, bg: s.filter === label ? '#151515' : '#FFFFFF', fg: s.filter === label ? '#FFFFFF' : '#555', go: () => this.setState({ filter: label }) })) };
+    }
+    const secs = post.sections.map((sec, i) => ({
+      h: sec.h, id: 'sec-' + i, inlineCta: i === 1,
+      blocks: sec.blocks.map(b => {
+        if (b.p) return { isP: true, segs: this.segs(b.p, byN) };
+        if (b.ul) return { isUl: true, items: b.ul.map(t => ({ segs: this.segs(t, byN) })) };
+        if (b.ol) return { isOl: true, items: b.ol.map((t, k) => ({ num: k + 1, segs: this.segs(t, byN) })) };
+        if (b.table) { const c = b.table.head.length; return { isTable: true, head: b.table.head, cols: 'repeat(' + c + ',minmax(0,1fr))', minW: (c * 170) + 'px', cells: b.table.rows.flatMap(r => r.map((t, k) => ({ t, w: k === 0 ? 500 : 400 }))) }; }
+        if (b.shot) return { isShot: true, text: b.shot };
+        return {};
+      })
+    }));
+    const linkNs = [...new Set([1, 2, ...(d.links[post.n] || [])])].filter(n => n !== post.n).slice(0, 3);
+    return { ...common, isArticle: true, articleCols: mob ? 'minmax(0,1fr)' : 'minmax(0,1fr) 300px',
+      a: { ...post, secs,
+        toc: post.sections.map((sec, i) => ({ h: sec.h, go: e => { e.preventDefault(); const el = document.getElementById('sec-' + i); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' }); } })),
+        faqs: post.faq.map((f, i) => ({ ...f, open: s.faqOpen === i, sign: s.faqOpen === i ? '–' : '+', toggle: () => this.setState({ faqOpen: s.faqOpen === i ? -1 : i }) })),
+        related: linkNs.map(n => this.card(byN[n]))
+      } };
+  }
+}
+</script>
+</body>
+</html>

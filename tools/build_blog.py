@@ -121,7 +121,7 @@ def footer():
     <span>Removal of individual false, unfair or policy-violating Google reviews. Not affiliated with Google.</span>
     <span>Questions? <a href="mailto:info@byereviews.com" style="text-decoration:underline">info@byereviews.com</a></span>
   </div>
-  <div class="r"><a href="mailto:info@byereviews.com">info@byereviews.com</a><a href="/imprint.html">Imprint</a><a href="/terms.html">Terms</a><a href="/withdrawal.html">Right of Withdrawal</a><a href="/privacy.html">Privacy</a></div>
+  <div class="r"><a href="mailto:info@byereviews.com">info@byereviews.com</a><a href="/imprint.html">Contact</a><a href="/terms.html">Terms</a><a href="/withdrawal.html">Right of Withdrawal</a><a href="/privacy.html">Privacy</a></div>
 </footer>
 <a class="mbar" href="{CTA_HREF}"><span><span>Free review audit</span><small>Answer within 24 hours</small></span><span class="ico w">{ARROW('#151515')}</span></a>
 </div></div>

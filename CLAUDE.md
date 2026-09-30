@@ -27,8 +27,12 @@ Files in `deploy/` are reference copies. Changing them does **not** change the s
 
 ## Site structure
 
-- `public/index.html`: the site (design runtime in `support.js`, React served locally from `assets/vendor/`)
-- `public/order.php`: order form endpoint (emails team + customer, stores JSON copy, per-IP rate limit)
+- `design/site.dc.html` + `design/blog.dc.html`: the design handoff (prototype, do not edit for fixes). `design/HANDOFF.md` = full spec.
+- `public/index.html`, `public/order/`, `public/login/`, `public/dashboard/` are **generated**: `python3 tools/build_site.py` (applies `tools/site_overrides.js` = real backend, routing, fixes to the design file), then `node tools/prerender.js <local-url>` (static snapshot for crawlers; needs `php -S 127.0.0.1:8123 -t public`). Change behaviour in `tools/site_overrides.js` / template patches in `tools/build_site.py`, never by hand in the output.
+- Backend: `app/*.php` (not web-accessible). `public/order.php` is the only PHP entry point nginx runs; it routes `?a=places|reviews|check-email|order|login|logout|me|message|reset|pay|stripe-webhook|admin`.
+- Data: JSON files in `public/orders/` (`order/`, `customers/`, `cache/`, `ratelimit/`, `app.log`) – on the server only, gitignored, blocked by nginx.
+- Server config with API keys: `/etc/byereviews/config.php` (template: `deploy/config.example.php`). Local testing: `BYEREVIEWS_CONFIG=/path/test-config.php php -S …` with `'mock_google' => true, 'mail_log_only' => true, 'data_dir' => '/tmp/…'`.
+- Admin (team): https://byereviews.com/order.php?a=admin – review statuses, support replies, payments.
 - Legal pages: `imprint.html`, `terms.html`, `withdrawal.html`, `privacy.html`
 - Blog: `public/blog/` is **generated** from `content/blog-posts.json` by `python3 tools/build_blog.py` (static HTML, schema, sitemap). Edit the JSON, rerun the script, commit the output. Internal links in the JSON use `[[n|text]]` (n = post number). `[AUTHOR]` bios and `[SCREENSHOT]` blocks are hidden until real content replaces them. `content/blog-posts/*.md` are reference copies only.
 - Links into the app from static pages: `/#order` opens the order flow, `/#login` the login, `/#how` etc. scroll to sections.
