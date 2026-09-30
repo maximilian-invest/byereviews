@@ -38,6 +38,7 @@ body{margin:0;background:#E4E4E4;font-family:'Geist',system-ui,sans-serif;color:
 a{color:#151515;text-decoration:none}a:hover{color:#6B6B6B}
 input,textarea,select,button{font-family:inherit}
 *{box-sizing:border-box}
+@keyframes brspin{to{transform:rotate(360deg)}}
 </style>
 </helmet>
 
@@ -73,12 +74,13 @@ input,textarea,select,button{font-family:inherit}
 <div style="max-width:1480px;margin:0 auto;padding:clamp(0px,1.4vw,16px)">
 <div style="background:#EFEFEF;border-radius:clamp(0px,2.6vw,36px);padding:clamp(10px,1.6vw,20px);display:flex;flex-direction:column;gap:clamp(12px,1.6vw,20px);min-height:100vh">
 
+<sc-if value="{{ mktNav }}" hint-placeholder-val="{{ true }}">
 <header style="display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:8px;z-index:20">
   <nav style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border-radius:20px;padding:8px clamp(10px,1.6vw,22px) 8px 10px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0">
     <a href="/" onClick="{{ goHome }}" style="display:flex;align-items:center;padding:8px 14px 8px 8px">
       <img src="/assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block">
     </a>
-    <sc-if value="{{ siteNavDesk }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
     <a href="/#how" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">How it works</a>
     <a href="/#pricing" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">Pricing</a>
     <a href="/#cases" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">Cases</a>
@@ -88,12 +90,12 @@ input,textarea,select,button{font-family:inherit}
     </sc-if>
   </nav>
   <div style="display:flex;align-items:center;gap:8px">
-    <sc-if value="{{ siteNavMob }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">
       <button onClick="{{ toggleMenu }}" aria-label="Menu" style="width:52px;height:52px;border:0;cursor:pointer;background:#FFFFFF;border-radius:18px;display:flex;align-items:center;justify-content:center;flex:none">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="{{ burgerPath }}" stroke="#151515" stroke-width="1.8" stroke-linecap="round"></path></svg>
       </button>
     </sc-if>
-    <sc-if value="{{ siteNavDesk }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
     <a href="/order/" onClick="{{ goOrder }}" style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border:0;border-radius:18px;padding:6px 16px 6px 6px;cursor:pointer;font-size:15px;font-weight:500;color:#151515;white-space:nowrap">
       <span style="width:40px;height:40px;flex:none;background:#151515;border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
       {{ headerCta }}
@@ -113,6 +115,27 @@ input,textarea,select,button{font-family:inherit}
     <a href="/order/" onClick="{{ goOrder }}" style="margin-top:auto;height:60px;border:0;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:18px;font-size:16px;font-weight:500;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 20px">Remove a review<span style="width:44px;height:44px;background:#151515;border-radius:14px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></a>
     <span style="text-align:center;font-size:12px;color:#8A8A8A;padding-top:8px">No upfront payment · pay only for removed reviews</span>
   </div>
+</sc-if>
+</sc-if>
+<sc-if value="{{ isPortal }}" hint-placeholder-val="{{ false }}">
+<header data-screen-label="App header" style="display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:8px;z-index:40">
+  <a href="/dashboard/" onClick="{{ acc.goDash }}" style="display:flex;align-items:center;background:#FFFFFF;border-radius:20px;padding:16px 20px;box-shadow:0 1px 2px rgba(0,0,0,.04)"><img src="/assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block"></a>
+  <div style="display:flex;align-items:center;gap:8px;position:relative">
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{ newOrder }}" style="border:0;cursor:pointer;display:flex;align-items:center;gap:14px;background:#151515;color:#FFFFFF;border-radius:18px;padding:6px 18px 6px 6px;font-size:15px;font-weight:500;white-space:nowrap"><span style="width:40px;height:40px;flex:none;background:#FFFFFF;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#151515;font-size:22px;font-weight:300;line-height:1">+</span>New order</button>
+    </sc-if>
+    <button onClick="{{ acc.toggleMenu }}" aria-label="Account menu" style="border:0;cursor:pointer;display:flex;align-items:center;gap:10px;background:#FFFFFF;border-radius:18px;padding:6px {{ acc.avatarPadR }} 6px 6px;font-size:15px;font-weight:500;color:#151515">
+      <span style="width:40px;height:40px;flex:none;border-radius:50%;background:#151515;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600">{{ acc.initial }}</span>
+      <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><span style="white-space:nowrap">{{ acc.name }}</span><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+    </button>
+    <sc-if value="{{ acc.menuDesktop }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;right:0;top:calc(100% + 8px);width:240px;background:#FFFFFF;border-radius:20px;padding:8px;box-shadow:0 16px 40px rgba(0,0,0,.12);display:flex;flex-direction:column;gap:2px">
+        <div style="padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid #F0F0F0;margin-bottom:4px"><span style="font-size:14px;font-weight:600">{{ acc.name }}</span><span style="font-size:13px;color:#6B6B6B;overflow:hidden;text-overflow:ellipsis">{{ acc.email }}</span></div>
+        <sc-for list="{{ acc.menu }}" as="m" hint-placeholder-count="3"><button onClick="{{ m.go }}" style="border:0;cursor:pointer;text-align:left;background:{{ m.bg }};border-radius:12px;padding:12px;font-size:15px;font-weight:500;color:{{ m.fg }}">{{ m.label }}</button></sc-for>
+      </div>
+    </sc-if>
+  </div>
+</header>
 </sc-if>
 
 <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
@@ -348,20 +371,61 @@ input,textarea,select,button{font-family:inherit}
 
 <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
 <section data-screen-label="Login" style="padding:clamp(40px,8vw,96px) 0;display:flex;justify-content:center">
-<sc-if value="{{ loginMode }}" hint-placeholder-val="{{ true }}">
   <div style="width:100%;max-width:440px;background:#FFFFFF;border-radius:28px;padding:clamp(24px,4vw,40px);display:flex;flex-direction:column;gap:16px">
     <h1 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Your</span> dashboard.</h1>
     <p style="margin:0;font-size:15px;color:#6B6B6B;line-height:1.5">Use the login details from your order confirmation email.</p>
     <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Email</label><input type="email" value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"></div>
-    <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Password</label><input type="password" value="{{ loginPass }}" onChange="{{ onLoginPass }}" onKeyDown="{{ onLoginKey }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"></div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><label style="font-size:14px;font-weight:500">Password</label><a href="/login/" onClick="{{ acc.goForgot }}" style="font-size:14px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">Forgot your password?</a></div><input type="password" value="{{ loginPass }}" onChange="{{ onLoginPass }}" onKeyDown="{{ onLoginKey }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"></div>
     <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#6B6B6B">{{ loginErrorText }}</span></sc-if>
     <button onClick="{{ doLogin }}" style="height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:18px;font-size:16px;font-weight:500">{{ loginBtn }}</button>
     <button onClick="{{ doReset }}" style="border:0;background:transparent;cursor:pointer;font-size:14px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">{{ resetLabel }}</button>
   </div>
+</section>
 </sc-if>
-<sc-if value="{{ resetMode }}" hint-placeholder-val="{{ false }}">
-  <div style="width:100%;max-width:440px;background:#FFFFFF;border-radius:28px;padding:clamp(24px,4vw,40px);display:flex;flex-direction:column;gap:16px"><h1 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Set a</span> new password.</h1><sc-if value="{{ resetValid }}" hint-placeholder-val="{{ true }}"><p style="margin:0;font-size:15px;color:#6B6B6B;line-height:1.5">For {{ resetEmail }}. At least 10 characters.</p><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">New password</label><input type="password" value="{{ resetPw }}" onChange="{{ onResetPw }}" autocomplete="new-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Repeat new password</label><input type="password" value="{{ resetPw2 }}" onChange="{{ onResetPw2 }}" autocomplete="new-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><sc-if value="{{ resetError }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#6B6B6B">{{ resetErrorText }}</span></sc-if><button onClick="{{ doResetConfirm }}" style="height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:18px;font-size:16px;font-weight:500">Save password</button></sc-if><sc-if value="{{ resetExpired }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:15px;color:#6B6B6B;line-height:1.5">This link has expired or was already used. Enter your email on the login page and we'll send you a new one.</p><button onClick="{{ leaveReset }}" style="height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:18px;font-size:16px;font-weight:500">Send a new link</button></sc-if></div>
+
+<sc-if value="{{ acc.isForgot }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Forgot password" style="padding:clamp(40px,8vw,96px) 0;display:flex;justify-content:center">
+  <div style="width:100%;max-width:440px;background:#FFFFFF;border-radius:28px;padding:clamp(24px,4vw,40px);display:flex;flex-direction:column;gap:16px">
+    <sc-if value="{{ acc.fpForm }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:16px">
+      <h1 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Forgot your</span> password?</h1>
+      <span style="font-size:15px;color:#555;line-height:1.5">Enter your email and we'll send you a link to set a new one.</span>
+      <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Email</label><input type="email" value="{{ acc.fpEmail }}" onChange="{{ acc.onFpEmail }}" placeholder="name@company.com" autocomplete="email" style="border:1px solid {{ acc.fpBd }};background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"><sc-if value="{{ acc.fpErr }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:#151515">Enter a valid email address.</span></sc-if></div>
+      <button onClick="{{ acc.sendReset }}" style="align-self:stretch;height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;padding:0 22px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px;opacity:{{ acc.fpOp }}"><sc-if value="{{ acc.fpBusy }}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;display:block;animation:brspin .8s linear infinite;flex:none"></span></sc-if>{{ acc.fpLabel }}</button>
+      <a href="/login/" onClick="{{ acc.goLogin }}" style="align-self:center;font-size:14px;color:#6B6B6B">← Back to log in</a>
+    </div></sc-if>
+    <sc-if value="{{ acc.fpSent }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:16px">
+      <span style="width:52px;height:52px;border-radius:16px;background:#151515;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3" stroke="#fff" stroke-width="1.8"></rect><path d="M4 7l8 6 8-6" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"></path></svg></span>
+      <h1 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Check</span> your inbox.</h1>
+      <span style="font-size:15px;color:#555;line-height:1.55">If an account exists for this address, we've sent a reset link (valid 1 h).</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ acc.backToFp }}" style="border:0;cursor:pointer;background:#F4F4F4;border-radius:14px;padding:13px 16px;font-size:14px;font-weight:500">Use another email</button></div>
+    </div></sc-if>
+  </div>
+</section>
 </sc-if>
+
+<sc-if value="{{ acc.isReset }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Set new password" style="padding:clamp(40px,8vw,96px) 0;display:flex;justify-content:center">
+  <div style="width:100%;max-width:440px;background:#FFFFFF;border-radius:28px;padding:clamp(24px,4vw,40px);display:flex;flex-direction:column;gap:16px">
+    <sc-if value="{{ acc.rsForm }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:16px">
+      <h1 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Set a new</span> password.</h1>
+      <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">New password</label><div style="position:relative"><input type="{{ acc.rsType }}" value="{{ acc.rsNew }}" onChange="{{ acc.onRsNew }}" placeholder="At least 10 characters" autocomplete="new-password" style="border:1px solid {{ acc.rsNewBd }};background:#F7F7F7;border-radius:16px;padding:16px 56px 16px 18px;font-size:16px;outline:none;width:100%"><button onClick="{{ acc.toggleRs }}" aria-label="Show password" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" stroke="#6B6B6B" stroke-width="1.7"></path><circle cx="12" cy="12" r="3" stroke="#6B6B6B" stroke-width="1.7"></circle><sc-if value="{{ acc.rsShown }}" hint-placeholder-val="{{ false }}"><path d="M4 4l16 16" stroke="#6B6B6B" stroke-width="1.7" stroke-linecap="round"></path></sc-if></svg></button></div><div style="display:flex;align-items:center;gap:10px"><div style="display:flex;gap:4px;flex:1;max-width:180px"><sc-for list="{{ acc.rsBars }}" as="b" hint-placeholder-count="3"><span style="flex:1;height:4px;border-radius:2px;display:block;background:{{ b }}"></span></sc-for></div><span style="font-size:13px;color:#6B6B6B">{{ acc.rsStrength }}</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Repeat new password</label><input value="{{ acc.rsRep }}" onChange="{{ acc.onRsRep }}" type="{{ acc.rsType }}" autocomplete="new-password" style="border:1px solid {{ acc.rsRepBd }};background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"><sc-if value="{{ acc.rsErrMatch }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:#151515">Passwords don't match.</span></sc-if></div>
+      <button onClick="{{ acc.saveReset }}" style="align-self:stretch;height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;padding:0 22px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px;opacity:{{ acc.rsOp }}"><sc-if value="{{ acc.rsBusy }}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;display:block;animation:brspin .8s linear infinite;flex:none"></span></sc-if>{{ acc.rsLabel }}</button>
+      
+    </div></sc-if>
+    <sc-if value="{{ acc.rsExpired }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:16px">
+      <span style="width:52px;height:52px;border-radius:16px;background:#F4F4F4;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#151515" stroke-width="1.8"></circle><path d="M12 7.5V12l3 2" stroke="#151515" stroke-width="1.8" stroke-linecap="round"></path></svg></span>
+      <h1 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">This link has</span> expired.</h1>
+      <span style="font-size:15px;color:#555;line-height:1.55">Reset links work once and for 1 hour. Request a new one and use the most recent email.</span>
+      <button onClick="{{ acc.resendReset }}" style="align-self:stretch;height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;padding:0 22px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px;opacity:{{ acc.one }}"><sc-if value="{{ acc.rsResendBusy }}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;display:block;animation:brspin .8s linear infinite;flex:none"></span></sc-if>{{ acc.rsResendLabel }}</button>
+    </div></sc-if>
+    <sc-if value="{{ acc.rsDone }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:16px">
+      <span style="width:52px;height:52px;border-radius:16px;background:#151515;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      <h1 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Password</span> updated.</h1>
+      <span style="font-size:15px;color:#555;line-height:1.55">You're logged in. Other devices were logged out.</span>
+      <button onClick="{{ acc.goDash }}" style="border:0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:#151515;color:#FFFFFF;border-radius:18px;padding:6px 6px 6px 22px;font-size:16px;font-weight:500">Go to dashboard<span style="width:44px;height:44px;background:#FFFFFF;border-radius:13px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
+    </div></sc-if>
+  </div>
 </section>
 </sc-if>
 
@@ -369,12 +433,8 @@ input,textarea,select,button{font-family:inherit}
 <section data-screen-label="Customer dashboard" style="padding:clamp(20px,4vw,48px) clamp(0px,1.2vw,16px) 24px;display:flex;flex-direction:column;gap:16px;max-width:1100px;width:100%;margin:0 auto">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:0 4px">
     <div style="display:flex;flex-direction:column;gap:8px">
-      <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">// order {{ pOrderId }} · {{ pBiz }}</span>
-      <h1 style="margin:0;font-size:clamp(34px,4.4vw,56px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Hi {{ pFirst }},</span> here's your status.</h1><sc-if value="{{ hasAccNotice }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:500;background:#FFFFFF;border-radius:12px;padding:8px 12px;align-self:flex-start">{{ accNotice }}</span></sc-if><sc-if value="{{ pCancelled }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:500;background:#FFFFFF;color:#D93025;border:1px solid #D93025;border-radius:12px;padding:8px 12px;align-self:flex-start">Order cancelled {{ pCancelledAt }}</span></sc-if>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button onClick="{{ newOrder }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:500">+ New order</button>
-      <button onClick="{{ logout }}" style="border:0;cursor:pointer;background:transparent;border-radius:14px;padding:12px 10px;font-size:14px;font-weight:500;color:#6B6B6B">Log out</button>
+      <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">{{ acc.eyebrow }}</span>
+      <h1 style="margin:0;font-size:clamp(34px,4.4vw,56px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">{{ acc.h1a }}</span> {{ acc.h1b }}</h1><sc-if value="{{ hasAccNotice }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:500;background:#FFFFFF;border-radius:12px;padding:8px 12px;align-self:flex-start">{{ accNotice }}</span></sc-if><sc-if value="{{ pCancelled }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:500;background:#FFFFFF;color:#D93025;border:1px solid #D93025;border-radius:12px;padding:8px 12px;align-self:flex-start">Order cancelled {{ pCancelledAt }}</span></sc-if>
     </div>
   </div>
 
@@ -383,9 +443,9 @@ input,textarea,select,button{font-family:inherit}
     <sc-for list="{{ orderChips }}" as="oc" hint-placeholder-count="2"><button onClick="{{ oc.go }}" style="border:0;cursor:pointer;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:500;font-family:'Geist Mono',monospace;background:{{ oc.bg }};color:{{ oc.fg }}">{{ oc.label }}</button></sc-for>
   </div>
   </sc-if>
-  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;align-self:flex-start">
+  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;align-self:{{ acc.tabsAlign }}">
     <sc-for list="{{ pTabs }}" as="tb" hint-placeholder-count="2">
-      <button onClick="{{ tb.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:10px 18px;font-size:14px;font-weight:500;display:flex;gap:8px;align-items:center;background:{{ tb.bg }};color:{{ tb.fg }}">{{ tb.label }}<sc-if value="{{ tb.hasDot }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:{{ tb.dotBg }};color:{{ tb.dotFg }};font-size:11px;display:flex;align-items:center;justify-content:center">{{ tb.dot }}</span></sc-if></button>
+      <button onClick="{{ tb.go }}" style="flex:1;justify-content:center;border:0;cursor:pointer;border-radius:12px;padding:10px 18px;font-size:14px;font-weight:500;display:flex;gap:8px;align-items:center;background:{{ tb.bg }};color:{{ tb.fg }}">{{ tb.label }}<sc-if value="{{ tb.hasDot }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:{{ tb.dotBg }};color:{{ tb.dotFg }};font-size:11px;display:flex;align-items:center;justify-content:center">{{ tb.dot }}</span></sc-if></button>
     </sc-for>
   </div>
 
@@ -417,36 +477,33 @@ input,textarea,select,button{font-family:inherit}
   </div>
 
   <div style="display:flex;flex-direction:column;gap:8px">
-    <div style="display:flex;align-items:center;gap:10px;padding:14px 4px 4px"><span style="font-size:18px;font-weight:500">Active</span><span style="min-width:24px;height:24px;padding:0 8px;border-radius:12px;background:#151515;color:#fff;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center">{{ pActiveCount }}</span></div>
-    <sc-for list="{{ pActive }}" as="r" hint-placeholder-count="2">
-      <div style="background:#FFFFFF;border-radius:22px;padding:16px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
-        <span style="width:40px;height:40px;border-radius:50%;background:#6B6B6B;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500">{{ r.initial }}</span>
-        <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:4px">
-          <span style="font-size:15px;font-weight:500">{{ r.name }} <span style="color:#6B6B6B;font-weight:400;font-size:13px">· {{ r.stars }} ★ · {{ r.when }}</span></span>
-          <span style="font-size:14px;line-height:1.45;color:{{ r.textCol }};text-decoration:{{ r.deco }}">{{ r.text }}</span>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto">
-          <span style="font-size:13px;font-weight:500;border-radius:10px;padding:6px 10px;display:flex;gap:6px;align-items:center;background:{{ r.badgeBg }};color:{{ r.badgeFg }};border:1px solid {{ r.badgeBd }}">{{ r.status }}</span>
-          <span style="font-size:13px;color:#6B6B6B">{{ r.priceNote }}</span>
-        </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 4px 4px">
+      <span style="font-size:18px;font-weight:500">Your reviews</span>
+      <div style="display:flex;background:#FFFFFF;border-radius:14px;padding:4px;gap:2px;max-width:100%;overflow-x:auto">
+        <sc-for list="{{ rvTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.go }}" style="border:0;cursor:pointer;border-radius:11px;padding:8px 13px;font-size:14px;font-weight:500;white-space:nowrap;display:flex;align-items:center;gap:7px;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}<span style="font-size:12px;opacity:.6">{{ t.count }}</span></button></sc-for>
       </div>
-    </sc-for>
-    <sc-if value="{{ pActiveEmpty }}" hint-placeholder-val="{{ false }}"><div style="background:#FFFFFF;border-radius:22px;padding:18px;font-size:14px;color:#8A8A8A">Nothing here yet.</div></sc-if>
-    <div style="display:flex;align-items:center;gap:10px;padding:14px 4px 4px"><span style="font-size:18px;font-weight:500">Done</span><span style="min-width:24px;height:24px;padding:0 8px;border-radius:12px;background:#151515;color:#fff;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center">{{ pDoneCount }}</span></div>
-    <sc-for list="{{ pDone }}" as="r" hint-placeholder-count="2">
-      <div style="background:#FFFFFF;border-radius:22px;padding:16px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
-        <span style="width:40px;height:40px;border-radius:50%;background:#6B6B6B;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500">{{ r.initial }}</span>
-        <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:4px">
-          <span style="font-size:15px;font-weight:500">{{ r.name }} <span style="color:#6B6B6B;font-weight:400;font-size:13px">· {{ r.stars }} ★ · {{ r.when }}</span></span>
-          <span style="font-size:14px;line-height:1.45;color:{{ r.textCol }};text-decoration:{{ r.deco }}">{{ r.text }}</span>
+    </div>
+    <div style="background:#FFFFFF;border-radius:24px;padding:6px;display:flex;flex-direction:column">
+      <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:minmax(150px,1fr) 64px minmax(0,2.4fr) 96px 132px;gap:16px;padding:12px 16px 10px;font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A">
+          <span>REVIEWER</span><span>RATING</span><span>REVIEW</span><span style="text-align:right">PRICE</span><span style="text-align:right">STATUS</span>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto">
-          <span style="font-size:13px;font-weight:500;border-radius:10px;padding:6px 10px;display:flex;gap:6px;align-items:center;background:{{ r.badgeBg }};color:{{ r.badgeFg }};border:1px solid {{ r.badgeBd }}">{{ r.status }}</span>
-          <span style="font-size:13px;color:#6B6B6B">{{ r.priceNote }}</span>
+      </sc-if>
+      <sc-for list="{{ rvRows }}" as="r" hint-placeholder-count="3">
+        <div style="border-top:1px solid #F0F0F0;padding:14px 16px;display:grid;grid-template-columns:{{ rvCols }};gap:{{ rvGap }};align-items:center">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0">
+            <span style="width:34px;height:34px;border-radius:50%;background:#6B6B6B;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500">{{ r.initial }}</span>
+            <span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.name }}</span><span style="font-size:12px;color:#6B6B6B">{{ r.when }}{{ r.mobStars }}</span></span>
+          </div>
+          <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><span style="font-size:14px;font-weight:500;white-space:nowrap">{{ r.stars }} ★</span></sc-if>
+          <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><span style="font-size:14px;line-height:1.45;color:{{ r.textCol }};text-decoration:{{ r.deco }};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ r.text }}</span></sc-if>
+          <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><span style="font-size:14px;font-weight:500;text-align:right;white-space:nowrap">{{ r.priceShort }}</span></sc-if>
+          <span style="justify-self:end"><span style="font-size:12px;font-weight:500;border-radius:9px;padding:5px 9px;white-space:nowrap;display:inline-flex;gap:6px;align-items:center;background:{{ r.badgeBg }};color:{{ r.badgeFg }};border:1px solid {{ r.badgeBd }}">{{ r.status }}</span></span>
+          <sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}"><span style="grid-column:1 / -1;font-size:14px;line-height:1.45;color:{{ r.textCol }};text-decoration:{{ r.deco }};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ r.text }}</span></sc-if>
         </div>
-      </div>
-    </sc-for>
-    <sc-if value="{{ pDoneEmpty }}" hint-placeholder-val="{{ false }}"><div style="background:#FFFFFF;border-radius:22px;padding:18px;font-size:14px;color:#8A8A8A">Nothing here yet.</div></sc-if>
+      </sc-for>
+      <sc-if value="{{ rvEmpty }}" hint-placeholder-val="{{ false }}"><div style="border-top:1px solid #F0F0F0;padding:28px 16px;text-align:center;font-size:14px;color:#8A8A8A">{{ rvEmptyText }}</div></sc-if>
+    </div>
   </div>
 
 <sc-if value="{{ pCanCancel }}" hint-placeholder-val="{{ false }}"><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px;border:1px solid #D2D2D2"><span style="font-size:18px;font-weight:500">Cancel this order</span><span style="font-size:14px;color:#6B6B6B;line-height:1.5">We stop working on all reviews that are still open. Reviews that were already removed stay billable.</span><sc-if value="{{ cancelOpen }}" hint-placeholder-val="{{ false }}"><textarea value="{{ cancelReason }}" onChange="{{ onCancelReason }}" rows="2" placeholder="Reason (optional)" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%;resize:vertical"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ confirmCancel }}" style="align-self:flex-start;height:48px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 20px;font-size:15px;font-weight:500">Cancel order</button><button onClick="{{ closeCancel }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Keep order</button></div></sc-if><sc-if value="{{ cancelClosed }}" hint-placeholder-val="{{ true }}"><button onClick="{{ openCancel }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Cancel order</button></sc-if></div></sc-if>
@@ -461,8 +518,7 @@ input,textarea,select,button{font-family:inherit}
       <div style="display:flex;flex-direction:column"><span style="font-size:14px;color:#6B6B6B">Total</span><span style="font-size:36px;font-weight:500;letter-spacing:-.04em;line-height:1.05">{{ pInvTotal }}</span></div>
       <sc-if value="{{ pCanPay }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;gap:8px;flex-wrap:wrap;flex:1 1 280px;justify-content:flex-end">
-          <button onClick="{{ payNow }}" style="flex:1 1 140px;height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;font-size:16px;font-weight:500">Apple Pay</button>
-          <button onClick="{{ payNow }}" style="flex:1 1 140px;height:56px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:16px;font-size:16px;font-weight:500">Pay by card</button>
+          <button onClick="{{ payNow }}" style="flex:0 1 auto;border:0;cursor:pointer;display:flex;align-items:center;gap:14px;background:#151515;color:#FFFFFF;border-radius:18px;padding:6px 22px 6px 6px;font-size:16px;font-weight:500;white-space:nowrap"><span style="width:44px;height:44px;flex:none;background:#FFFFFF;border-radius:13px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>Pay now</button>
         </div>
       </sc-if>
       <sc-if value="{{ pPaid }}" hint-placeholder-val="{{ false }}"><span style="font-size:15px;font-weight:500;background:#151515;color:#fff;border-radius:12px;padding:10px 14px">✓ Paid</span></sc-if>
@@ -473,7 +529,6 @@ input,textarea,select,button{font-family:inherit}
   </div>
   </sc-if>
 
-<sc-if value="{{ pTabSettings }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:12px;max-width:760px"><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px"><span style="font-size:18px;font-weight:500">Profile</span><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px"><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Full name</label><input type="text" value="{{ acc.name }}" onChange="{{ acc.onName }}" autocomplete="name" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Company</label><input type="text" value="{{ acc.company }}" onChange="{{ acc.onCompany }}" autocomplete="organization" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Phone</label><input type="tel" value="{{ acc.phone }}" onChange="{{ acc.onPhone }}" autocomplete="tel" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Street</label><input type="text" value="{{ acc.street }}" onChange="{{ acc.onStreet }}" autocomplete="street-address" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">ZIP &amp; city</label><input type="text" value="{{ acc.city }}" onChange="{{ acc.onCity }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Country</label><select value="{{ acc.country }}" onChange="{{ acc.onCountry }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"><sc-for list="{{ countries }}" as="c" hint-placeholder-count="3"><option value="{{ c }}">{{ c }}</option></sc-for></select></div></div><button onClick="{{ acc.saveProfile }}" style="align-self:flex-start;height:48px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 20px;font-size:15px;font-weight:500">Save changes</button></div><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px"><span style="font-size:18px;font-weight:500">Email address</span><span style="font-size:15px">{{ acc.email }}</span><sc-if value="{{ acc.hasPending }}" hint-placeholder-val="{{ false }}"><div style="background:#F4F4F4;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.5;color:#333"><span>Confirm your new address – we sent a link to <strong style="font-weight:500">{{ acc.pending }}</strong> (valid 24 h). Until then you log in with {{ acc.email }}.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ acc.resendEmail }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Resend link</button><button onClick="{{ acc.cancelEmail }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Cancel change</button></div></div></sc-if><sc-if value="{{ acc.showEmailForm }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px"><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">New email</label><input type="email" value="{{ acc.newEmail }}" onChange="{{ acc.onNewEmail }}" autocomplete="email" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Current password</label><input type="password" value="{{ acc.emailPw }}" onChange="{{ acc.onEmailPw }}" autocomplete="current-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div></div><button onClick="{{ acc.saveEmail }}" style="align-self:flex-start;height:48px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 20px;font-size:15px;font-weight:500">Send confirmation link</button></sc-if><sc-if value="{{ acc.showEmailBtn }}" hint-placeholder-val="{{ true }}"><button onClick="{{ acc.openEmail }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Change email</button></sc-if></div><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px"><span style="font-size:18px;font-weight:500">Password</span><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:12px"><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Current password</label><input type="password" value="{{ acc.pwCur }}" onChange="{{ acc.onPwCur }}" autocomplete="current-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">New password</label><input type="password" value="{{ acc.pwNew }}" onChange="{{ acc.onPwNew }}" autocomplete="new-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Repeat new password</label><input type="password" value="{{ acc.pwRep }}" onChange="{{ acc.onPwRep }}" autocomplete="new-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div></div><span style="font-size:13px;color:#6B6B6B">At least 10 characters. Other devices are logged out after the change.</span><button onClick="{{ acc.savePw }}" style="align-self:flex-start;height:48px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 20px;font-size:15px;font-weight:500">Change password</button></div><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px"><span style="font-size:18px;font-weight:500">Sessions</span><span style="font-size:14px;color:#6B6B6B;line-height:1.5">Logged in on a shared or lost device? Log out everywhere except here.</span><button onClick="{{ acc.logoutAll }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Log out on all devices</button></div><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px;border:1px solid #D2D2D2"><span style="font-size:18px;font-weight:500">Delete account</span><span style="font-size:14px;color:#6B6B6B;line-height:1.5">Open orders and invoices must be kept for legal reasons; your personal data is deleted as soon as that's no longer required.</span><sc-if value="{{ acc.deletionRequested }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:500">Deletion requested on {{ acc.deletionDate }}</span></sc-if><sc-if value="{{ acc.showDelete }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end"><div style="flex:1 1 220px"><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Password</label><input type="password" value="{{ acc.delPw }}" onChange="{{ acc.onDelPw }}" autocomplete="current-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div></div><button onClick="{{ acc.requestDelete }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Request deletion</button></div></sc-if></div><sc-if value="{{ acc.hasMsg }}" hint-placeholder-val="{{ false }}"><div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:200;background:#151515;color:#fff;border-radius:16px;padding:14px 18px;font-size:14px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px)">{{ acc.msg }}</div></sc-if></div></sc-if>
   <sc-if value="{{ pTabSupport }}" hint-placeholder-val="{{ false }}">
   <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span style="font-size:18px;font-weight:500">Support</span><span style="font-size:13px;color:#6B6B6B;display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#151515;display:block"></span>Usually replies within 2 hours</span></div>
@@ -491,11 +546,86 @@ input,textarea,select,button{font-family:inherit}
   </div>
   </sc-if>
 
-  <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px;align-items:center">
+<sc-if value="{{ pTabSettings }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Settings" style="display:grid;grid-template-columns:{{ acc.setCols }};gap:14px;align-items:start;width:100%">
+    <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:18px;font-weight:500;letter-spacing:-.01em">Profile</span><span style="font-size:14px;color:#6B6B6B">Used on your invoices.</span></div>
+      <div style="display:grid;grid-template-columns:{{ acc.formCols }};gap:12px">
+        <sc-for list="{{ acc.profFields }}" as="f" hint-placeholder-count="5">
+          <div style="display:flex;flex-direction:column;gap:8px;grid-column:{{ f.span }}"><label style="font-size:14px;font-weight:500">{{ f.label }}</label><input value="{{ f.value }}" onChange="{{ f.on }}" placeholder="{{ f.ph }}" autocomplete="{{ f.ac }}" style="border:1px solid {{ f.bd }};background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"><sc-if value="{{ f.err }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500">Required</span></sc-if></div>
+        </sc-for>
+        <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Country</label><select value="{{ acc.country }}" onChange="{{ acc.onCountry }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%;color:#151515"><sc-for list="{{ acc.countries }}" as="c" hint-placeholder-count="8"><option value="{{ c }}">{{ c }}</option></sc-for></select></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><button onClick="{{ acc.saveProfile }}" style="align-self:flex-start;height:52px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;padding:0 22px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px;opacity:{{ acc.profOp }}"><sc-if value="{{ acc.profBusy }}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;display:block;animation:brspin .8s linear infinite;flex:none"></span></sc-if>{{ acc.profLabel }}</button><sc-if value="{{ acc.profDirty }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#6B6B6B">Unsaved changes</span></sc-if></div>
+    </div>
+
+    <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-size:18px;font-weight:500;letter-spacing:-.01em">Email address</span><span style="font-size:15px;color:#555;word-break:break-all">{{ acc.email }}</span></div>
+        <sc-if value="{{ acc.emailView }}" hint-placeholder-val="{{ true }}"><button onClick="{{ acc.startEmail }}" style="border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;border-radius:14px;padding:11px 16px;font-size:14px;font-weight:500">Change email</button></sc-if>
+      </div>
+      <sc-if value="{{ acc.emailEdit }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:12px;border-top:1px solid #F0F0F0;padding-top:16px">
+        <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">New email address</label><input type="email" value="{{ acc.newEmail }}" onChange="{{ acc.onNewEmail }}" placeholder="name@company.com" autocomplete="email" style="border:1px solid {{ acc.newEmailBd }};background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"><sc-if value="{{ acc.emailErrExists }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:#151515">This email already has an account.</span></sc-if><sc-if value="{{ acc.emailErrInvalid }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:#151515">Enter a valid email address.</span></sc-if></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Current password</label><input type="password" value="{{ acc.emailPw }}" onChange="{{ acc.onEmailPw }}" autocomplete="current-password" style="border:1px solid {{ acc.emailPwBd }};background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"><sc-if value="{{ acc.emailErrPw }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:#151515">Wrong password.</span></sc-if></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ acc.saveEmail }}" style="align-self:flex-start;height:52px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;padding:0 22px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px;opacity:{{ acc.emailOp }}"><sc-if value="{{ acc.emailBusy }}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;display:block;animation:brspin .8s linear infinite;flex:none"></span></sc-if>{{ acc.emailLabel }}</button><button onClick="{{ acc.cancelEmailEdit }}" style="height:52px;border:0;cursor:pointer;background:transparent;border-radius:16px;padding:0 14px;font-size:15px;font-weight:500;color:#6B6B6B">Cancel</button></div>
+      </div></sc-if>
+      <sc-if value="{{ acc.emailPending }}" hint-placeholder-val="{{ false }}"><div style="background:#F4F4F4;border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px;align-items:flex-start"><span style="flex:none;width:36px;height:36px;border-radius:12px;background:#151515;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3" stroke="#fff" stroke-width="1.8"></rect><path d="M4 7l8 6 8-6" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-size:15px;font-weight:500">Confirm your new address</span><span style="font-size:14px;color:#555;line-height:1.5;word-break:break-word">We sent a link to <strong style="color:#151515;font-weight:500">{{ acc.pendingEmail }}</strong> (valid 24 h). Until then you log in with <strong style="color:#151515;font-weight:500">{{ acc.email }}</strong>.</span></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-left:48px"><button onClick="{{ acc.resendEmail }}" style="border:0;cursor:pointer;background:#FFFFFF;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500">{{ acc.resendLabel }}</button><button onClick="{{ acc.cancelPending }}" style="border:0;cursor:pointer;background:transparent;border-radius:12px;padding:10px;font-size:14px;font-weight:500;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">Cancel change</button></div>
+      </div></sc-if>
+    </div>
+
+    <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:16px;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:18px;font-weight:500;letter-spacing:-.01em">Password</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Current password</label><div style="position:relative"><input type="{{ acc.curType }}" value="{{ acc.pwCur }}" onChange="{{ acc.onPwCur }}" placeholder="" autocomplete="current-password" style="border:1px solid {{ acc.pwCurBd }};background:#F7F7F7;border-radius:16px;padding:16px 56px 16px 18px;font-size:16px;outline:none;width:100%"><button onClick="{{ acc.toggleCur }}" aria-label="Show password" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" stroke="#6B6B6B" stroke-width="1.7"></path><circle cx="12" cy="12" r="3" stroke="#6B6B6B" stroke-width="1.7"></circle><sc-if value="{{ acc.curShown }}" hint-placeholder-val="{{ false }}"><path d="M4 4l16 16" stroke="#6B6B6B" stroke-width="1.7" stroke-linecap="round"></path></sc-if></svg></button></div><sc-if value="{{ acc.pwErrCur }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:#151515">Wrong password.</span></sc-if></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">New password</label><div style="position:relative"><input type="{{ acc.newType }}" value="{{ acc.pwNew }}" onChange="{{ acc.onPwNew }}" placeholder="At least 10 characters" autocomplete="new-password" style="border:1px solid {{ acc.pwNewBd }};background:#F7F7F7;border-radius:16px;padding:16px 56px 16px 18px;font-size:16px;outline:none;width:100%"><button onClick="{{ acc.toggleNew }}" aria-label="Show password" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" stroke="#6B6B6B" stroke-width="1.7"></path><circle cx="12" cy="12" r="3" stroke="#6B6B6B" stroke-width="1.7"></circle><sc-if value="{{ acc.newShown }}" hint-placeholder-val="{{ false }}"><path d="M4 4l16 16" stroke="#6B6B6B" stroke-width="1.7" stroke-linecap="round"></path></sc-if></svg></button></div><div style="display:flex;align-items:center;gap:10px"><div style="display:flex;gap:4px;flex:1;max-width:180px"><sc-for list="{{ acc.pwBars }}" as="b" hint-placeholder-count="3"><span style="flex:1;height:4px;border-radius:2px;display:block;background:{{ b }}"></span></sc-for></div><span style="font-size:13px;color:#6B6B6B">{{ acc.pwStrength }}</span></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Repeat new password</label><input value="{{ acc.pwRep }}" onChange="{{ acc.onPwRep }}" type="{{ acc.newType }}" autocomplete="new-password" style="border:1px solid {{ acc.pwRepBd }};background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"><sc-if value="{{ acc.pwErrMatch }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:#151515">Passwords don't match.</span></sc-if></div>
+      <button onClick="{{ acc.savePw }}" style="align-self:flex-start;height:52px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;padding:0 22px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px;opacity:{{ acc.pwOp }}"><sc-if value="{{ acc.pwBusy }}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;display:block;animation:brspin .8s linear infinite;flex:none"></span></sc-if>{{ acc.pwLabel }}</button>
+    </div>
+
+    <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:18px;font-weight:500;letter-spacing:-.01em">Sessions</span><span style="font-size:14px;color:#6B6B6B">{{ acc.sessText }}</span></div>
+      <button onClick="{{ acc.logoutAll }}" style="height:48px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px"><sc-if value="{{ acc.sessBusy }}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;border:2px solid #D2D2D2;border-top-color:#151515;border-radius:50%;display:block;animation:brspin .8s linear infinite;flex:none"></span></sc-if>Log out on all devices</button>
+    </div>
+
+    <div style="border:1.5px solid #151515;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">DANGER ZONE</span>
+      <span style="font-size:18px;font-weight:500;letter-spacing:-.01em">Delete account</span>
+      <span style="font-size:14px;color:#555;line-height:1.55;text-wrap:pretty">Open orders and invoices must be kept for legal reasons; your personal data is deleted as soon as that's no longer required.</span>
+      <sc-if value="{{ acc.delNone }}" hint-placeholder-val="{{ true }}"><button onClick="{{ acc.openDel }}" style="align-self:flex-start;height:48px;border:1.5px solid #151515;cursor:pointer;background:transparent;border-radius:14px;padding:0 18px;font-size:14px;font-weight:600">Request deletion</button></sc-if>
+      <sc-if value="{{ acc.delDone }}" hint-placeholder-val="{{ false }}"><div style="background:#F4F4F4;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:14px;font-weight:500">Deletion requested on {{ acc.delDate }}</span><span style="font-size:13px;color:#6B6B6B">We'll email you when it's done.</span></div></sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ pNotSettings }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px;align-items:center">
     <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:500">Account</span><span style="font-size:14px;color:#6B6B6B;word-break:break-all">{{ pEmail }}</span></div>
     <span style="font-size:14px;color:#6B6B6B;line-height:1.5">We email you at every step. Questions? Reply to any of our emails.</span>
   </div>
+  </sc-if>
 </section>
+<sc-if value="{{ acc.sheetOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:300;background:#EFEFEF;display:flex;flex-direction:column;padding:12px;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 4px 20px"><img src="/assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block;margin-left:14px"><button onClick="{{ acc.toggleMenu }}" aria-label="Close menu" style="width:52px;height:52px;border:0;cursor:pointer;background:#FFFFFF;border-radius:18px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="#151515" stroke-width="1.8" stroke-linecap="round"></path></svg></button></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:0 10px 20px"><span style="width:48px;height:48px;flex:none;border-radius:50%;background:#151515;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600">{{ acc.initial }}</span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:17px;font-weight:600">{{ acc.name }}</span><span style="font-size:14px;color:#6B6B6B;overflow:hidden;text-overflow:ellipsis">{{ acc.email }}</span></div></div>
+    <div style="display:flex;flex-direction:column;gap:6px"><sc-for list="{{ acc.menu }}" as="m" hint-placeholder-count="3"><button onClick="{{ m.go }}" style="border:0;cursor:pointer;text-align:left;background:#FFFFFF;border-radius:20px;padding:20px;font-size:22px;font-weight:500;letter-spacing:-.02em;color:{{ m.fg }}">{{ m.label }}</button></sc-for></div>
+    <button onClick="{{ newOrder }}" style="margin-top:auto;height:64px;border:0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:#151515;color:#FFFFFF;border-radius:20px;padding:0 8px 0 22px;font-size:17px;font-weight:500">New order<span style="width:48px;height:48px;background:#FFFFFF;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#151515;font-size:24px;font-weight:300">+</span></button>
+  </div>
+</sc-if>
+<sc-if value="{{ acc.delOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:320;background:rgba(21,21,21,.4);backdrop-filter:blur(4px);display:flex;align-items:{{ acc.modalAlign }};justify-content:center;padding:{{ acc.modalPad }}">
+    <div style="width:100%;max-width:440px;background:#FFFFFF;border-radius:{{ acc.modalR }};padding:24px;display:flex;flex-direction:column;gap:14px">
+      <span style="font-size:24px;font-weight:500;letter-spacing:-.03em;line-height:1.1">Delete your account?</span>
+      <span style="font-size:14px;color:#555;line-height:1.55">Open orders and invoices must be kept for legal reasons; your personal data is deleted as soon as that's no longer required.</span>
+      <div style="display:flex;flex-direction:column;gap:8px"><label style="font-size:14px;font-weight:500">Confirm with your password</label><input type="password" value="{{ acc.delPw }}" onChange="{{ acc.onDelPw }}" autocomplete="current-password" style="border:1px solid {{ acc.delBd }};background:#F7F7F7;border-radius:16px;padding:16px 18px;font-size:16px;outline:none;width:100%"><sc-if value="{{ acc.delErr }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;color:#151515">Wrong password.</span></sc-if></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button onClick="{{ acc.closeDel }}" style="height:52px;border:0;cursor:pointer;background:#F4F4F4;border-radius:16px;font-size:15px;font-weight:500">Cancel</button><button onClick="{{ acc.confirmDel }}" style="height:52px;border:1.5px solid #151515;cursor:pointer;background:#FFFFFF;border-radius:16px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;opacity:{{ acc.delOp }}"><sc-if value="{{ acc.delBusy }}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;border:2px solid #D2D2D2;border-top-color:#151515;border-radius:50%;display:block;animation:brspin .8s linear infinite;flex:none"></span></sc-if>Request deletion</button></div>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ acc.hasToast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:340;background:#151515;color:#fff;border-radius:16px;padding:14px 18px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);width:max-content;max-width:calc(100% - 32px)"><span style="width:22px;height:22px;border-radius:7px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;flex:none"><svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#151515" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>{{ acc.toast }}</div>
+</sc-if>
 <sc-if value="{{ pShowChatFab }}" hint-placeholder-val="{{ false }}">
   <button onClick="{{ openSupport }}" aria-label="Chat with support" style="position:fixed;right:16px;bottom:16px;z-index:70;width:60px;height:60px;border:0;cursor:pointer;background:#151515;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 5.5A2.5 2.5 0 016.5 3h11A2.5 2.5 0 0120 5.5v8a2.5 2.5 0 01-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 014 14.5z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"></path></svg>
@@ -1013,19 +1143,24 @@ class Component extends DCLogic {
       pRemoved: n, pTotal: items.filter(i => i.st !== 'cancelled').length, pProgress: inProg,
       pRatingBefore: '4.2', pRatingNow: (4.2 + Math.min(0.6, n * 0.3)).toFixed(1),
       pDue: fmt(paid ? 0 : due), pPayLabel: paid ? 'Nothing due' : n ? 'Due today' + (n > 1 ? ' · incl. volume discount' : '') : 'Nothing due yet',
-      pCanPay: !paid && n > 0, pPaid: paid && n > 0, payNow: () => this.setState({ portalPaid: true }),
+      pCanPay: !paid && n > 0, pPaid: paid && n > 0, payNow: () => { this.accToast('Redirecting to Stripe Checkout…'); setTimeout(() => this.setState({ portalPaid: true }), 1200); },
       pSteps: [['Order received', fd(0)], ['In review', phase >= 2 ? fd(0) : '—'], ['Removed', phase >= 3 ? fd(1) : '—'], ['Paid', phase >= 4 ? 'today' : '—']].map(([label, date], i) => ({ label, date, bar: i < phase ? '#151515' : '#E4E4E4', fg: i < phase ? '#151515' : '#8A8A8A' })),
       pReviews: items,
       pActive: items.filter(i => i.st === 'progress' || i.st === 'submitted'), pDone: items.filter(i => i.st === 'removed' || i.st === 'cancelled'),
       pActiveCount: items.filter(i => i.st === 'progress' || i.st === 'submitted').length, pDoneCount: items.filter(i => i.st === 'removed' || i.st === 'cancelled').length,
       pActiveEmpty: !items.some(i => i.st === 'progress' || i.st === 'submitted'), pDoneEmpty: !items.some(i => i.st === 'removed' || i.st === 'cancelled'),
+      ...(() => { const mob = (s.vw || 1200) < 760, t = s.rvTab || 'all', isA = i => i.st === 'progress' || i.st === 'submitted';
+        const f = { all: () => true, active: isA, done: i => !isA(i) }, list = items.filter(f[t]);
+        return { rvTabs: [['all', 'All'], ['active', 'Active'], ['done', 'Done']].map(([k, label]) => ({ label, count: items.filter(f[k]).length, bg: t === k ? '#151515' : 'transparent', fg: t === k ? '#FFFFFF' : '#555', go: () => this.setState({ rvTab: k }) })),
+          rvRows: list.map(i => ({ ...i, mobStars: mob ? ' · ' + i.stars + ' ★' : '', priceShort: i.st === 'cancelled' ? '—' : fmt(i.price) })), rvEmpty: list.length === 0, rvEmptyText: t === 'done' ? 'No finished reviews yet.' : 'Nothing in progress.',
+          rvCols: mob ? 'minmax(0,1fr) auto' : 'minmax(150px,1fr) 64px minmax(0,2.4fr) 96px 132px', rvGap: mob ? '8px 12px' : '16px' }; })(),
       pHasInvoice: n > 0, pInvoiceNo: 'INV-' + (demo ? '48213' : String(s.orderId || '').replace('BR-', '')), pDueDate: fd(1),
       pLines: removed.map(i => ({ label: i.name + ' · ' + (i.price === 90 ? '≤ 4 weeks' : '> 4 weeks'), amount: fmt(i.price) })),
       pHasDisc: rate > 0, pDiscPct: Math.round(rate * 100) + '%', pDiscAmt: '– ' + fmt(discAmt), pInvTotal: fmt(due),
       ...(() => { const tab = s.portalTab || 'overview', unread = msgs.length > (s.seenMsgs || 0) && tab !== 'support' && msgs[msgs.length - 1].from === 'team';
         const go = t => { this.setState({ portalTab: t, seenMsgs: t === 'support' ? 999 : s.seenMsgs }); window.scrollTo({ top: 0 }); };
-        return { pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pShowChatFab: tab !== 'support', pUnread: unread, openSupport: () => go('support'),
-          pTabs: [['overview', 'Overview'], ['support', 'Support']].map(([k, label]) => ({ label, go: () => go(k), bg: tab === k ? '#151515' : 'transparent', fg: tab === k ? '#FFFFFF' : '#555',
+        return { pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pTabSettings: tab === 'settings', pNotSettings: tab !== 'settings', pShowChatFab: tab !== 'support', pUnread: unread, openSupport: () => go('support'),
+          pTabs: [['overview', 'Overview'], ['support', 'Support'], ['settings', 'Settings']].map(([k, label]) => ({ label, go: () => go(k), bg: tab === k ? '#151515' : 'transparent', fg: tab === k ? '#FFFFFF' : '#555',
             hasDot: k === 'support' && unread, dot: '1', dotBg: '#151515', dotFg: '#FFFFFF' })) }; })(),
       payRef: this.payRef, supportRef: this.supportRef, scrollPay: () => scrollTo(this.payRef), scrollSupport: () => scrollTo(this.supportRef),
       pMsgs: msgs.map(m => ({ ...m, justify: m.from === 'me' ? 'flex-end' : 'flex-start', bg: m.from === 'me' ? '#151515' : '#F4F4F4', fg: m.from === 'me' ? '#FFFFFF' : '#151515' })),
@@ -1036,6 +1171,78 @@ class Component extends DCLogic {
   }
   accounts() { try { return JSON.parse(localStorage.getItem('br-accounts') || '{}'); } catch (e) { return {}; } }
   saveAccount(em, data) { try { const a = this.accounts(); a[em] = { ...(a[em] || {}), ...data }; localStorage.setItem('br-accounts', JSON.stringify(a)); } catch (e) {} }
+  accToast(t) { clearTimeout(this.accT); this.setState({ accToastMsg: t }); this.accT = setTimeout(() => this.setState({ accToastMsg: '' }), 2800); }
+  pwStrength(p) { if (!p) return [0, 'Min. 10 characters']; if (p.length < 10) return [1, (10 - p.length) + ' more characters']; let sc = 1; if (p.length >= 14) sc++; if (/[A-Z]/.test(p) && /[a-z]/.test(p)) sc++; if (/\d|[^A-Za-z0-9]/.test(p)) sc++; return sc >= 4 ? [3, 'Strong'] : sc >= 2 ? [2, 'Okay – add numbers or symbols'] : [1, 'Weak']; }
+  _designAccountVals(sw, mob) {
+    const s = this.state, set = p => this.setState(p), later = f => setTimeout(f, 900);
+    const demo = !s.submitted || s.portalUser === 'demo';
+    const prof = s.accProf || (demo ? { name: 'Anna Rossi', company: 'Osteria da Anna', phone: '+39 331 555 0147', street: 'Via Roma 12', zip: '16043 Chiavari', country: 'Italy' } : { name: s.name || '', company: s.company || '', phone: s.phone || '', street: (s.biz && s.biz.street) || '', zip: '', country: s.country || 'United States' });
+    const saved = s.accSaved || prof;
+    const email = s.accEmail || sw.pEmail || '';
+    const bd = e => e ? '#151515' : '#D2D2D2', vEm = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || '').trim());
+    const bars = n => [0, 1, 2].map(i => i < n ? '#151515' : '#E4E4E4');
+    const tab = s.portalTab || 'overview', settings = tab === 'settings';
+    const setTab = t => { this.setState({ portalTab: t, view: 'portal', accMenu: false, seenMsgs: t === 'support' ? 999 : s.seenMsgs }); window.scrollTo({ top: 0 }); };
+    const [ps, pt] = this.pwStrength(s.pwNew || ''), [rs, rt] = this.pwStrength(s.rsNew || '');
+    const wrongPw = p => !p || p === 'wrong';
+    const today = () => new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const dirty = ['name', 'company', 'phone', 'street', 'zip', 'country'].some(k => (prof[k] || '') !== (saved[k] || ''));
+    const fpS = s.fpState || 'form', rsS = s.rsState || 'form', em = s.emailMode || 'view', sess = s.sessions == null ? 3 : s.sessions;
+    return {
+      name: prof.name || 'Your account', initial: ((prof.name || '?').trim()[0] || '?').toUpperCase(), email,
+      avatarPadR: mob ? '6px' : '16px', toggleMenu: () => set({ accMenu: !s.accMenu }), menuDesktop: !!s.accMenu && !mob && sw.isPortal, sheetOpen: !!s.accMenu && mob && sw.isPortal,
+      menu: [['Dashboard', () => setTab('overview')], ['Settings', () => setTab('settings')], ['Log out', () => { this.setState({ view: 'login', portalIn: false, loginPass: '', accMenu: false }); window.scrollTo({ top: 0 }); }]].map(([label, go]) => ({ label, go, bg: 'transparent', fg: label === 'Log out' ? '#6B6B6B' : '#151515' })),
+      goDash: e => { e && e.preventDefault && e.preventDefault(); this.setState({ portalIn: true }); setTab('overview'); },
+      goLogin: e => { e && e.preventDefault && e.preventDefault(); set({ view: 'login' }); window.scrollTo({ top: 0 }); },
+      goForgot: e => { e && e.preventDefault && e.preventDefault(); set({ view: 'forgot', fpState: 'form', fpEmail: s.loginEmail || '', fpErr: false }); window.scrollTo({ top: 0 }); },
+      eyebrow: settings ? '// account · ' + email : '// order ' + sw.pOrderId + ' · ' + sw.pBiz,
+      h1a: settings ? 'Your' : 'Hi ' + ((prof.name || 'there').split(' ')[0]) + ',', h1b: settings ? 'settings.' : "here's your status.",
+      tabsAlign: mob ? 'stretch' : 'flex-start', setCols: mob ? 'minmax(0,1fr)' : 'repeat(2,minmax(0,1fr))', formCols: 'minmax(0,1fr)',
+      profFields: [['name', 'Full name', 'Jane Smith', 'name', true], ['company', 'Company', 'Smith Bakery Ltd', 'organization', false], ['phone', 'Phone', '+44 7700 900123', 'tel', false], ['street', 'Street', '12 High Street', 'address-line1', true], ['zip', 'ZIP & city', 'SW1A 1AA London', 'postal-code', true]].map(([k, label, ph, ac, req]) => {
+        const err = !!s.profErr && req && !String(prof[k] || '').trim(); return { label, ph, ac, value: prof[k] || '', err, bd: bd(err), span: 'auto', on: e => set({ accProf: { ...prof, [k]: e.target.value }, accSaved: saved, profErr: false }) }; }),
+      country: prof.country || 'United States', onCountry: e => set({ accProf: { ...prof, country: e.target.value }, accSaved: saved }),
+      countries: ['United States', 'United Kingdom', 'Canada', 'Australia', 'Ireland', 'Austria', 'Germany', 'Switzerland', 'France', 'Italy', 'Spain', 'Netherlands', 'Other'],
+      profDirty: dirty && !s.profBusy, profBusy: !!s.profBusy, profOp: s.profBusy ? .7 : 1, profLabel: s.profBusy ? 'Saving…' : 'Save changes',
+      saveProfile: () => { if (s.profBusy) return; if (['name', 'street', 'zip'].some(k => !String(prof[k] || '').trim())) return set({ profErr: true }); set({ profBusy: true }); later(() => { this.setState({ profBusy: false, accSaved: { ...this.state.accProf || prof } }); this.accToast('Profile saved'); }); },
+      emailView: em === 'view', emailEdit: em === 'edit', emailPending: em === 'pending',
+      startEmail: () => set({ emailMode: 'edit', newEmail: '', emailPw: '', emailErr: null }), cancelEmailEdit: () => set({ emailMode: 'view', emailErr: null }),
+      newEmail: s.newEmail || '', onNewEmail: e => set({ newEmail: e.target.value, emailErr: null }), emailPw: s.emailPw || '', onEmailPw: e => set({ emailPw: e.target.value, emailErr: null }),
+      emailErrExists: s.emailErr === 'exists', emailErrInvalid: s.emailErr === 'invalid', emailErrPw: s.emailErr === 'pw',
+      newEmailBd: bd(s.emailErr === 'exists' || s.emailErr === 'invalid'), emailPwBd: bd(s.emailErr === 'pw'),
+      emailBusy: !!s.emailBusy, emailOp: s.emailBusy ? .7 : 1, emailLabel: s.emailBusy ? 'Checking…' : 'Send confirmation link',
+      saveEmail: () => { if (s.emailBusy) return; const n = (s.newEmail || '').trim().toLowerCase(); if (!vEm(n)) return set({ emailErr: 'invalid' }); set({ emailBusy: true });
+        later(() => { if (wrongPw(s.emailPw)) return set({ emailBusy: false, emailErr: 'pw' }); if (/^taken@/.test(n) || n === 'demo@byereviews.com' || (this.accounts()[n] && n !== email)) return set({ emailBusy: false, emailErr: 'exists' }); set({ emailBusy: false, emailMode: 'pending', pendingEmail: n, emailResent: false }); }); },
+      pendingEmail: s.pendingEmail || '', resendLabel: s.emailResent ? '✓ Link sent again' : 'Resend link', resendEmail: () => { set({ emailResent: true }); this.accToast('Confirmation link resent'); },
+      cancelPending: () => { set({ emailMode: 'view', pendingEmail: '' }); this.accToast('Email change cancelled'); },
+      curType: s.showCur ? 'text' : 'password', newType: s.showNew ? 'text' : 'password', curShown: !!s.showCur, newShown: !!s.showNew, toggleCur: () => set({ showCur: !s.showCur }), toggleNew: () => set({ showNew: !s.showNew }),
+      pwCur: s.pwCur || '', pwNew: s.pwNew || '', pwRep: s.pwRep || '', onPwCur: e => set({ pwCur: e.target.value, pwErr: null }), onPwNew: e => set({ pwNew: e.target.value, pwErr: null }), onPwRep: e => set({ pwRep: e.target.value, pwErr: null }),
+      pwBars: bars(ps), pwStrength: s.pwErr === 'short' ? 'Use at least 10 characters' : pt,
+      pwErrCur: s.pwErr === 'cur', pwErrMatch: s.pwErr === 'match', pwCurBd: bd(s.pwErr === 'cur'), pwNewBd: bd(s.pwErr === 'short'), pwRepBd: bd(s.pwErr === 'match'),
+      pwBusy: !!s.pwBusy, pwOp: s.pwBusy ? .7 : 1, pwLabel: s.pwBusy ? 'Changing…' : 'Change password',
+      savePw: () => { if (s.pwBusy) return; if (!s.pwCur) return set({ pwErr: 'cur' }); if ((s.pwNew || '').length < 10) return set({ pwErr: 'short' }); if (s.pwNew !== s.pwRep) return set({ pwErr: 'match' }); set({ pwBusy: true });
+        later(() => { if (wrongPw(s.pwCur)) return set({ pwBusy: false, pwErr: 'cur' }); set({ pwBusy: false, pwCur: '', pwNew: '', pwRep: '', sessions: 1 }); this.accToast('Password changed – other devices were logged out'); }); },
+      sessText: sess > 1 ? 'Logged in on ' + sess + ' devices, including this one.' : 'Only this device is logged in.', sessBusy: !!s.sessBusy,
+      logoutAll: () => { if (s.sessBusy) return; set({ sessBusy: true }); later(() => { set({ sessBusy: false, sessions: 1 }); this.accToast('Logged out on all other devices'); }); },
+      delNone: !s.delDate, delDone: !!s.delDate, delDate: s.delDate || '', openDel: () => set({ delOpen: true, delPw: '', delErr: false }), closeDel: () => set({ delOpen: false }),
+      delOpen: !!s.delOpen, delPw: s.delPw || '', onDelPw: e => set({ delPw: e.target.value, delErr: false }), delErr: !!s.delErr, delBd: bd(s.delErr), delBusy: !!s.delBusy, delOp: s.delBusy ? .7 : 1,
+      confirmDel: () => { if (s.delBusy) return; if (!s.delPw) return set({ delErr: true }); set({ delBusy: true }); later(() => { if (wrongPw(s.delPw)) return set({ delBusy: false, delErr: true }); set({ delBusy: false, delOpen: false, delDate: today() }); this.accToast('Deletion requested – confirmation sent by email'); }); },
+      modalAlign: mob ? 'flex-end' : 'center', modalPad: mob ? '0' : '20px', modalR: mob ? '28px 28px 0 0' : '28px',
+      isForgot: s.view === 'forgot', fpForm: fpS !== 'sent', fpSent: fpS === 'sent', fpEmail: s.fpEmail || '', onFpEmail: e => set({ fpEmail: e.target.value, fpErr: false }),
+      fpErr: !!s.fpErr, fpBd: bd(s.fpErr), fpBusy: fpS === 'loading', fpOp: fpS === 'loading' ? .7 : 1, fpLabel: fpS === 'loading' ? 'Sending…' : 'Send reset link',
+      sendReset: () => { if (fpS === 'loading') return; if (!vEm(s.fpEmail)) return set({ fpErr: true }); set({ fpState: 'loading' }); later(() => set({ fpState: 'sent' })); },
+      backToFp: () => set({ fpState: 'form' }), openResetLink: () => { set({ view: 'reset', rsState: 'form', rsNew: '', rsRep: '', rsErr: null }); window.scrollTo({ top: 0 }); },
+      isReset: s.view === 'reset', rsForm: rsS === 'form' || rsS === 'loading', rsExpired: rsS === 'expired', rsDone: rsS === 'done',
+      rsType: s.rsShow ? 'text' : 'password', rsShown: !!s.rsShow, toggleRs: () => set({ rsShow: !s.rsShow }),
+      rsNew: s.rsNew || '', rsRep: s.rsRep || '', onRsNew: e => set({ rsNew: e.target.value, rsErr: null }), onRsRep: e => set({ rsRep: e.target.value, rsErr: null }),
+      rsBars: bars(rs), rsStrength: s.rsErr === 'short' ? 'Use at least 10 characters' : rt, rsNewBd: bd(s.rsErr === 'short'), rsRepBd: bd(s.rsErr === 'match'), rsErrMatch: s.rsErr === 'match',
+      rsBusy: rsS === 'loading', rsOp: rsS === 'loading' ? .7 : 1, rsLabel: rsS === 'loading' ? 'Saving…' : 'Save new password',
+      saveReset: () => { if (rsS === 'loading') return; if ((s.rsNew || '').length < 10) return set({ rsErr: 'short' }); if (s.rsNew !== s.rsRep) return set({ rsErr: 'match' }); set({ rsState: 'loading' }); later(() => set({ rsState: 'done', rsNew: '', rsRep: '', sessions: 1, portalIn: true })); },
+      expireLink: () => set({ rsState: 'expired', rsResend: 'idle' }), one: 1,
+      rsResendBusy: s.rsResend === 'loading', rsResendLabel: s.rsResend === 'loading' ? 'Sending…' : s.rsResend === 'sent' ? '✓ New link sent – check your inbox' : 'Send a new link',
+      resendReset: () => { if (s.rsResend && s.rsResend !== 'idle') return; set({ rsResend: 'loading' }); later(() => set({ rsResend: 'sent' })); },
+      hasToast: !!s.accToastMsg, toast: s.accToastMsg || ''
+    };
+  }
   _designDoLogin() {
     const s = this.state, em = (s.loginEmail || '').trim().toLowerCase(), pw = s.loginPass || '';
     if (em === 'demo@byereviews.com' && pw === 'demo') return this.setState({ view: 'portal', portalIn: true, portalUser: 'demo' });
@@ -1057,6 +1264,7 @@ class Component extends DCLogic {
     sw.heroOverlay = mobV ? 'linear-gradient(180deg, rgba(14,14,14,.92) 0%, rgba(14,14,14,.7) 40%, rgba(14,14,14,.2) 70%, rgba(14,14,14,.85) 100%)' : 'linear-gradient(90deg, rgba(14,14,14,.95) 0%, rgba(14,14,14,.75) 38%, rgba(14,14,14,0) 62%)';
     sw.vidRef = this.vidRef;
     Object.assign(sw, this.portalVals());
+    sw.acc = this.accountVals(sw, mobV); sw.mktNav = !sw.isPortal;
     const menuOpen = !!this.state.menuOpen && mobV;
     sw.menuOpen = menuOpen; sw.toggleMenu = () => this.setState({ menuOpen: !this.state.menuOpen });
     sw.burgerPath = 'M3 6h14M3 14h14'; sw.closeMenuHome = e => { e && e.preventDefault && e.preventDefault(); this.setState({ menuOpen: false, view: 'home' }); window.scrollTo({ top: 0 }); };
@@ -1255,7 +1463,7 @@ class Component extends DCLogic {
   }
   state = Object.assign({}, this.state, { places: [], placeReviews: [], reviewsStatus: 'idle', reviewsComplete: true, emailKnown: false,
     customer: null, orders: [], orderIdx: 0, submitting: false, submitError: '', loginBusy: false, resetSent: false,
-    account: null, af: {}, accMsg: '', resetToken: '', resetState: '', resetEmail: '', resetPw: '', resetPw2: '', resetErr: '' });
+    account: null, rsToken: '', rsEmail: '' });
 
   // ---------- funnel tracking (first-party, no cookies, no IP stored; see app/analytics.php) ----------
   track(ev, extra) {
@@ -1276,7 +1484,7 @@ class Component extends DCLogic {
   }
 
   // ---------- routing: / · /order/ · /login/ · /dashboard/ ----------
-  paths = { home: '/', order: '/order/', success: '/order/', login: '/login/', portal: '/dashboard/' };
+  paths = { home: '/', order: '/order/', success: '/order/', login: '/login/', forgot: '/login/', reset: '/login/', portal: '/dashboard/' };
   viewFromPath() {
     const p = location.pathname;
     if (p.startsWith('/order')) return 'order';
@@ -1302,14 +1510,15 @@ class Component extends DCLogic {
     window.addEventListener('popstate', this.onPop);
     const qs = new URLSearchParams(location.search);
     const rt = qs.get('reset');
-    if (rt) { this.setState({ resetToken: rt, resetState: 'checking', view: 'login' }); this.api('reset-check', { query: { t: rt } }).then(r => this.setState({ resetState: r.ok ? 'valid' : 'expired', resetEmail: r.email || '' })); }
+    if (rt) { this.setState({ rsToken: rt, rsState: 'form', view: 'reset' }); this.api('reset-check', { query: { t: rt } }).then(r => this.setState(r.ok ? { rsEmail: r.email || '' } : { rsState: 'expired', rsResend: 'idle' })); }
+    if (qs.has('forgot')) this.setState({ view: 'forgot', fpState: 'form' });
     const em = qs.get('email');
     if (em) this.setState({ accNotice: em === 'changed' ? '✓ Your new email address is confirmed.' : 'That confirmation link is invalid or has expired.' });
     this.api('me').then(r => {
       if (!r.ok) return;
       this.setAccount(r.account);
       this.setState({ customer: r.customer, orders: r.orders || [], portalIn: true, loginEmail: r.customer.email,
-        view: (want === 'portal' || want === 'login') ? 'portal' : this.state.view });
+        view: (want === 'portal' || want === 'login') && !this.state.rsToken && this.state.view !== 'forgot' ? 'portal' : this.state.view });
     });
   }
   scrollToId(id) { const el = document.getElementById(id); if (el) el.scrollIntoView(); }
@@ -1321,8 +1530,8 @@ class Component extends DCLogic {
     if (v === this._lastView) return;
     this._lastView = v;
     const path = this.paths[v] || '/';
-    if (location.pathname !== path || location.hash) history.pushState(null, '', path);
-    const titles = { order: 'Remove a Google review', login: 'Log in', portal: 'Your dashboard', success: 'Order received' };
+    if ((location.pathname !== path || location.hash) && !(v === 'reset' && location.pathname === path)) history.pushState(null, '', path);
+    const titles = { order: 'Remove a Google review', login: 'Log in', forgot: 'Forgot your password?', reset: 'Set a new password', portal: 'Your dashboard', success: 'Order received' };
     document.title = titles[v] ? titles[v] + ' – byereviews' : this.homeTitle || document.title;
   }
   homeTitle = typeof document !== 'undefined' ? document.title : '';
@@ -1441,60 +1650,83 @@ class Component extends DCLogic {
     if (!/\S+@\S+\.\S+/.test(email)) return this.setState({ loginError: true, loginErrorText: 'Enter your email above first.' });
     this.api('reset', { body: { email } }).then(() => this.setState({ resetSent: true, loginError: false }));
   }
-  // ---------- account settings ----------
-  setAccount(a) {
-    if (!a) return;
-    this.setState({ account: a, af: { name: a.name || '', company: a.company || '', phone: a.phone || '', street: a.street || '', city: a.city || '', country: a.country || this.state.country,
-      newEmail: '', emailPw: '', emailOpen: false, pwCur: '', pwNew: '', pwRep: '', delPw: '' } });
-  }
-  accToast(m) { clearTimeout(this.accT); this.setState({ accMsg: m }); this.accT = setTimeout(() => this.setState({ accMsg: '' }), 3200); }
+  // ---------- account area (design: accountVals) wired to app/account.php ----------
+  setAccount(a) { if (a) this.setState({ account: a, accProf: null, accSaved: null, emailMode: 'view' }); }
   accErr(r) {
-    return { wrong_password: 'Wrong password.', password_too_short: 'The new password needs at least 10 characters.', email_taken: 'This email already has an account.',
-      invalid_email: 'Please enter a valid email address.', same_email: "That's already your email.", too_many_requests: 'Too many attempts – please wait a few minutes.',
-      name_missing: 'Please enter your name.', not_logged_in: 'Your session has expired – please log in again.' }[r.error] || 'Something went wrong – please try again.';
+    return { wrong_password: 'Wrong password.', password_too_short: 'Use at least 10 characters.', email_taken: 'This email already has an account.',
+      invalid_email: 'Enter a valid email address.', same_email: "That's already your email.", too_many_requests: 'Too many attempts – please wait a few minutes.',
+      name_missing: 'Required', not_logged_in: 'Your session has expired – please log in again.' }[r.error] || 'Something went wrong – please try again.';
   }
-  accVals() {
-    const s = this.state, a = s.account || {}, f = s.af || {};
-    const set = k => e => this.setState({ af: { ...this.state.af, [k]: e.target.value } });
-    const call = (action, body, okMsg, after) => this.api(action, { body }).then(r => {
-      if (!r.ok) { this.accToast(this.accErr(r)); if (r.error === 'not_logged_in') this.setState({ portalIn: false, view: 'login' }); return; }
-      if (r.account) this.setAccount(r.account);
-      if (after) after(r);
-      if (okMsg) this.accToast(okMsg);
-    });
-    return {
-      email: a.email || '', pending: a.pendingEmail || '', hasPending: !!a.pendingEmail,
-      showEmailForm: !a.pendingEmail && !!f.emailOpen, showEmailBtn: !a.pendingEmail && !f.emailOpen,
-      name: f.name, company: f.company, phone: f.phone, street: f.street, city: f.city, country: f.country,
-      onName: set('name'), onCompany: set('company'), onPhone: set('phone'), onStreet: set('street'), onCity: set('city'), onCountry: set('country'),
-      newEmail: f.newEmail, emailPw: f.emailPw, onNewEmail: set('newEmail'), onEmailPw: set('emailPw'),
-      pwCur: f.pwCur, pwNew: f.pwNew, pwRep: f.pwRep, onPwCur: set('pwCur'), onPwNew: set('pwNew'), onPwRep: set('pwRep'),
-      delPw: f.delPw, onDelPw: set('delPw'),
-      deletionRequested: !!a.deletionRequestedAt, showDelete: !a.deletionRequestedAt,
-      deletionDate: a.deletionRequestedAt ? new Date(a.deletionRequestedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
-      hasMsg: !!s.accMsg, msg: s.accMsg,
-      saveProfile: () => call('account-profile', { name: f.name, company: f.company, phone: f.phone, street: f.street, city: f.city, country: f.country }, 'Profile saved',
-        r => this.setState(st => ({ customer: { ...st.customer, name: r.account.name } }))),
-      openEmail: () => this.setState({ af: { ...f, emailOpen: true } }),
-      saveEmail: () => call('account-email', { email: (f.newEmail || '').trim(), password: f.emailPw || '' }, 'Confirmation link sent to ' + (f.newEmail || '').trim()),
-      resendEmail: () => call('account-email', { email: a.pendingEmail, password: f.emailPw || '' }, 'Link sent again'),
-      cancelEmail: () => call('account-email-cancel', {}, 'Email change cancelled'),
-      savePw: () => {
-        if ((f.pwNew || '') !== (f.pwRep || '')) return this.accToast("The new passwords don't match.");
-        call('account-password', { current: f.pwCur || '', password: f.pwNew || '' }, 'Password changed – other devices were logged out', () => this.setState({ af: { ...this.state.af, pwCur: '', pwNew: '', pwRep: '' } }));
-      },
-      logoutAll: () => call('account-logout-all', {}, 'Logged out on all other devices'),
-      requestDelete: () => { if (!confirm('Request deletion of your byereviews account?')) return; call('account-delete', { password: f.delPw || '' }, 'Deletion request received'); }
-    };
-  }
-  doResetConfirm() {
-    const s = this.state;
-    if (s.resetPw !== s.resetPw2) return this.setState({ resetErr: "The passwords don't match." });
-    this.api('reset-confirm', { body: { token: s.resetToken, password: s.resetPw } }).then(r => {
-      if (!r.ok) return r.error === 'link_expired' ? this.setState({ resetState: 'expired' }) : this.setState({ resetErr: this.accErr(r) });
-      history.replaceState(null, '', '/login/');
-      this.setAccount(r.account);
-      this.setState({ resetToken: '', resetState: '', resetPw: '', resetPw2: '', resetErr: '', customer: r.customer, orders: r.orders || [], orderIdx: 0, portalIn: true, portalTab: 'overview', view: 'portal', accNotice: '✓ Password updated.' });
+  accountVals(sw, mob) {
+    const d = this._designAccountVals(sw, mob), s = this.state, a = s.account || {}, set = p => this.setState(p);
+    const fromAcc = { name: a.name || '', company: a.company || '', phone: a.phone || '', street: a.street || '', zip: a.city || '', country: a.country || 'United States' };
+    const prof = s.accProf || fromAcc, saved = s.accSaved || fromAcc;
+    const dirty = ['name', 'company', 'phone', 'street', 'zip', 'country'].some(k => (prof[k] || '') !== (saved[k] || ''));
+    const bd = e => e ? '#151515' : '#D2D2D2', vEm = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || '').trim());
+    const expired = r => { if (r.error === 'not_logged_in') { this.setState({ portalIn: false, customer: null, view: 'login' }); this.accToast(this.accErr(r)); return true; } return false; };
+    const tab = s.portalTab || 'overview', settings = tab === 'settings';
+    const setTab = t => { this.setState({ portalTab: t, view: 'portal', accMenu: false, seenTeamMsgs: t === 'support' ? 999 : s.seenTeamMsgs }); window.scrollTo({ top: 0 }); };
+    const em = s.emailMode === 'edit' ? 'edit' : a.pendingEmail ? 'pending' : 'view';
+    const first = (a.name || (s.customer && s.customer.name) || 'there').split(' ')[0];
+    const today = iso => new Date(iso || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const logout = () => { this.api('logout', { body: {} }); this.setState({ view: 'login', portalIn: false, customer: null, orders: [], account: null, loginPass: '', accMenu: false }); window.scrollTo({ top: 0 }); };
+    const profFields = d.profFields.map((f, i) => { const k = ['name', 'company', 'phone', 'street', 'zip'][i], req = ['name', 'street', 'zip'].includes(k), err = !!s.profErr && req && !String(prof[k] || '').trim();
+      return { ...f, value: prof[k] || '', err, bd: bd(err), on: e => set({ accProf: { ...prof, [k]: e.target.value }, accSaved: saved, profErr: false }) }; });
+    return Object.assign(d, {
+      name: a.name || 'Your account', initial: ((a.name || '?').trim()[0] || '?').toUpperCase(), email: a.email || '',
+      menu: d.menu.map(m => m.label === 'Log out' ? { ...m, go: logout } : m.label === 'Settings' ? { ...m, go: () => setTab('settings') } : { ...m, go: () => setTab('overview') }),
+      goDash: e => { e && e.preventDefault && e.preventDefault(); if (!this.state.portalIn) return this.setState({ view: 'login' }); setTab('overview'); },
+      eyebrow: settings ? '// account · ' + (a.email || '') : '// order ' + (sw.pOrderId || '') + ' · ' + (sw.pBiz || ''),
+      h1a: settings ? 'Your' : 'Hi ' + first + ',', h1b: settings ? 'settings.' : "here's your status.",
+      // profile
+      profFields, country: prof.country || 'United States', onCountry: e => set({ accProf: { ...prof, country: e.target.value }, accSaved: saved }),
+      countries: d.countries.includes(prof.country) || !prof.country ? d.countries : [prof.country, ...d.countries],
+      profDirty: dirty && !s.profBusy,
+      saveProfile: () => { if (s.profBusy) return; if (['name', 'street', 'zip'].some(k => !String(prof[k] || '').trim())) return set({ profErr: true }); set({ profBusy: true });
+        this.api('account-profile', { body: { name: prof.name, company: prof.company, phone: prof.phone, street: prof.street, city: prof.zip, country: prof.country } }).then(r => {
+          this.setState({ profBusy: false }); if (!r.ok) return expired(r) || this.accToast(this.accErr(r));
+          this.setAccount(r.account); this.setState(st => ({ customer: st.customer ? { ...st.customer, name: r.account.name } : st.customer })); this.accToast('Profile saved'); }); },
+      // email
+      emailView: em === 'view', emailEdit: em === 'edit', emailPending: em === 'pending', pendingEmail: a.pendingEmail || '',
+      startEmail: () => set({ emailMode: 'edit', newEmail: '', emailPw: '', emailErr: null }), cancelEmailEdit: () => set({ emailMode: 'view', emailErr: null }),
+      saveEmail: () => { if (s.emailBusy) return; const n = (s.newEmail || '').trim().toLowerCase(); if (!vEm(n)) return set({ emailErr: 'invalid' }); set({ emailBusy: true });
+        this.api('account-email', { body: { email: n, password: s.emailPw || '' } }).then(r => {
+          if (!r.ok) { if (expired(r)) return; return set({ emailBusy: false, emailErr: r.error === 'wrong_password' ? 'pw' : r.error === 'email_taken' ? 'exists' : 'invalid' }); }
+          this.setState({ emailBusy: false, emailMode: 'view', account: r.account, emailResent: false, emailPw: '' }); this.accToast('Confirmation link sent to ' + n); }); },
+      resendEmail: () => { if (s.emailResent) return;
+        if (!s.emailPw) return this.setState({ emailMode: 'edit', newEmail: a.pendingEmail, emailErr: null }, () => this.accToast('Enter your password to send the link again'));
+        this.api('account-email', { body: { email: a.pendingEmail, password: s.emailPw } }).then(r => r.ok ? (set({ emailResent: true }), this.accToast('Confirmation link resent')) : (expired(r) || this.accToast(this.accErr(r)))); },
+      cancelPending: () => this.api('account-email-cancel', { body: {} }).then(r => { if (!r.ok) return expired(r) || this.accToast(this.accErr(r)); this.setAccount(r.account); this.accToast('Email change cancelled'); }),
+      // password
+      savePw: () => { if (s.pwBusy) return; if (!s.pwCur) return set({ pwErr: 'cur' }); if ((s.pwNew || '').length < 10) return set({ pwErr: 'short' }); if (s.pwNew !== s.pwRep) return set({ pwErr: 'match' }); set({ pwBusy: true });
+        this.api('account-password', { body: { current: s.pwCur, password: s.pwNew } }).then(r => {
+          if (!r.ok) { if (expired(r)) return; return set({ pwBusy: false, pwErr: r.error === 'wrong_password' ? 'cur' : r.error === 'password_too_short' ? 'short' : null }); }
+          set({ pwBusy: false, pwCur: '', pwNew: '', pwRep: '' }); this.accToast('Password changed – other devices were logged out'); }); },
+      // sessions
+      sessText: 'Lost a device or used a shared computer? Log out everywhere except here.',
+      logoutAll: () => { if (s.sessBusy) return; set({ sessBusy: true });
+        this.api('account-logout-all', { body: {} }).then(r => { set({ sessBusy: false }); if (!r.ok) return expired(r) || this.accToast(this.accErr(r)); this.accToast('Logged out on all other devices'); }); },
+      // deletion
+      delNone: !a.deletionRequestedAt, delDone: !!a.deletionRequestedAt, delDate: a.deletionRequestedAt ? today(a.deletionRequestedAt) : '',
+      confirmDel: () => { if (s.delBusy) return; if (!s.delPw) return set({ delErr: true }); set({ delBusy: true });
+        this.api('account-delete', { body: { password: s.delPw } }).then(r => {
+          if (!r.ok) { if (expired(r)) return; return set({ delBusy: false, delErr: true }); }
+          this.setState({ delBusy: false, delOpen: false, delPw: '', account: r.account }); this.accToast('Deletion requested – confirmation sent by email'); }); },
+      // forgot password → reset link by email
+      goForgot: e => { e && e.preventDefault && e.preventDefault(); set({ view: 'forgot', fpState: 'form', fpEmail: s.loginEmail || '', fpErr: false }); window.scrollTo({ top: 0 }); },
+      sendReset: () => { const fpS = s.fpState || 'form'; if (fpS === 'loading') return; if (!vEm(s.fpEmail)) return set({ fpErr: true }); set({ fpState: 'loading' });
+        this.api('reset', { body: { email: (s.fpEmail || '').trim() } }).then(r => set({ fpState: r.ok || r.error !== 'too_many_requests' ? 'sent' : 'form', fpErr: false })); },
+      // set a new password (from /login/?reset=…)
+      saveReset: () => { const rsS = s.rsState || 'form'; if (rsS === 'loading') return; if ((s.rsNew || '').length < 10) return set({ rsErr: 'short' }); if (s.rsNew !== s.rsRep) return set({ rsErr: 'match' }); set({ rsState: 'loading' });
+        this.api('reset-confirm', { body: { token: s.rsToken, password: s.rsNew } }).then(r => {
+          if (!r.ok) return set({ rsState: r.error === 'link_expired' ? 'expired' : 'form', rsErr: r.error === 'password_too_short' ? 'short' : null, rsResend: 'idle' });
+          history.replaceState(null, '', '/login/');
+          this.setAccount(r.account);
+          this.setState({ rsState: 'done', rsNew: '', rsRep: '', rsToken: '', customer: r.customer, orders: r.orders || [], orderIdx: 0, portalIn: true, portalTab: 'overview' }); }); },
+      resendReset: () => { if (s.rsResend && s.rsResend !== 'idle') return;
+        const email = s.rsEmail || s.loginEmail || '';
+        if (!vEm(email)) return set({ view: 'forgot', fpState: 'form', fpEmail: '' });
+        set({ rsResend: 'loading' }); this.api('reset', { body: { email } }).then(() => set({ rsResend: 'sent' })); }
     });
   }
 
@@ -1533,6 +1765,12 @@ class Component extends DCLogic {
       pSteps: [['Order received', fd(tl.received || o.createdAt)], ['In review', phase >= 2 ? fd(tl.review || tl.received) : '—'], ['Removed', phase >= 3 ? fd(tl.removed) : '—'], ['Paid', phase >= 4 ? fd(tl.paid) : '—']]
         .map(([label, date], i) => ({ label, date, bar: i < phase ? '#151515' : '#E4E4E4', fg: i < phase ? '#151515' : '#8A8A8A' })),
       pReviews: items,
+      ...(() => { const mob = (s.vw || 1200) < 760, t = s.rvTab || 'all', isA = i => i.st === 'progress' || i.st === 'submitted';
+        const f = { all: () => true, active: isA, done: i => !isA(i) }, list = items.filter(f[t]);
+        return { rvTabs: [['all', 'All'], ['active', 'Active'], ['done', 'Done']].map(([k, label]) => ({ label, count: items.filter(f[k]).length, bg: t === k ? '#151515' : 'transparent', fg: t === k ? '#FFFFFF' : '#555', go: () => this.setState({ rvTab: k }) })),
+          rvRows: list.map(i => ({ ...i, mobStars: mob ? ' · ' + i.stars + ' ★' : '', priceShort: i.st === 'cancelled' || i.st === 'stopped' ? '—' : fmt(i.price) })),
+          rvEmpty: list.length === 0, rvEmptyText: t === 'done' ? 'No finished reviews yet.' : 'Nothing in progress.',
+          rvCols: mob ? 'minmax(0,1fr) auto' : 'minmax(150px,1fr) 64px minmax(0,2.4fr) 96px 132px', rvGap: mob ? '8px 12px' : '16px' }; })(),
       pActive: items.filter(i => i.st === 'progress' || i.st === 'submitted'), pDone: items.filter(i => i.st === 'removed' || i.st === 'cancelled' || i.st === 'stopped'),
       pActiveCount: items.filter(i => i.st === 'progress' || i.st === 'submitted').length, pDoneCount: items.filter(i => i.st === 'removed' || i.st === 'cancelled' || i.st === 'stopped').length,
       pActiveEmpty: !items.some(i => i.st === 'progress' || i.st === 'submitted'), pDoneEmpty: !items.some(i => i.st === 'removed' || i.st === 'cancelled' || i.st === 'stopped'),
@@ -1541,7 +1779,7 @@ class Component extends DCLogic {
       pHasDisc: inv.rate > 0, pDiscPct: Math.round(inv.rate * 100) + '%', pDiscAmt: '– ' + fmt(inv.discount), pInvTotal: fmt(inv.total),
       pMsgs: msgs, sendSupport: send, onSupportKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } },
       pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pShowChatFab: tab === 'overview', pUnread: unread, openSupport: () => goTab('support'),
-      pTabSettings: tab === 'settings', acc: this.accVals(),
+      pTabSettings: tab === 'settings', pNotSettings: tab !== 'settings',
       pCancelled: !!o.cancelled, pCancelledAt: o.cancelledAt ? new Date(o.cancelledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
       pCanCancel: !o.cancelled && items.some(i => i.st === 'submitted' || i.st === 'progress'),
       cancelOpen: !!s.cancelOpen, cancelClosed: !s.cancelOpen, openCancel: () => this.setState({ cancelOpen: true }), closeCancel: () => this.setState({ cancelOpen: false, cancelReason: '' }),
@@ -1568,12 +1806,7 @@ class Component extends DCLogic {
       error: s.submitError || v.error, hasError: !!s.submitError || v.hasError, navInfo: s.submitError || v.navInfo,
       emailKnown: !!s.emailKnown,
       onEmail: e => { const email = e.target.value; this.setState({ email }); this.checkEmail(email.trim()); },
-      siteNavDesk: v.desktop && s.view !== 'portal', siteNavMob: v.mobile && s.view !== 'portal',
       hasAccNotice: !!s.accNotice && s.view === 'portal', accNotice: s.accNotice || '',
-      loginMode: !s.resetToken, resetMode: !!s.resetToken, resetValid: s.resetState === 'valid', resetExpired: s.resetState === 'expired',
-      resetEmail: s.resetEmail, resetPw: s.resetPw, resetPw2: s.resetPw2, onResetPw: e => this.setState({ resetPw: e.target.value, resetErr: '' }), onResetPw2: e => this.setState({ resetPw2: e.target.value, resetErr: '' }),
-      resetError: !!s.resetErr, resetErrorText: s.resetErr, doResetConfirm: () => this.doResetConfirm(),
-      leaveReset: () => { history.replaceState(null, '', '/login/'); this.setState({ resetToken: '', resetState: '' }); },
       loginErrorText: s.loginErrorText || "Email or password doesn't match.",
       loginBtn: s.loginBusy ? 'Logging in…' : 'Log in',
       doReset: () => this.doReset(), resetLabel: s.resetSent ? '✓ If an account exists for this address, a reset link is on its way (valid 1 h)' : 'Forgot your password?',
@@ -1591,8 +1824,12 @@ class Component extends DCLogic {
       bizNfTitle: s.searchError ? 'Search is unavailable right now' : 'No profile found'
     });
     const real = this.realPortal();
-    if (real) Object.assign(v, real);
-    else Object.assign(v, { pTabSettings: false, acc: {}, pCanCancel: false, pCancelled: false, hasOrderSwitch: false, orderChips: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
+    if (real) {
+      Object.assign(v, real);
+      // the design builds the eyebrow from its demo order; use the real one
+      if (v.acc && (s.portalTab || 'overview') !== 'settings') v.acc.eyebrow = '// order ' + real.pOrderId + ' · ' + real.pBiz;
+    }
+    else Object.assign(v, { pCanCancel: false, pCancelled: false, hasOrderSwitch: false, orderChips: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
     return v;
   }
 

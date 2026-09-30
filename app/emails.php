@@ -204,9 +204,10 @@ function mail_order_deleted(array $order, string $reason = ''): void {
 }
 
 /** Short branded notice: headline, paragraphs, optional button, small print. */
-function mail_notice(string $to, string $subject, string $title, array $paras, ?array $button = null, string $foot = ''): void {
+function mail_notice(string $to, string $subject, string $title, array $paras, ?array $button = null, string $foot = '', array $box = []): void {
     $inner = m_h1('', $title);
     foreach ($paras as $p) $inner .= m_p($p);
+    if ($box) $inner .= m_box($box);
     if ($button) $inner .= email_button($button[1], $button[0]);
     if ($foot !== '') $inner .= m_p($foot, 'margin-top:16px;font-size:13px;color:#8A8A8A');
     send_branded($to, $subject, $inner, '// account', strip_tags($paras[0] ?? ''));
@@ -224,22 +225,36 @@ function mail_confirm_email(array $cust, string $newEmail, string $link): void {
         ['Confirm email address', $link], "Didn't ask for this? Ignore this email – nothing changes.");
 }
 
+function mail_when(): string { return eh(date('j M Y, H:i') . ' UTC'); }
+
+/** "Chrome on macOS" from the User-Agent of the request that triggered the mail. */
+function device_label(): string {
+    $ua = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
+    $b = preg_match('/Edg\//', $ua) ? 'Edge' : (preg_match('/Chrome\//', $ua) ? 'Chrome' : (preg_match('/Firefox\//', $ua) ? 'Firefox' : (preg_match('/Safari\//', $ua) ? 'Safari' : 'Browser')));
+    $o = preg_match('/iPhone|iPad/', $ua) ? 'iOS' : (preg_match('/Android/', $ua) ? 'Android' : (preg_match('/Mac OS X/', $ua) ? 'macOS' : (preg_match('/Windows/', $ua) ? 'Windows' : (preg_match('/Linux/', $ua) ? 'Linux' : 'unknown device'))));
+    return "$b on $o";
+}
+
 function mail_email_changed(array $cust, string $oldEmail): void {
     mail_notice($oldEmail, 'Your byereviews email address was changed', 'Your email address was changed.',
-        ['Hi ' . eh(first_name($cust['name'])) . ', the login email of your byereviews account was changed to <strong style="color:#151515">' . eh($cust['email']) . '</strong>. All further emails go to the new address.'],
-        null, 'Wasn\'t you? Contact us right away at <a href="mailto:' . TEAM_EMAIL . '" style="color:#151515">' . TEAM_EMAIL . '</a>.');
+        ['Hi ' . eh(first_name($cust['name'])) . ', the login email of your byereviews account was changed. All further emails go to the new address.'],
+        null, 'Wasn\'t you? Contact us right away at <a href="mailto:' . TEAM_EMAIL . '" style="color:#151515">' . TEAM_EMAIL . '</a>.',
+        [['Old', eh($oldEmail)], ['New', eh($cust['email'])], ['When', mail_when()]]);
 }
 
 function mail_password_changed(array $cust): void {
     mail_notice($cust['email'], 'Your byereviews password was changed', 'Your password was changed.',
         ['Hi ' . eh(first_name($cust['name'])) . ', the password of your byereviews account was just changed. Other devices were logged out.'],
-        ['Go to dashboard', SITE_URL . '/dashboard/'], 'Wasn\'t you? Reset your password on the login page and contact us at <a href="mailto:' . TEAM_EMAIL . '" style="color:#151515">' . TEAM_EMAIL . '</a>.');
+        ['Reset password', SITE_URL . '/login/?forgot=1'], 'Wasn\'t you? Reset your password now and contact us at <a href="mailto:' . TEAM_EMAIL . '" style="color:#151515">' . TEAM_EMAIL . '</a>.',
+        [['When', mail_when()], ['Device', eh(device_label())]]);
 }
 
 function mail_deletion_requested(array $cust): void {
     mail_notice($cust['email'], 'Deletion request received', 'Deletion request received.',
         ['Hi ' . eh(first_name($cust['name'])) . ', we\'ve received your request to delete your byereviews account.',
-         'Open orders and invoices must be kept for legal reasons; your personal data is deleted as soon as that\'s no longer required. We\'ll confirm by email once it\'s done.']);
+         'Open orders and invoices must be kept for legal reasons; your personal data is deleted as soon as that\'s no longer required. We\'ll confirm by email once it\'s done.'],
+        null, 'Changed your mind? Just reply to this email.',
+        [['Requested on', eh(date('j M Y', strtotime($cust['deletionRequestedAt'] ?? 'now')))], ['Account', eh($cust['email'])]]);
     mail_team('Account deletion requested – ' . $cust['email'], 'Deletion request.',
         m_box([['Customer', eh($cust['name'])], ['Email', eh($cust['email'])], ['Orders', eh(implode(', ', $cust['orders'] ?? []) ?: '—')]]), $cust['email']);
 }

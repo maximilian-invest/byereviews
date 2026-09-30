@@ -80,6 +80,14 @@ rep('<a href="#" onClick="{{ closeMenuHome }}"', '<a href="/" onClick="{{ closeM
 rep("['How it works', '#how'], ['Pricing', '#pricing'], ['Cases', '#cases'], ['FAQ', '#faq'], ['Guides', 'byereviews Blog.dc.html'], ['Log in', '#']",
     "['How it works', '/#how'], ['Pricing', '/#pricing'], ['Cases', '/#cases'], ['FAQ', '/#faq'], ['Guides', '/blog/'], ['Log in', '/login/']")
 
+rep('<a href="#" onClick="{{ acc.goDash }}"', '<a href="/dashboard/" onClick="{{ acc.goDash }}"')
+rep('<a href="#" onClick="{{ acc.goForgot }}"', '<a href="/login/" onClick="{{ acc.goForgot }}"')
+rep('<a href="#" onClick="{{ acc.goLogin }}"', '<a href="/login/" onClick="{{ acc.goLogin }}"')
+
+# account area: prototype-only buttons out (the real reset link comes by email)
+s, n = re.subn(r'<button onClick="\{\{ acc\.(openResetLink|expireLink) \}\}"[^>]*>[^<]*</button>', '', s)
+assert n == 2, n
+
 # every "Remove a review" button becomes a real link to /order/
 s, n = re.subn(r'<button onClick="\{\{ goOrder \}\}"(.*?)>(.*?)</button>', r'<a href="/order/" onClick="{{ goOrder }}"\1>\2</a>', s, flags=re.S)
 assert n >= 5, n
@@ -90,7 +98,7 @@ rep('<a href="#">Imprint</a><a href="#">Terms</a><a href="#">Right of Withdrawal
 rep('Not affiliated with Google.</span>', 'Not affiliated with Google.</span>\n    <span style="font-size:14px;color:#6B6B6B">Questions? <a href="mailto:info@byereviews.com" style="text-decoration:underline">info@byereviews.com</a></span>')
 rep('<a href="#" style="text-decoration:underline">Terms</a>', '<a href="/terms.html" target="_blank" rel="noopener" style="text-decoration:underline">Terms</a>')
 rep('<a href="#" style="text-decoration:underline">Right of Withdrawal</a>', '<a href="/withdrawal.html" target="_blank" rel="noopener" style="text-decoration:underline">Right of Withdrawal</a>')
-rep('&lt;hello@byereviews.com&gt;', '&lt;info@byereviews.com&gt;')
+s = s.replace('&lt;hello@byereviews.com&gt;', '&lt;info@byereviews.com&gt;')
 
 # reviews older than 4 weeks: show the removal probability
 rep('<span style="font-size:18px">Older than 4 weeks</span>',
@@ -116,13 +124,13 @@ rep('<button onClick="{{ fillDemo }}" style="border:0;background:transparent;cur
     '<button onClick="{{ doReset }}" style="border:0;background:transparent;cursor:pointer;font-size:14px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">{{ resetLabel }}</button>')
 
 # dashboard: switch between several orders of the same customer
-rep('''  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;align-self:flex-start">
+rep('''  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;align-self:{{ acc.tabsAlign }}">
     <sc-for list="{{ pTabs }}"''', '''  <sc-if value="{{ hasOrderSwitch }}" hint-placeholder-val="{{ false }}">
   <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:0 4px"><span style="font-size:13px;color:#6B6B6B">Your orders</span>
     <sc-for list="{{ orderChips }}" as="oc" hint-placeholder-count="2"><button onClick="{{ oc.go }}" style="border:0;cursor:pointer;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:500;font-family:'Geist Mono',monospace;background:{{ oc.bg }};color:{{ oc.fg }}">{{ oc.label }}</button></sc-for>
   </div>
   </sc-if>
-  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;align-self:flex-start">
+  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;align-self:{{ acc.tabsAlign }}">
     <sc-for list="{{ pTabs }}"''')
 
 # step 1: the customer must pick one of the real Google results (no auto-select)
@@ -159,7 +167,7 @@ exec((ROOT / 'tools' / 'site_account_patch.py').read_text(encoding='utf-8'))
 
 # logic: keep the design's methods under new names, inject the production layer
 for old, new in [('  componentDidMount() {', '  _designDidMount() {'), ('  renderVals() {', '  _designRenderVals() {'),
-                 ('  doLogin() {', '  _designDoLogin() {'), ('  findBiz() {', '  _designFindBiz() {'), ('  lookup(id, value) {', '  _designLookup(id, value) {')]:
+                 ('  doLogin() {', '  _designDoLogin() {'), ('  accountVals(sw, mob) {', '  _designAccountVals(sw, mob) {'), ('  findBiz() {', '  _designFindBiz() {'), ('  lookup(id, value) {', '  _designLookup(id, value) {')]:
     rep(old, new)
 s = s.replace('this.profilePool', 'this.poolReviews()')
 overrides = (ROOT / 'tools' / 'site_overrides.js').read_text(encoding='utf-8')

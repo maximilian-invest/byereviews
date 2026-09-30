@@ -473,6 +473,30 @@ button,input,textarea{font-family:inherit}
 </section>
 </sc-if>
 
+<sc-if value="{{ isMailAuth }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="{{ am.label }}" style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:clamp(16px,4vw,40px) 0">
+  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;max-width:100%;overflow-x:auto">
+    <sc-for list="{{ amTabs }}" as="t" hint-placeholder-count="5"><button onClick="{{ t.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 12px;font-size:13px;font-weight:500;white-space:nowrap;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</button></sc-for>
+  </div>
+  <div style="width:100%;max-width:600px;background:#FFFFFF;border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.06)">
+    <div style="padding:14px 20px;border-bottom:1px solid #F0F0F0;display:flex;flex-direction:column;gap:3px;font-size:13px;color:#6B6B6B">
+      <span><strong style="color:#151515">byereviews</strong> &lt;{{ sender }}&gt;</span>
+      <span style="word-break:break-all">To: {{ am.to }}</span>
+      <span style="color:#151515;font-size:15px;font-weight:600">{{ am.subject }}</span>
+    </div>
+    <div style="padding:clamp(24px,4vw,36px);display:flex;flex-direction:column;gap:18px">
+      <img src="assets/byereviews-logo.png" alt="byereviews" style="height:20px;align-self:flex-start">
+      <span style="font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1.15">{{ am.h1 }}</span>
+      <span style="font-size:15px;line-height:1.6;color:#444">{{ am.body }}</span>
+      <sc-if value="{{ am.hasBox }}" hint-placeholder-val="{{ false }}"><div style="background:#F4F4F4;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;font-size:14px"><sc-for list="{{ am.box }}" as="b" hint-placeholder-count="2"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><span style="color:#6B6B6B">{{ b.k }}</span><span style="font-weight:500;word-break:break-all">{{ b.v }}</span></div></sc-for></div></sc-if>
+      <sc-if value="{{ am.hasBtn }}" hint-placeholder-val="{{ true }}"><a href="#" style="align-self:flex-start;background:#151515;color:#fff;border-radius:14px;padding:15px 22px;font-size:15px;font-weight:600">{{ am.btn }}</a></sc-if>
+      <sc-if value="{{ am.hasNote }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;line-height:1.5;color:#151515;font-weight:500">{{ am.note }}</span></sc-if>
+      <span style="font-size:12px;color:#8A8A8A;border-top:1px solid #F0F0F0;padding-top:14px;line-height:1.5">{{ am.footer }}</span>
+    </div>
+  </div>
+</section>
+</sc-if>
+
 <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
   <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:200;background:#151515;color:#fff;border-radius:16px;padding:14px 18px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px)"><span style="width:22px;height:22px;border-radius:7px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;flex:none"><svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#151515" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>{{ toast }}</div>
 </sc-if>
@@ -604,13 +628,26 @@ class Component extends DCLogic {
   isToday(t) { return t && new Date(t).toDateString() === new Date().toDateString(); }
   renderVals() {
     const s = this.state, mob = s.vw < 760, orders = s.empty ? [] : s.orders;
-    const scr = [['admin', 'Admin'], ['cust', 'Customer dashboard'], ['mail_status', 'Email · Status update'], ['mail_pay', 'Email · Payment']];
+    const scr = [['admin', 'Admin'], ['cust', 'Customer dashboard'], ['mail_status', 'Email · Status update'], ['mail_pay', 'Email · Payment'], ['mail_auth', 'Emails · Account']];
     const curScr = s.screen === 'login' ? 'admin' : s.screen;
     const base = {
       desktop: !mob, mobile: mob, today: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }),
       screenTabs: scr.map(([k, label]) => ({ label, bg: curScr === k ? '#FFFFFF' : 'transparent', fg: curScr === k ? '#151515' : '#B5B5B5', go: () => this.setState({ screen: k === 'admin' ? (s.authed ? 'admin' : 'login') : k }) })),
       toggleEmpty: () => this.setState({ empty: !s.empty }), emptyLabel: s.empty ? 'Show demo orders' : 'Show empty state',
       isLogin: s.screen === 'login', isAdmin: s.screen === 'admin', isCustDash: s.screen === 'cust', isEmail: s.screen === 'mail_status' || s.screen === 'mail_pay',
+      isMailAuth: s.screen === 'mail_auth', ...(() => {
+        const k = s.authMail || 'reset', to = 'james@carterdental.com', nu = 'james@carter-dental.com', when = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const M = {
+          reset: ['Reset password', { to, subject: 'Reset your password', h1: 'Reset your password', body: "Hi James, we got a request to reset the password for your byereviews account. The link is valid for 1 hour and works once.", btn: 'Set a new password', note: "Didn't ask for this? Ignore this email.", footer: 'Sent because a password reset was requested on byereviews.com.' }],
+          confirm: ['Confirm new email', { to: nu, subject: 'Confirm your new email address', h1: 'Confirm your new email address', body: 'Hi James, please confirm that this is the new login email for your byereviews account. The link is valid for 24 hours – until then you keep logging in with ' + to + '.', btn: 'Confirm email address', footer: "Didn't request this? Ignore this email – nothing will change." }],
+          changed: ['Email changed', { to, subject: 'Your email address was changed', h1: 'Your email address was changed', body: 'The login email for your byereviews account was changed. From now on, log in with the new address.', box: [{ k: 'Old', v: to }, { k: 'New', v: nu }, { k: 'When', v: when }], note: "Wasn't you? Contact us right away at info@byereviews.com.", footer: 'Security notice sent to your previous address.' }],
+          pw: ['Password changed', { to, subject: 'Your password was changed', h1: 'Your password was changed', body: 'The password for your byereviews account was just changed. All other devices were logged out.', box: [{ k: 'When', v: when }, { k: 'Device', v: 'Safari on iPhone' }], note: "Wasn't you? Reset your password now and contact us at info@byereviews.com.", btn: 'Reset password', footer: 'Security notice from byereviews.' }],
+          del: ['Deletion request', { to, subject: 'Deletion request received', h1: 'We received your deletion request', body: "Open orders and invoices must be kept for legal reasons; your personal data is deleted as soon as that's no longer required. We'll email you once it's done.", box: [{ k: 'Requested on', v: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }, { k: 'Account', v: to }], note: 'Changed your mind? Just reply to this email.', footer: 'byereviews · info@byereviews.com · 0664 260 0930' }]
+        };
+        const m = M[k][1];
+        return { am: { ...m, label: 'Email – ' + m.subject, hasBtn: !!m.btn, hasNote: !!m.note, hasBox: !!m.box, box: m.box || [] },
+          amTabs: Object.keys(M).map(id => ({ label: M[id][0], bg: k === id ? '#151515' : 'transparent', fg: k === id ? '#FFFFFF' : '#555', go: () => this.setState({ authMail: id }) })) };
+      })(),
       isMailStatus: s.screen === 'mail_status', isMailPay: s.screen === 'mail_pay', emailLabel: s.screen === 'mail_pay' ? '07 Email – Payment' : '06 Email – Status update',
       loginEmail: s.loginEmail, loginPass: s.loginPass, onLoginEmail: e => this.setState({ loginEmail: e.target.value }), onLoginPass: e => this.setState({ loginPass: e.target.value }),
       doLogin: () => this.setState({ screen: 'admin', authed: true }), onLoginKey: e => { if (e.key === 'Enter') this.setState({ screen: 'admin', authed: true }); },

@@ -185,21 +185,12 @@ Range switch 7 / 30 / 90 days / All, "compared to previous period".
 - **C2. Email "Status update":** subject "Status update on your order BR-xxxxx"; "Update on your reviews", list of changed reviews with new status chip, button "View in dashboard".
 - **C3. Email "Review removed – payment":** subject "N reviews removed – €X due"; "Good news – N reviews are gone.", list of removed reviews (struck-through excerpt + price), discount, "Total due today", primary "Pay now" (Stripe Checkout), secondary "View in dashboard"; footer "You only pay for reviews that were actually removed. Questions? Just reply to this email."
 
-## Files
-- `byereviews Site.dc.html` – landing, order flow, success, login, dashboard (all views in one file; see the `renderVals` / `renderBase` / `portalVals` logic for state and rules).
-- `byereviews Blog.dc.html` – blog index + article template.
-- `byereviews Admin.dc.html` – internal admin panel (orders, order detail, WhatsApp partner flow, payments, settings, analytics) + customer dashboard & the two emails triggered by admin actions.
-- `blog-posts.json` – all 10 posts (title, slug, keyword, cluster, lead, sections, FAQ, cover image) + linking map + author + CTA copy.
-- `assets/byereviews-logo.png` – logo.
-- `assets.html`, `download-assets.sh`, `download-assets.ps1`, `assets/manifest.json` – image & video download.
-- `blog-posts/*.md` – the 10 blog posts as Markdown.
-- `support.js` – runtime needed only to open the prototypes in a browser (not for production).
 
 ---
 
 ## Lead Finder (`LeadFinder.dc.html`, mounted in Admin as nav item "Lead Finder" with search icon)
 
-Purpose: the backend (`app/leads.php`) uses the Google Places API (New) to find small businesses in **England / USA** with a recent bad review; the owner follows them on Instagram and contacts them. English UI, same visual system as Admin.
+Purpose: a Python script uses the Google Places API (New) to find small businesses in **England / USA** with a recent bad review; the owner follows them on Instagram and contacts them. English UI, same visual system as Admin.
 The dark "STATE / DETAIL AS" bar at the top is prototype-only (switches Normal / Empty / Running / Quota reached / API error and Drawer / Page).
 
 **List page**
@@ -209,8 +200,6 @@ The dark "STATE / DETAIL AS" bar at the top is prototype-only (switches Normal /
 - **Run status:** running = black card "Searching… Query n of N", progress bar, current query (mono), live tiles, Cancel. Done = "Last run" tiles: Queries · Places scanned · Small profiles · Reviews checked · New leads (black tile) · Skipped · checked recently. Quota stop = red notice "Stopped at query 18 of 25… remaining queries run automatically tomorrow."
 - **API error:** red-bordered card "Google API key missing or invalid" (REQUEST_DENIED), mentions `GOOGLE_PLACES_API_KEY` + Places API (New), button "Open Settings".
 - **Leads table:** tabs All · New · Followed · Contacted · Won · Ignored (counts) · search · region filter All/England/USA · "Export CSV" (name,address,region,rating,reviews,bad_stars,bad_date,instagram,status). Columns: Business (name + address) | Google (rating ★ + count) | Bad review (badge 1★ red `#FCE8E6/#D93025`, 2★ orange `#FEF3E2/#B45309`, "x days ago", quote clamped to 2 lines) | Instagram (@handle or "not found" grey) | Status pill (New black · Followed outlined · Contacted grey · Won green `#E6F4EA/#1E8E3E` · Ignored outlined grey) | Actions (Maps, Instagram – disabled if none, open lead). Sorted newest bad review first. < 760px → rows become cards.
-- **Review age filter** (own row under the toolbar): `REVIEW AGE` segmented Any · 3 days · 7 days · 14 days · 28 days · Custom; Custom shows two number fields "from x to y days ago". Age = days since the **newest** bad review of the lead, computed at render time from the stored review date (never store `age_days`, it goes stale).
-- **Result row** above the table: "8 leads · 3 from the last 7 days" (live) + sort toggle "Newest review first ↓ / Oldest review first ↑" (the BAD REVIEW column header toggles the same sort). Right side: active filters as black removable chips (Status, Region, Review age, search term, each with ×) + "Reset filters".
 - **Empty:** "No leads yet – Add a few queries, then start with a dry run…" + "Run first search".
 
 **Lead detail** (right drawer 560px with dim overlay, or own page max 760px with "← All leads")
@@ -225,3 +214,61 @@ The dark "STATE / DETAIL AS" bar at the top is prototype-only (switches Normal /
 **Backend notes:** persist per place_id: status, notes, last_checked_at, region, instagram handle; respect daily caps (30 Text Search, 30 Place Details) and monthly 930 to stay free; skip places checked within N days.
 
 ---
+
+## Print (German) – `doc-page.js` required to open
+All sizes **include 3 mm bleed**; export each file via browser → PDF, print shop converts to CMYK.
+- `byereviews Business Card.dc.html` – 85 × 55 mm (file 91 × 61 mm), 2 pages (front black with image + logo, back contact + QR).
+- `byereviews Flyer A5.dc.html` – A5 148 × 210 mm (file 154 × 216 mm), front + back.
+- `byereviews DIN lang Folder.dc.html` – 6-page wrap fold (Wickelfalz), open 297 × 210 mm (file 303 × 216 mm), panels 100 / 100 / 97 mm (fold-in panel 97 mm). Page 1 = outside (p5 flap · p6 back · p1 cover), page 2 = inside (p2 · p3 · p4 flap).
+- Contact: info@byereviews.com · 0664 260 0930 · byereviews.com. QR codes point to https://byereviews.com (generated via api.qrserver.com – for print, replace with a locally generated vector QR).
+
+
+---
+
+## Customer account area (in `byereviews Site.dc.html`, view `portal`) – update 2026-09-30
+
+**App header (logged in, replaces marketing nav):** left logo (→ dashboard). Right: "+ New order" (black pill, white inset square with "+") and account button (black avatar circle with initial + name + chevron) → dropdown 240px: name/email header, Dashboard · Settings · Log out. Mobile < 760px: logo + avatar only → full-screen sheet (#EFEFEF): avatar/name/email, big white rows Dashboard · Settings · Log out, black "New order" button pinned at bottom. No marketing links, no "Remove a review" CTA.
+
+**Dashboard tabs:** Overview · Support · **Settings** (segmented, full-width on mobile). Heading changes on Settings to "Your settings." with eyebrow `// account · {email}`. The "+ New order / Log out" buttons were removed from the dashboard heading (now in header).
+
+**Payment card:** a single "Pay now" (black pill with inset arrow) → Stripe Checkout (payment method chosen there). No Apple Pay / card buttons.
+
+**"Your reviews" table:** white card with tabs All · Active · Done (+counts). Desktop columns: Reviewer (avatar, name, date) · Rating · Review (2-line clamp; removed = struck-through grey) · Price (— for not eligible) · Status chip. Mobile rows: name + date · stars, status right, text below. Active = submitted + in progress; Done = removed + not eligible. Empty: "Nothing in progress." / "No finished reviews yet."
+
+**Settings (2-column grid on desktop, 1 column mobile; white cards radius 24):**
+1. **Profile** – Full name*, Company, Phone, Street*, ZIP & city*, Country (select). "Save changes" (loading "Saving…", "Unsaved changes" hint, "Required" errors) → toast "Profile saved".
+2. **Email address** – shows current. "Change email" → New email + Current password → "Send confirmation link". Errors: "Enter a valid email address.", "Wrong password.", "This email already has an account." Pending state (grey box): "Confirm your new address – We sent a link to {new} (valid 24 h). Until then you log in with {old}." + "Resend link" / "Cancel change".
+3. **Password** – Current, New (min 10, eye toggle, 3-bar strength: "x more characters" / Weak / Okay – add numbers or symbols / Strong), Repeat. Errors "Wrong password.", "Use at least 10 characters", "Passwords don't match." → toast "Password changed – other devices were logged out".
+4. **Sessions** – "Logged in on N devices…" + "Log out on all devices".
+5. **Delete account** – outlined danger card (1.5px #151515, not red), label DANGER ZONE, text "Open orders and invoices must be kept for legal reasons; your personal data is deleted as soon as that's no longer required." "Request deletion" → modal (bottom sheet on mobile) with password → state "Deletion requested on {date}".
+
+**Forgot password flow:** login card link "Forgot your password?" →
+a) "Forgot your password?" email field → neutral "Check your inbox. If an account exists for this address, we've sent a reset link (valid 1 h)." (never reveal whether the account exists).
+b) "Set a new password." (from email link): new + repeat with same strength/eye rules. Expired/used link: "This link has expired." + "Send a new link".
+c) "Password updated." → logged in → "Go to dashboard". Invalidate all other sessions.
+
+**Toasts:** black pill bottom-center with white check square.
+
+## Account emails (Admin preview → "Emails · Account")
+Same layout as status/payment emails (white card, logo, H1, black button, grey footer):
+- **Reset your password** – button "Set a new password" (1 h, single-use); "Didn't ask for this? Ignore this email."
+- **Confirm your new email address** – sent to NEW address; button "Confirm email address" (24 h).
+- **Your email address was changed** – sent to OLD address; Old/New/When box; "Wasn't you? Contact us right away at info@byereviews.com."
+- **Your password was changed** – When/Device box; "Wasn't you? Reset your password now…"; button "Reset password".
+- **Deletion request received** – Requested on/Account box; legal retention text; "Changed your mind? Just reply to this email."
+
+Backend: email change only takes effect after confirming the link; old address stays login until then; send "email changed" to old address after confirmation. Password change/reset → revoke other sessions + send security email. Deletion = request + retention flag (orders/invoices kept per legal retention), personal data purged afterwards.
+
+Prototype-only: password "wrong" triggers "Wrong password"; emails starting with "taken@" trigger "already has an account"; "prototype: show expired link" button on reset page.
+
+## Files
+- `byereviews Site.dc.html` – landing, order flow, success, login, dashboard (all views in one file; see the `renderVals` / `renderBase` / `portalVals` logic for state and rules).
+- `byereviews Blog.dc.html` – blog index + article template.
+- `byereviews Admin.dc.html` – internal admin panel (orders, order detail, WhatsApp partner flow, payments, settings, analytics) + customer dashboard & the two emails triggered by admin actions.
+- `blog-posts.json` – all 10 posts (title, slug, keyword, cluster, lead, sections, FAQ, cover image) + linking map + author + CTA copy.
+- `LeadFinder.dc.html` – Lead Finder section (imported by the Admin file).
+- `byereviews Business Card.dc.html`, `byereviews Flyer A5.dc.html`, `byereviews DIN lang Folder.dc.html` + `doc-page.js` – print files (German).
+- `assets/byereviews-logo.png` – logo.
+- `assets.html`, `download-assets.sh`, `download-assets.ps1`, `assets/manifest.json` – image & video download.
+- `blog-posts/*.md` – the 10 blog posts as Markdown.
+- `support.js` – runtime needed only to open the prototypes in a browser (not for production).

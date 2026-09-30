@@ -536,13 +536,26 @@ class Component extends DCLogic {
   isToday(t) { return t && new Date(t).toDateString() === new Date().toDateString(); }
   _designRenderVals() {
     const s = this.state, mob = s.vw < 760, orders = s.empty ? [] : s.orders;
-    const scr = [['admin', 'Admin'], ['cust', 'Customer dashboard'], ['mail_status', 'Email · Status update'], ['mail_pay', 'Email · Payment']];
+    const scr = [['admin', 'Admin'], ['cust', 'Customer dashboard'], ['mail_status', 'Email · Status update'], ['mail_pay', 'Email · Payment'], ['mail_auth', 'Emails · Account']];
     const curScr = s.screen === 'login' ? 'admin' : s.screen;
     const base = {
       desktop: !mob, mobile: mob, today: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }),
       screenTabs: scr.map(([k, label]) => ({ label, bg: curScr === k ? '#FFFFFF' : 'transparent', fg: curScr === k ? '#151515' : '#B5B5B5', go: () => this.setState({ screen: k === 'admin' ? (s.authed ? 'admin' : 'login') : k }) })),
       toggleEmpty: () => this.setState({ empty: !s.empty }), emptyLabel: s.empty ? 'Show demo orders' : 'Show empty state',
       isLogin: s.screen === 'login', isAdmin: s.screen === 'admin', isCustDash: s.screen === 'cust', isEmail: s.screen === 'mail_status' || s.screen === 'mail_pay',
+      isMailAuth: s.screen === 'mail_auth', ...(() => {
+        const k = s.authMail || 'reset', to = 'james@carterdental.com', nu = 'james@carter-dental.com', when = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const M = {
+          reset: ['Reset password', { to, subject: 'Reset your password', h1: 'Reset your password', body: "Hi James, we got a request to reset the password for your byereviews account. The link is valid for 1 hour and works once.", btn: 'Set a new password', note: "Didn't ask for this? Ignore this email.", footer: 'Sent because a password reset was requested on byereviews.com.' }],
+          confirm: ['Confirm new email', { to: nu, subject: 'Confirm your new email address', h1: 'Confirm your new email address', body: 'Hi James, please confirm that this is the new login email for your byereviews account. The link is valid for 24 hours – until then you keep logging in with ' + to + '.', btn: 'Confirm email address', footer: "Didn't request this? Ignore this email – nothing will change." }],
+          changed: ['Email changed', { to, subject: 'Your email address was changed', h1: 'Your email address was changed', body: 'The login email for your byereviews account was changed. From now on, log in with the new address.', box: [{ k: 'Old', v: to }, { k: 'New', v: nu }, { k: 'When', v: when }], note: "Wasn't you? Contact us right away at info@byereviews.com.", footer: 'Security notice sent to your previous address.' }],
+          pw: ['Password changed', { to, subject: 'Your password was changed', h1: 'Your password was changed', body: 'The password for your byereviews account was just changed. All other devices were logged out.', box: [{ k: 'When', v: when }, { k: 'Device', v: 'Safari on iPhone' }], note: "Wasn't you? Reset your password now and contact us at info@byereviews.com.", btn: 'Reset password', footer: 'Security notice from byereviews.' }],
+          del: ['Deletion request', { to, subject: 'Deletion request received', h1: 'We received your deletion request', body: "Open orders and invoices must be kept for legal reasons; your personal data is deleted as soon as that's no longer required. We'll email you once it's done.", box: [{ k: 'Requested on', v: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) }, { k: 'Account', v: to }], note: 'Changed your mind? Just reply to this email.', footer: 'byereviews · info@byereviews.com · 0664 260 0930' }]
+        };
+        const m = M[k][1];
+        return { am: { ...m, label: 'Email – ' + m.subject, hasBtn: !!m.btn, hasNote: !!m.note, hasBox: !!m.box, box: m.box || [] },
+          amTabs: Object.keys(M).map(id => ({ label: M[id][0], bg: k === id ? '#151515' : 'transparent', fg: k === id ? '#FFFFFF' : '#555', go: () => this.setState({ authMail: id }) })) };
+      })(),
       isMailStatus: s.screen === 'mail_status', isMailPay: s.screen === 'mail_pay', emailLabel: s.screen === 'mail_pay' ? '07 Email – Payment' : '06 Email – Status update',
       loginEmail: s.loginEmail, loginPass: s.loginPass, onLoginEmail: e => this.setState({ loginEmail: e.target.value }), onLoginPass: e => this.setState({ loginPass: e.target.value }),
       doLogin: () => this.setState({ screen: 'admin', authed: true }), onLoginKey: e => { if (e.key === 'Enter') this.setState({ screen: 'admin', authed: true }); },
