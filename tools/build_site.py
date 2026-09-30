@@ -92,6 +92,10 @@ rep('<a href="#" style="text-decoration:underline">Terms</a>', '<a href="/terms.
 rep('<a href="#" style="text-decoration:underline">Right of Withdrawal</a>', '<a href="/withdrawal.html" target="_blank" rel="noopener" style="text-decoration:underline">Right of Withdrawal</a>')
 rep('&lt;hello@byereviews.com&gt;', '&lt;info@byereviews.com&gt;')
 
+# no unverified rating claims
+s, n = re.subn(r'\s*<span[^>]*>Trustpilot ★ 4\.9</span>', '', s)
+assert n == 1, n
+
 # success page: no demo email preview
 s, n = re.subn(r'<sc-if value="\{\{ isNewAccount \}\}" hint-placeholder-val="\{\{ false \}\}"><button onClick="\{\{ openMail \}\}".*?</button></sc-if>', '', s, flags=re.S)
 assert n == 1, n
@@ -112,16 +116,23 @@ rep('''  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:
   <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;align-self:flex-start">
     <sc-for list="{{ pTabs }}"''')
 
-# step 1: other matches for the search
+# step 1: the customer must pick one of the real Google results (no auto-select)
 m = re.search(r'(<sc-if value="\{\{ bizFound \}\}" hint-placeholder-val="\{\{ false \}\}">.*?</sc-if>)', s, flags=re.S)
-rep(m.group(1), m.group(1) + '''
-        <sc-if value="{{ hasAlts }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;flex-direction:column;gap:6px;padding:2px 2px 0">
-            <span style="font-size:13px;color:#6B6B6B">Not your business? Other matches:</span>
-            <sc-for list="{{ altPlaces }}" as="ap" hint-placeholder-count="2">
-              <button onClick="{{ ap.go }}" style="text-align:left;border:1px solid #E4E4E4;background:#FFFFFF;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;color:#151515;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">{{ ap.name }}</span><span style="font-size:12px;color:#6B6B6B">{{ ap.addr }}</span></button>
+rep(m.group(1), '''<sc-if value="{{ bizChoose }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:14px;color:#6B6B6B;padding:2px 4px">{{ chooseTitle }}</span>
+            <sc-for list="{{ choosePlaces }}" as="cp" hint-placeholder-count="3">
+              <button onClick="{{ cp.go }}" style="width:100%;text-align:left;border:0;cursor:pointer;background:#F4F4F4;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;color:#151515">
+                <span style="width:44px;height:44px;border-radius:12px;background:#151515;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:500">{{ cp.initial }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:500">{{ cp.name }}</span><span style="font-size:13px;color:#6B6B6B">{{ cp.meta }}</span></span>
+                <span style="flex:none;font-size:13px;font-weight:500;background:#FFFFFF;border-radius:10px;padding:8px 12px">Select</span>
+              </button>
             </sc-for>
           </div>
+        </sc-if>
+        ''' + m.group(1) + '''
+        <sc-if value="{{ hasAlts }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ showAllMatches }}" style="align-self:flex-start;border:0;background:transparent;cursor:pointer;padding:2px 4px;font-size:14px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">{{ altLabel }}</button>
         </sc-if>''')
 rep('<span style="font-size:16px;font-weight:500">No profile found</span>', '<span style="font-size:16px;font-weight:500">{{ bizNfTitle }}</span>')
 

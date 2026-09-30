@@ -75,7 +75,7 @@
     this.setState({ bizStatus: 'loading', places: [], biz: null });
     this.api('places', { query: { q } }).then(r => {
       if (!r.ok || !(r.places || []).length) return this.setState({ bizStatus: 'notfound', biz: null, searchError: !r.ok });
-      this.pickPlace(r.places[0], r.places);
+      this.setState({ bizStatus: 'choose', places: r.places, biz: null, searchError: false });
     });
   }
   pickPlace(p, list) {
@@ -204,8 +204,12 @@
       successText: s.newAccount ? "We've created your personal dashboard and emailed your login details to " + s.email + '.' : 'This order was added to your existing account (' + s.email + '). Log in with your existing password.',
       reviewsLoading: s.reviewsStatus === 'loading', reviewsPartial: s.reviewsStatus === 'done' && !s.reviewsComplete, reviewsFailed: s.reviewsStatus === 'error',
       noResults: v.noResults && s.reviewsStatus !== 'loading',
+      bizChoose: s.bizStatus === 'choose',
+      chooseTitle: (s.places || []).length === 1 ? 'We found this profile – is it yours?' : 'We found ' + (s.places || []).length + ' profiles – select yours:',
+      choosePlaces: (s.places || []).map(p => ({ initial: (p.name || '?')[0], name: p.name, meta: p.meta || p.address, go: () => this.pickPlace(p) })),
       hasAlts: s.bizStatus === 'found' && (s.places || []).length > 1,
-      altPlaces: (s.places || []).filter(p => !s.biz || p.id !== s.biz.id).map(p => ({ name: p.name, addr: p.address, go: () => this.pickPlace(p) })),
+      altLabel: 'Not your business? Show all ' + (s.places || []).length + ' matches',
+      showAllMatches: () => this.setState({ bizStatus: 'choose', biz: null, selected: {}, placeReviews: [], reviewsStatus: 'idle' }),
       bizNfTitle: s.searchError ? 'Search is unavailable right now' : 'No profile found'
     });
     const real = this.realPortal();

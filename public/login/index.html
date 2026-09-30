@@ -142,7 +142,6 @@ input,textarea,select,button{font-family:inherit}
       <span style="font-size:15px;color:#B5B5B5">No upfront payment</span>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <span style="background:rgba(255,255,255,.08);color:#FFFFFF;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 16px;font-size:14px;font-weight:500">Trustpilot ★ 4.9</span>
       <span style="background:rgba(255,255,255,.08);color:#FFFFFF;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 16px;font-size:14px;font-weight:500">No cure, no pay</span>
       <span style="background:rgba(255,255,255,.08);color:#FFFFFF;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 16px;font-size:14px;font-weight:500">Profile stays intact</span>
     </div>
@@ -518,6 +517,18 @@ input,textarea,select,button{font-family:inherit}
         <sc-if value="{{ bizLoading }}" hint-placeholder-val="{{ false }}">
           <div style="background:#F4F4F4;border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px"><span style="width:48px;height:48px;border-radius:12px;background:#E4E4E4;flex:none"></span><div style="flex:1;display:flex;flex-direction:column;gap:8px"><span style="height:10px;width:40%;background:#E4E4E4;border-radius:5px;display:block"></span><span style="height:10px;width:60%;background:#E4E4E4;border-radius:5px;display:block"></span></div><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#8A8A8A">searching google…</span></div>
         </sc-if>
+        <sc-if value="{{ bizChoose }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:14px;color:#6B6B6B;padding:2px 4px">{{ chooseTitle }}</span>
+            <sc-for list="{{ choosePlaces }}" as="cp" hint-placeholder-count="3">
+              <button onClick="{{ cp.go }}" style="width:100%;text-align:left;border:0;cursor:pointer;background:#F4F4F4;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;color:#151515">
+                <span style="width:44px;height:44px;border-radius:12px;background:#151515;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:500">{{ cp.initial }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:500">{{ cp.name }}</span><span style="font-size:13px;color:#6B6B6B">{{ cp.meta }}</span></span>
+                <span style="flex:none;font-size:13px;font-weight:500;background:#FFFFFF;border-radius:10px;padding:8px 12px">Select</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
         <sc-if value="{{ bizFound }}" hint-placeholder-val="{{ false }}">
           <div style="background:#F4F4F4;border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
             <span style="width:48px;height:48px;border-radius:12px;background:#151515;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500">{{ bizInitial }}</span>
@@ -526,12 +537,7 @@ input,textarea,select,button{font-family:inherit}
           </div>
         </sc-if>
         <sc-if value="{{ hasAlts }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;flex-direction:column;gap:6px;padding:2px 2px 0">
-            <span style="font-size:13px;color:#6B6B6B">Not your business? Other matches:</span>
-            <sc-for list="{{ altPlaces }}" as="ap" hint-placeholder-count="2">
-              <button onClick="{{ ap.go }}" style="text-align:left;border:1px solid #E4E4E4;background:#FFFFFF;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;color:#151515;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">{{ ap.name }}</span><span style="font-size:12px;color:#6B6B6B">{{ ap.addr }}</span></button>
-            </sc-for>
-          </div>
+          <button onClick="{{ showAllMatches }}" style="align-self:flex-start;border:0;background:transparent;cursor:pointer;padding:2px 4px;font-size:14px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">{{ altLabel }}</button>
         </sc-if>
         <sc-if value="{{ bizNotFound }}" hint-placeholder-val="{{ false }}">
           <div style="background:#F4F4F4;border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
@@ -1309,7 +1315,7 @@ class Component extends DCLogic {
     this.setState({ bizStatus: 'loading', places: [], biz: null });
     this.api('places', { query: { q } }).then(r => {
       if (!r.ok || !(r.places || []).length) return this.setState({ bizStatus: 'notfound', biz: null, searchError: !r.ok });
-      this.pickPlace(r.places[0], r.places);
+      this.setState({ bizStatus: 'choose', places: r.places, biz: null, searchError: false });
     });
   }
   pickPlace(p, list) {
@@ -1438,8 +1444,12 @@ class Component extends DCLogic {
       successText: s.newAccount ? "We've created your personal dashboard and emailed your login details to " + s.email + '.' : 'This order was added to your existing account (' + s.email + '). Log in with your existing password.',
       reviewsLoading: s.reviewsStatus === 'loading', reviewsPartial: s.reviewsStatus === 'done' && !s.reviewsComplete, reviewsFailed: s.reviewsStatus === 'error',
       noResults: v.noResults && s.reviewsStatus !== 'loading',
+      bizChoose: s.bizStatus === 'choose',
+      chooseTitle: (s.places || []).length === 1 ? 'We found this profile – is it yours?' : 'We found ' + (s.places || []).length + ' profiles – select yours:',
+      choosePlaces: (s.places || []).map(p => ({ initial: (p.name || '?')[0], name: p.name, meta: p.meta || p.address, go: () => this.pickPlace(p) })),
       hasAlts: s.bizStatus === 'found' && (s.places || []).length > 1,
-      altPlaces: (s.places || []).filter(p => !s.biz || p.id !== s.biz.id).map(p => ({ name: p.name, addr: p.address, go: () => this.pickPlace(p) })),
+      altLabel: 'Not your business? Show all ' + (s.places || []).length + ' matches',
+      showAllMatches: () => this.setState({ bizStatus: 'choose', biz: null, selected: {}, placeReviews: [], reviewsStatus: 'idle' }),
       bizNfTitle: s.searchError ? 'Search is unavailable right now' : 'No profile found'
     });
     const real = this.realPortal();
