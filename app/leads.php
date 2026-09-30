@@ -15,6 +15,18 @@ const LEADS_QUERIES = [
 ];
 const LEADS_CRIT = ['revMin' => 5, 'revMax' => 30, 'ratingMax' => 4.8, 'badMin' => 1, 'badMax' => 2, 'maxAge' => 28, 'skip' => 7];
 const LEAD_STATUSES = ['New', 'Followed', 'Contacted', 'Won', 'Ignored'];
+// chains / franchises – a single branch can't decide anything, so they are never leads (matched as whole words in the name)
+const LEADS_CHAINS = ['five guys', "mcdonald's", 'mcdonalds', 'kfc', 'subway', "domino's", 'dominos', 'pizza hut', "papa john's", 'papa johns', 'burger king',
+    "wendy's", 'taco bell', 'chipotle', "dunkin'", 'dunkin', 'starbucks', 'costa coffee', 'caffe nero', 'caffè nero', 'pret a manger', 'greggs', "nando's", 'nandos',
+    'wingstop', 'popeyes', 'chick-fil-a', 'tim hortons', 'leon', 'itsu', 'wasabi', 'tortilla', 'gourmet burger kitchen', 'byron', 'wagamama', 'pizza express', 'franco manca',
+    "frankie & benny's", 'harvester', 'toby carvery', 'wetherspoon', 'greene king', 'toni & guy', 'toni&guy', 'supercuts', 'great clips', 'sport clips', 'fantastic sams',
+    'regis', 'rush hair', 'headmasters', 'jd sports', 'boots', 'superdrug', 'tesco', "sainsbury's", 'asda', 'aldi', 'lidl', 'co-op', 'walgreens', 'cvs', '7-eleven',
+    'panera', "jersey mike's", 'jimmy john', 'firehouse subs', "arby's", 'sonic drive-in', "carl's jr", "hardee's", 'little caesars', 'jollibee', 'shake shack',
+    'krispy kreme', 'baskin', 'dairy queen', 'cinnabon', 'auntie anne', 'jamba', 'smoothie king', 'tropical smoothie', 'boba guys', 'kung fu tea', 'gong cha', 'chatime',
+    'coco fresh', 'sharetea', 'the alley', 'tiger sugar', 'european wax center', 'massage envy', 'hand & stone', 'drybar', 'orangetheory', 'anytime fitness',
+    'planet fitness', 'puregym', 'the gym group', 'snap fitness', 'specsavers', 'vision express', 'timpson', 'mr. clean car wash', 'mister car wash', 'take 5', 'jiffy lube',
+    'kwik fit', 'halfords', 'enterprise rent', 'hertz', 'avis', 'banfield', 'petsmart', 'petco', 'pets at home'];
+
 
 function leads_limits(): array {
     return [
@@ -111,7 +123,22 @@ function leads_find_instagram(string $website): string {
 
 function leads_settings(): array {
     $s = store_get('leadsys', 'settings') ?? [];
-    return ['region' => $s['region'] ?? 'GB', 'queries' => ($s['queries'] ?? []) + LEADS_QUERIES, 'crit' => ($s['crit'] ?? []) + LEADS_CRIT, 'ig' => $s['ig'] ?? true];
+    return ['region' => $s['region'] ?? 'GB', 'queries' => ($s['queries'] ?? []) + LEADS_QUERIES, 'crit' => ($s['crit'] ?? []) + LEADS_CRIT, 'ig' => $s['ig'] ?? true,
+        'exclude' => $s['exclude'] ?? ''];
+}
+
+/** Chain / franchise branch? Built-in list + own exclude list (name), store-locator style website, or a website shared with another place of this run. */
+function leads_is_chain(array $p, array &$run): bool {
+    $name = ' ' . preg_replace('/\s+/', ' ', mb_strtolower((string)($p['displayName']['text'] ?? ''))) . ' ';
+    $words = array_merge(LEADS_CHAINS, array_filter(array_map(fn($x) => mb_strtolower(trim($x)), explode(',', (string)($run['exclude'] ?? '')))));
+    foreach ($words as $w) if ($w !== '' && preg_match('/(^|[^\p{L}\p{N}])' . preg_quote($w, '/') . '($|[^\p{L}\p{N}])/u', $name)) return true;
+    $web = (string)($p['websiteUri'] ?? '');
+    if ($web === '') return false;
+    if (preg_match('~/(locations?|stores?|restaurants?|store-?locator|find-?(us|a-store|a-location)|branches|shops?|salons?|studios?|clinics?)/[^?#]+~i', (string)parse_url($web, PHP_URL_PATH) . '/')) return true;
+    $host = preg_replace('/^www\./', '', strtolower((string)parse_url($web, PHP_URL_HOST)));
+    if ($host === '' || preg_match('/(facebook|instagram|linktr|business\.site|wixsite|square\.site|toasttab|order\.online|ubereats|deliveroo|just-eat|doordash|grubhub)/', $host)) return false;
+    $run['hosts'][$host] = ($run['hosts'][$host] ?? 0) + 1;
+    return $run['hosts'][$host] > 1;
 }
 
 function leads_clean_crit($c): array {
@@ -199,6 +226,7 @@ function leads_task(array &$run, array $t): bool {
         if ($id === '' || ($p['businessStatus'] ?? 'OPERATIONAL') !== 'OPERATIONAL' || in_array($id, $run['queued'], true)) continue;
         $run['queued'][] = $id;
         if ($n < $crit['revMin'] || $n > $crit['revMax'] || $rating > $crit['ratingMax']) continue;
+        if (leads_is_chain($p, $run)) { $run['stats']['chains'] = ($run['stats']['chains'] ?? 0) + 1; continue; }
         $run['stats']['small']++;
         $run['stats']['rev'] += count($p['reviews'] ?? []);
         $existing = store_get('leads', $id);
@@ -268,7 +296,8 @@ function action_admin_leads_run(): void {
     $crit = leads_clean_crit($d['crit'] ?? []);
     $ig = !empty($d['ig']);
     $st = leads_settings();
-    $st['region'] = $region; $st['queries'][$region] = implode("\n", $queries); $st['crit'] = $crit; $st['ig'] = $ig;
+    $exclude = clean($d['exclude'] ?? '', 1000);
+    $st['region'] = $region; $st['queries'][$region] = implode("\n", $queries); $st['crit'] = $crit; $st['ig'] = $ig; $st['exclude'] = $exclude;
     store_put('leadsys', 'settings', $st);
     if (!$queries) fail(400, 'no_queries');
     if (!(string)config('google_places_key', '') && !config('mock_google')) fail(503, 'not_configured');
@@ -285,7 +314,7 @@ function action_admin_leads_run(): void {
         $run = $prev;
         $run['status'] = 'running'; $run['stopReason'] = ''; $run['endedAt'] = null;
     } else {
-        $run = ['id' => bin2hex(random_bytes(6)), 'status' => 'running', 'region' => $region, 'queries' => $queries, 'crit' => $crit, 'ig' => $ig,
+        $run = ['id' => bin2hex(random_bytes(6)), 'status' => 'running', 'region' => $region, 'queries' => $queries, 'crit' => $crit, 'ig' => $ig, 'exclude' => $exclude, 'hosts' => [],
             'tasks' => array_map(fn($q) => ['t' => 'search', 'q' => $q], $queries), 'total' => count($queries), 'done' => 0,
             'queued' => [], 'newIds' => [], 'stats' => leads_new_stats(), 'startedAt' => date('c'), 'stopReason' => ''];
     }

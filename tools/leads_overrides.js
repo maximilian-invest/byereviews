@@ -11,7 +11,7 @@
     this.api('admin-leads').then(r => {
       if (!r.ok) return this.toast(r.error === 'not_authed' ? 'Session expired – please sign in again' : 'Could not load leads');
       const st = r.settings, region = st.region === 'US' ? 'USA' : 'England';
-      this.setState({ ready: true, qByRegion: { England: st.queries.GB, USA: st.queries.US }, region, queries: region === 'USA' ? st.queries.US : st.queries.GB, crit: st.crit, ig: !!st.ig });
+      this.setState({ ready: true, qByRegion: { England: st.queries.GB, USA: st.queries.US }, region, queries: region === 'USA' ? st.queries.US : st.queries.GB, crit: st.crit, ig: !!st.ig, exclude: st.exclude || '' });
       this.applyState(r);
       if (r.run && r.run.status === 'running') this.loop(r.run.id); // e.g. page reloaded during a run
     });
@@ -30,7 +30,7 @@
   }
   payload(extra) {
     const s = this.state;
-    return Object.assign({ region: s.region === 'USA' ? 'US' : 'GB', queries: s.queries, crit: s.crit, ig: s.ig }, extra);
+    return Object.assign({ region: s.region === 'USA' ? 'US' : 'GB', queries: s.queries, crit: s.crit, ig: s.ig, exclude: s.exclude || '' }, extra);
   }
   failRun(r) {
     const m = { not_configured: 'Google API key missing on the server', no_queries: 'Add at least one query', already_running: 'A search is already running', not_authed: 'Session expired – please sign in again' }[r.error];
@@ -102,6 +102,7 @@
       criteria: v.criteria.filter(c => c.label !== 'Skip if checked within'),
       liveTiles: v.liveTiles.map(relabel), lastTiles: v.lastTiles.map(relabel),
       isEmpty: s.ready && v.isEmpty,
+      exclude: s.exclude || '', onExclude: e => this.setState({ exclude: e.target.value }),
       quota: [['Google searches (incl. reviews)', u.text, lim.text]].map(([label, x, l]) => ({ label, month: x.month, today: x.day, monthMax: l.month, todayMax: l.day,
         monthPct: Math.min(100, x.month / l.month * 100) + '%', monthCol: col(x.month / l.month), todayPct: Math.min(100, x.day / l.day * 100) + '%', todayCol: col(x.day / l.day) })),
       cost: '€' + cost.toFixed(2), quotaWarn: warn, quotaFull: full, quotaBorder: full ? '#D93025' : warn ? '#E8A33D' : 'transparent',

@@ -101,6 +101,14 @@ for old, new in [('  componentDidMount() {', '  _designDidMount() {'), ('  compo
                  ('  startRun() {', '  _designStartRun() {'), ('  open(id) {', '  _designOpen(id) {')]:
     rep(old, new)
 rep('leads: this.leadsSeed(),', 'leads: [],')
+rep('        Find Instagram via website\n      </button>\n    </div>',
+    '''        Find Instagram via website
+      </button>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:13px;font-weight:500">Skip chains <span style="color:#6B6B6B;font-weight:400">· big chains are skipped automatically, add more comma-separated</span></span>
+        <input value="{{ exclude }}" onChange="{{ onExclude }}" placeholder="e.g. Five Guys, Toni &amp; Guy" style="border:0;background:#F4F4F4;border-radius:14px;padding:12px 14px;font-size:14px;outline:none">
+      </div>
+    </div>''')
 overrides = (ROOT / 'tools' / 'leads_overrides.js').read_text(encoding='utf-8')
 idx = s.rindex('\n}\n</script>')
 s = s[:idx] + '\n' + overrides + s[idx:]
