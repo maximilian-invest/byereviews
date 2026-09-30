@@ -82,8 +82,8 @@ const LEADS_AREAS = [
 ];
 
 const LEADS_DEFAULT_SEL = [
-    'GB' => ['cats' => ['nails', 'barber', 'beauty', 'cafe'], 'cities' => ['London']],
-    'US' => ['cats' => ['nails', 'barber', 'beauty', 'cafe'], 'cities' => ['New York']],
+    'GB' => ['cats' => [], 'cities' => []],   // nothing picked = all categories / all cities
+    'US' => ['cats' => [], 'cities' => []],
 ];
 
 /** Catalog for the admin page. */
@@ -102,10 +102,17 @@ function leads_clean_sel(string $region, $sel): array {
     return ['cats' => $cats, 'cities' => $cities];
 }
 
-/** Picked categories × all areas of the picked cities, area by area (so a stop midway still covers every category somewhere). */
+/** Nothing picked = everything. Categories × areas, cities interleaved (so a partial run is spread over all picked cities). */
 function leads_build_queries(string $region, array $sel): array {
+    $cats = $sel['cats'] ?: array_keys(LEADS_CATEGORIES);
+    $cities = $sel['cities'] ?: array_keys(LEADS_AREAS[$region]);
+    $lists = [];
+    foreach ($cities as $city) {
+        $l = [];
+        foreach (LEADS_AREAS[$region][$city] as $area) foreach ($cats as $c) $l[] = LEADS_CATEGORIES[$c][$region === 'US' ? 2 : 1] . ' in ' . $area;
+        $lists[] = $l;
+    }
     $out = [];
-    foreach ($sel['cities'] as $city) foreach (LEADS_AREAS[$region][$city] as $area)
-        foreach ($sel['cats'] as $c) $out[] = LEADS_CATEGORIES[$c][$region === 'US' ? 2 : 1] . ' in ' . $area;
+    for ($i = 0, $max = max(array_map('count', $lists) ?: [0]); $i < $max; $i++) foreach ($lists as $l) if (isset($l[$i])) $out[] = $l[$i];
     return $out;
 }

@@ -11,7 +11,7 @@
     this.api('admin-leads').then(r => {
       if (!r.ok) return this.toast(r.error === 'not_authed' ? 'Session expired – please sign in again' : 'Could not load leads');
       const st = r.settings, region = st.region === 'US' ? 'USA' : 'England';
-      this.setState({ ready: true, sel: st.sel, catalog: r.catalog, region, crit: st.crit, ig: !!st.ig, exclude: st.exclude || '' });
+      this.setState({ ready: true, sel: st.sel, catalog: r.catalog, region, crit: st.crit, ig: !!st.ig, exclude: st.exclude || '', target: st.target || 500 });
       this.applyState(r);
       if (r.run && r.run.status === 'running') this.loop(r.run.id); // e.g. page reloaded during a run
     });
@@ -31,10 +31,10 @@
   payload(extra) {
     const s = this.state;
     const rk = s.region === 'USA' ? 'US' : 'GB';
-    return Object.assign({ region: rk, sel: s.sel[rk], crit: s.crit, ig: s.ig, exclude: s.exclude || '' }, extra);
+    return Object.assign({ region: rk, sel: s.sel[rk], crit: s.crit, ig: s.ig, exclude: s.exclude || '', target: parseInt(s.target, 10) || 500 }, extra);
   }
   failRun(r) {
-    const m = { not_configured: 'Google API key missing on the server', no_categories: 'Pick at least one category', no_cities: 'Pick at least one city', already_running: 'A search is already running', not_authed: 'Session expired – please sign in again' }[r.error];
+    const m = { not_configured: 'Google API key missing on the server',  already_running: 'A search is already running', not_authed: 'Session expired – please sign in again' }[r.error];
     this.toast(m || 'Something went wrong');
     if (r.error === 'not_configured') this.setState({ configured: false });
   }
@@ -76,32 +76,44 @@
     }
   }
 
-  // category + city checkboxes → searches (category × every area of the city), built on the server
+  // two dropdowns with checkboxes; nothing ticked = all. The server builds category × area searches and continues where the last run stopped.
   pickers() {
     const s = this.state, rk = s.region === 'USA' ? 'US' : 'GB', sel = s.sel[rk] || { cats: [], cities: [] }, cat = s.catalog;
     const setSel = patch => this.setState(st => ({ sel: { ...st.sel, [rk]: { ...st.sel[rk], ...patch } } }));
     const toggle = (key, id) => setSel({ [key]: sel[key].includes(id) ? sel[key].filter(x => x !== id) : [...sel[key], id] });
-    const chip = on => ({ bg: on ? '#151515' : '#F4F4F4', fg: on ? '#FFFFFF' : '#555555', on: on ? 'true' : 'false' });
+    const box = on => ({ on: on ? 'true' : 'false', bg: on ? '#151515' : '#FFFFFF', bd: on ? '#151515' : '#C8C8C8', tick: on ? '✓' : '' });
     const cities = cat.cities[rk] || [];
-    const areas = cities.filter(c => sel.cities.includes(c.id)).reduce((n, c) => n + c.areas, 0);
-    const searches = areas * sel.cats.length;
+    const summary = (ids, labelOf, allLabel) => !ids.length ? allLabel : ids.length <= 2 ? ids.map(labelOf).join(', ') : ids.slice(0, 2).map(labelOf).join(', ') + ' +' + (ids.length - 2);
+    const catLabel = id => (cat.cats.find(c => c.id === id) || { label: id }).label;
+    const nCats = sel.cats.length || cat.cats.length;
+    const areas = cities.filter(c => !sel.cities.length || sel.cities.includes(c.id)).reduce((n, c) => n + c.areas, 0);
+    const target = parseInt(s.target, 10) || 0, calls = Math.ceil(target / 20);
     const left = s.limits && s.usage ? Math.max(0, s.limits.text.month - s.usage.text.month) : null;
+    const over = left != null && calls > left;
     return {
-      catChips: cat.cats.map(c => ({ label: c.label, ...chip(sel.cats.includes(c.id)), go: () => toggle('cats', c.id) })),
-      cityChips: cities.map(c => ({ label: c.id, sub: c.areas + ' areas', ...chip(sel.cities.includes(c.id)), go: () => toggle('cities', c.id) })),
-      catCount: sel.cats.length + ' of ' + cat.cats.length, cityCount: sel.cities.length + ' of ' + cities.length,
-      allCats: () => setSel({ cats: sel.cats.length === cat.cats.length ? [] : cat.cats.map(c => c.id) }), allCatsLabel: sel.cats.length === cat.cats.length ? 'None' : 'All',
-      allCities: () => setSel({ cities: sel.cities.length === cities.length ? [] : cities.map(c => c.id) }), allCitiesLabel: sel.cities.length === cities.length ? 'None' : 'All',
-      planText: searches ? sel.cats.length + ' categor' + (sel.cats.length === 1 ? 'y' : 'ies') + ' × ' + areas + ' areas = ' + searches.toLocaleString('en-US') + ' searches · up to ' + (searches * 3).toLocaleString('en-US') + ' Google calls (20 places each)' +
-        (left != null && searches * 3 > left ? ' · stops at your monthly limit (' + left.toLocaleString('en-US') + ' left), continue next time' : '') : 'Pick at least one category and one city',
-      planWarn: left != null && searches * 3 > left ? '#B45309' : '#6B6B6B'
+      anyOpen: !!s.drop, closeDrop: () => this.setState({ drop: null }),
+      catsZ: s.drop === 'cats' ? 25 : 'auto', citiesZ: s.drop === 'cities' ? 25 : 'auto',
+      pickCols: s.vw < 760 ? 'minmax(0,1fr)' : 'minmax(0,1fr) minmax(0,1fr)',
+      catsIsOpen: s.drop === 'cats', catsOpen: s.drop === 'cats' ? 'true' : 'false', openCats: () => this.setState({ drop: s.drop === 'cats' ? null : 'cats' }),
+      citiesIsOpen: s.drop === 'cities', citiesOpen: s.drop === 'cities' ? 'true' : 'false', openCities: () => this.setState({ drop: s.drop === 'cities' ? null : 'cities' }),
+      catSummary: summary(sel.cats, catLabel, 'All categories (' + cat.cats.length + ')'),
+      citySummary: summary(sel.cities, x => x, (rk === 'US' ? 'All of the USA' : 'All of England') + ' (' + cities.length + ' cities)'),
+      catOptions: [{ label: 'All categories', sub: '', ...box(!sel.cats.length), go: () => setSel({ cats: [] }) }]
+        .concat(cat.cats.map(c => ({ label: c.label, sub: '', ...box(sel.cats.includes(c.id)), go: () => toggle('cats', c.id) }))),
+      cityOptions: [{ label: rk === 'US' ? 'All of the USA' : 'All of England', sub: cities.reduce((n, c) => n + c.areas, 0) + ' areas', ...box(!sel.cities.length), go: () => setSel({ cities: [] }) }]
+        .concat(cities.map(c => ({ label: c.id, sub: c.areas + ' areas', ...box(sel.cities.includes(c.id)), go: () => toggle('cities', c.id) }))),
+      target: s.target, onTarget: e => this.setState({ target: e.target.value }),
+      targetCost: '≈ ' + calls.toLocaleString('en-US') + ' Google calls',
+      planText: nCats + ' categor' + (nCats === 1 ? 'y' : 'ies') + ' × ' + areas + ' areas = ' + (nCats * areas).toLocaleString('en-US') + ' searches to go through. Each run checks ' + target.toLocaleString('en-US') +
+        ' profiles and continues where the last one stopped.' + (over ? ' Only ' + left.toLocaleString('en-US') + ' calls left this month – raise the monthly limit.' : ''),
+      planWarn: over ? '#B45309' : '#6B6B6B'
     };
   }
 
   renderVals() {
     const s = this.state, run = s.srvRun, running = this.isRunning();
     // the design reads demo/run/lastRun – feed it the server state
-    const stats = r => ({ i: r.i, total: r.total, places: r.places, small: r.small, rev: r.rev, leads: r.leads, skip: r.skip });
+    const stats = r => ({ i: r.searches, total: r.searches, places: r.places, small: r.small, rev: r.rev, leads: r.leads, skip: r.skip });
     const saved = { demo: s.demo, run: s.run, lastRun: s.lastRun };
     s.demo = !s.configured ? 'error' : 'normal';
     s.run = running ? stats(run) : null;
@@ -123,7 +135,7 @@
     const when = t => { if (!t) return ''; const d = new Date(t), today = new Date().toDateString() === d.toDateString();
       return (today ? 'today' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })) + ', ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); };
     const stoppedQuota = !!(run && run.status === 'quota');
-    const relabel = t => ({ ...t, label: { 'Small profiles': 'Small profiles (5–30)', 'Reviews checked': 'Reviews read', 'Skipped · checked recently': 'Already in list' }[t.label] || t.label });
+    const relabel = t => ({ ...t, label: { 'Queries': 'Google calls', 'Small profiles': 'Small profiles (5–30)', 'Reviews checked': 'Reviews read', 'Skipped · checked recently': 'Already in list' }[t.label] || t.label });
     Object.assign(v, {
       criteria: v.criteria.filter(c => c.label !== 'Skip if checked within'),
       liveTiles: v.liveTiles.map(relabel), lastTiles: v.lastTiles.map(relabel),
@@ -138,20 +150,20 @@
       quotaFullText: 'Monthly limit reached – raise it below to keep searching',
       cost: '€' + cost.toFixed(2), quotaWarn: warn, quotaFull: full, quotaBorder: full ? '#D93025' : warn ? '#E8A33D' : 'transparent',
       runOpacity: full || !s.configured || running || s.busy ? .4 : 1,
-      runTitle: running ? 'Searching… Query ' + Math.min(run.i + 1, run.total) + ' of ' + run.total : '',
-      runPct: running ? (run.i / Math.max(1, run.total) * 100) + '%' : '0%',
+      runTitle: running ? 'Searching… ' + run.places.toLocaleString('en-US') + ' of ' + run.target.toLocaleString('en-US') + ' profiles' : '',
+      runPct: running ? Math.min(100, run.places / Math.max(1, run.target) * 100) + '%' : '0%',
       runQuery: running ? '→ ' + (run.current || '…') : '',
       cancelRun: () => { this.stopLoop = true; this.api('admin-leads-cancel', { body: {} }).then(r => { if (r.ok) this.applyState(r); }); this.toast('Run cancelled'); },
       showLastRun: !!run && !running,
       quotaStopped: stoppedQuota,
-      quotaStopText: stoppedQuota ? 'Stopped at query ' + run.i + ' of ' + run.total + '.' : '',
-      quotaStopMore: stoppedQuota ? ' Your monthly search limit was reached. Raise it in the Google quota card and press Run search to continue with the remaining ' + run.remaining + ' search' + (run.remaining === 1 ? '' : 'es') + '.' : '',
+      quotaStopText: stoppedQuota ? 'Stopped after ' + run.places.toLocaleString('en-US') + ' of ' + run.target.toLocaleString('en-US') + ' profiles.' : '',
+      quotaStopMore: stoppedQuota ? ' Your monthly search limit was reached. Raise it in the Google quota card and press Run search – it continues where it stopped.' : '',
       lastRunTitle: !run ? 'Last run' : run.status === 'quota' ? 'Last run · stopped early' : run.status === 'cancelled' ? 'Last run · cancelled' : run.status === 'error' ? 'Last run · API error' : 'Last run',
       lastRunWhen: run ? when(run.endedAt || run.startedAt) : '',
       dryRun: () => this.api('admin-leads-run', { body: this.payload({ dry: true }) }).then(r => {
         if (!r.ok) return this.failRun(r);
-        const d = r.dry, fits = d.text <= d.textLeft;
-        this.toast((d.resume ? 'Resumes: ' : 'Dry run: ') + d.queries + ' searches · up to ' + d.text + ' Google calls · ' + d.textLeft + ' left this month' + (fits ? '' : ' · stops at your monthly limit'));
+        const d = r.dry;
+        this.toast('Dry run: ≈ ' + d.calls + ' Google calls for ' + (parseInt(s.target, 10) || 0) + ' profiles · starts at search ' + (d.cursor + 1) + ' of ' + d.searches + ' · ' + d.left + ' calls left this month');
       }),
       fixError: () => this.toast('Add google_places_key in /etc/byereviews/config.php (Places API (New) enabled)'),
       regionTabs: ['England', 'USA'].map(k => ({ label: k, bg: s.region === k ? '#FFFFFF' : 'transparent', fg: s.region === k ? '#151515' : '#8A8A8A', sh: s.region === k ? '0 1px 3px rgba(0,0,0,.08)' : 'none',
