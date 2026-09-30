@@ -833,7 +833,17 @@ class Component extends DCLogic {
     return ['', 'Find your business first.', 'Select at least one review.', 'Enter your name and a valid email.', 'Please accept the Terms to submit.'][step];
   }
   go = (view) => (e) => { if (e && e.preventDefault && view === 'order') e.preventDefault(); this.setState({ view }); window.scrollTo({ top: 0 }); };
-  vidRef = el => { if (!el) return; el.muted = true; el.defaultMuted = true; el.playsInline = true; el.setAttribute('muted', ''); el.setAttribute('playsinline', ''); el.playbackRate = 0.6; el.defaultPlaybackRate = 0.6; el.onplay = () => { el.playbackRate = 0.6; }; const p = el.play(); if (p && p.catch) p.catch(() => {}); };
+  vidRef = el => { if (!el) return; el.muted = true; el.defaultMuted = true; el.playsInline = true; el.loop = true; el.autoplay = true; el.setAttribute('muted', ''); el.setAttribute('playsinline', ''); el.setAttribute('loop', ''); el.playbackRate = 0.6; el.defaultPlaybackRate = 0.6;
+    if (el.__loopBound) return; el.__loopBound = true;
+    const play = () => { if (!el.isConnected) return; el.playbackRate = 0.6; const p = el.play(); if (p && p.catch) p.catch(() => {}); };
+    el.onplay = () => { el.playbackRate = 0.6; };
+    el.addEventListener('ended', () => { el.currentTime = 0; play(); });
+    el.addEventListener('pause', () => { if (!document.hidden) setTimeout(play, 50); });
+    el.addEventListener('stalled', play); el.addEventListener('canplay', () => { if (el.paused) play(); });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && el.paused) play(); });
+    const kick = () => { if (el.paused) play(); window.removeEventListener('touchstart', kick); window.removeEventListener('scroll', kick); };
+    window.addEventListener('touchstart', kick, { passive: true }); window.addEventListener('scroll', kick, { passive: true });
+    play(); };
   Confetti = () => {
     const E = React.createElement, ref = React.useRef(null);
     React.useEffect(() => {
