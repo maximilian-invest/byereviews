@@ -5,7 +5,7 @@ Website for [byereviews.com](https://byereviews.com), built from the design expo
 ## Structure
 
 ```
-public/            → everything that goes into Hostinger's public_html
+public/            → web root on the VPS
   index.html       → the site (design runtime in support.js, React served locally)
   order.php        → receives orders, emails them to info@byereviews.com + confirmation to the customer
   orders/          → orders are also stored here as JSON (web access blocked)
@@ -13,15 +13,18 @@ public/            → everything that goes into Hostinger's public_html
   assets/          → logo, favicon, fonts, media, vendor scripts
 ```
 
-## Deployment (VPS)
+## Deployment (VPS, automatic)
 
-1. Copy the contents of `public/` to `/var/www/byereviews` (e.g. `git pull` + `rsync -a --delete --exclude orders/ public/ /var/www/byereviews/`).
-2. `mkdir -p /var/www/byereviews/orders && chown www-data /var/www/byereviews/orders` so orders can be stored.
-3. Nginx: use `deploy/nginx-byereviews.conf` (needs `php-fpm`; certificate via `certbot --nginx -d byereviews.com -d www.byereviews.com`).
-   On Apache the included `public/.htaccess` does the same job.
+Push to `main` → the VPS pulls it within ~60 seconds (cron + `deploy/deploy.sh`). Details and server paths: see `CLAUDE.md`.
+
+One-time server setup (already done on 187.124.166.153):
+
+1. `git clone https://github.com/maximilian-invest/byereviews.git /var/www/byereviews`
+2. nginx vhost from `deploy/nginx-byereviews.conf`, then `certbot --nginx -d byereviews.com -d www.byereviews.com --redirect`
+3. `install -m 755 deploy/deploy.sh /usr/local/bin/byereviews-deploy` and `cp deploy/byereviews-deploy.cron /etc/cron.d/byereviews-deploy`
 4. Email: copy `deploy/smtp.example.php` to `/etc/byereviews/smtp.php`, enter the password of the
-   `info@byereviews.com` mailbox (Hostinger SMTP) and make it readable for the PHP user only
-   (`chown root:www-data`, `chmod 640`). Without this file PHP `mail()` is used, which usually does not work on a VPS.
+   `info@byereviews.com` mailbox (Hostinger SMTP), `chown root:www-data`, `chmod 640`.
+   Without this file PHP `mail()` is used, which does not work on this VPS.
 5. Test: place a test order, both the team email and the customer confirmation should arrive.
 
 ## Local preview

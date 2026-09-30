@@ -1,0 +1,2 @@
+# /etc/cron.d/byereviews-deploy — pull main every minute and deploy if it changed
+* * * * * root flock -n /run/byereviews-deploy.lock /usr/local/bin/byereviews-deploy >> /var/log/byereviews-deploy.log 2>&1
