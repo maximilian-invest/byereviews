@@ -45,8 +45,8 @@ __ROBOTS__<link rel="icon" type="image/png" href="/assets/favicon.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
 __PRELOAD__
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://byereviews.com/#org","name":"byereviews","url":"https://byereviews.com/","logo":"https://byereviews.com/assets/byereviews-logo.png","email":"info@byereviews.com"},{"@type":"WebSite","name":"byereviews","url":"https://byereviews.com/","publisher":{"@id":"https://byereviews.com/#org"}},{"@type":"Service","name":"Google review removal","provider":{"@id":"https://byereviews.com/#org"},"areaServed":["US","GB","CA","AU","EU"],"offers":[{"@type":"Offer","name":"Review posted within the last 4 weeks","price":"90","priceCurrency":"USD"},{"@type":"Offer","name":"Review older than 4 weeks","price":"125","priceCurrency":"USD"}]}]}</script>
-<style>html.js #prerender{display:none}html:not(.js) x-dc{display:none!important}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://byereviews.com/#org","name":"byereviews","url":"https://byereviews.com/","logo":"https://byereviews.com/assets/byereviews-logo.png","email":"info@byereviews.com"},{"@type":"WebSite","name":"byereviews","url":"https://byereviews.com/","publisher":{"@id":"https://byereviews.com/#org"}},{"@type":"Service","name":"Google review removal","provider":{"@id":"https://byereviews.com/#org"},"areaServed":["US","GB","CA","AU","EU"],"offers":[{"@type":"Offer","name":"Removal of a review posted within the last 4 weeks","price":"90","priceCurrency":"USD","url":"https://byereviews.com/pricing/","description":"Charged only once the review is removed. No upfront payment, no retainer."},{"@type":"Offer","name":"Removal of a review older than 4 weeks","price":"125","priceCurrency":"USD","url":"https://byereviews.com/pricing/","description":"Charged only once the review is removed. No upfront payment, no retainer."}],"serviceType":"Google review removal","description":"Removal of fake, spam, off-topic and otherwise policy-violating Google reviews through the official Google reporting and legal-removal channels. Pay per removed review."}]}</script>
+__FAQLD__<style>html.js #prerender{display:none}html:not(.js) x-dc{display:none!important}</style>
 <script>
 document.documentElement.classList.add('js');
 window.__resources = {
@@ -174,6 +174,19 @@ rep('</x-dc>', '</template></x-dc>')
 
 assert 'cdn.openart.ai' not in s and 'fonts.googleapis' not in s and 'href="#"' not in s.split('data-dc-script')[0], 'leftover external/dead link'
 
+import json as _json
+# FAQ JSON-LD from the design's FAQ list (the same text the page shows)
+_src = SRC.read_text(encoding='utf-8')
+_block = _src[_src.index('      faqs: ['):_src.index('].map((f, i) => ({ ...f, open: s.faqOpen')]
+_faqs = []
+for _m in re.finditer(r"\{ q: '((?:[^'\\]|\\.)*)', a: (?:'((?:[^'\\]|\\.)*)'|`([^`]*)`) \}", _block):
+    _a = (_m.group(2) or _m.group(3)).replace("\\'", "'").replace('${this.fmt(90)}', '$90').replace('${this.fmt(125)}', '$125')
+    _faqs.append({'@type': 'Question', 'name': _m.group(1).replace("\\'", "'"), 'acceptedAnswer': {'@type': 'Answer', 'text': _a}})
+assert len(_faqs) >= 5 and '${' not in _json.dumps(_faqs), _faqs
+FAQ_LD = ('<script type="application/ld+json">'
+          + _json.dumps({'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': _faqs}, ensure_ascii=False).replace('</', '<\\/')
+          + '</script>\n')
+
 HERO_PRELOAD = ('<link rel="preload" as="image" href="/assets/media/hero-mobile-poster-v2.webp" media="(max-width: 759px)" fetchpriority="high">\n'
                 '<link rel="preload" as="image" href="/assets/media/hero-desktop-poster-v2.webp" media="(min-width: 760px)" fetchpriority="high">\n')
 HOME_LIKE = ('index.html', 'pricing/index.html', 'how-it-works/index.html', 'faq/index.html', 'results/index.html')
@@ -264,6 +277,7 @@ for path, (canonical, robots) in pages.items():
     out.parent.mkdir(parents=True, exist_ok=True)
     html = s.replace('__CANONICAL__', canonical).replace('__ROBOTS__', robots)
     # hero poster = LCP element on landing-page URLs: fetch it before the runtime renders the hero
+    html = html.replace('__FAQLD__', FAQ_LD if (path == 'index.html' or path in INTENTS) else '', 1)
     html = html.replace('__PRELOAD__\n', HERO_PRELOAD if (path in HOME_LIKE or path in INTENTS) else '', 1)
     if snap and (path in HOME_LIKE or path in INTENTS):
         html = html.replace('<!--PRERENDER-->', snap.group(0), 1)
