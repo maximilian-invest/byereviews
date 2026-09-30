@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://byereviews.com/</loc></url>
-  <url><loc>https://byereviews.com/terms.html</loc></url>
-  <url><loc>https://byereviews.com/withdrawal.html</loc></url>
+  <url><loc>https://byereviews.com/</loc><lastmod>2026-09-30</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://byereviews.com/blog/</loc><lastmod>2026-09-30</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://byereviews.com/blog/how-to-remove-a-google-review/</loc><lastmod>2026-09-30</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://byereviews.com/blog/google-review-removal-service/</loc><lastmod>2026-09-30</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://byereviews.com/blog/remove-fake-google-reviews/</loc><lastmod>2026-09-30</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://byereviews.com/blog/which-google-reviews-can-be-removed/</loc><lastmod>2026-09-30</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://byereviews.com/blog/google-review-appeal/</loc><lastmod>2026-09-30</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://byereviews.com/blog/remove-google-review-competitor-former-employee/</loc><lastmod>2026-09-30</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://byereviews.com/blog/google-review-extortion-scam/</loc><lastmod>2026-09-30</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://byereviews.com/blog/google-review-bombing/</loc><lastmod>2026-09-30</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://byereviews.com/blog/defamatory-google-review-removal/</loc><lastmod>2026-09-30</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://byereviews.com/blog/can-business-owner-delete-google-reviews/</loc><lastmod>2026-09-30</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://byereviews.com/terms.html</loc><lastmod>2026-09-30</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://byereviews.com/withdrawal.html</loc><lastmod>2026-09-30</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>

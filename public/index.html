@@ -78,6 +78,7 @@ input,textarea,select,button{font-family:inherit}
     <a href="#pricing" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">Pricing</a>
     <a href="#cases" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">Cases</a>
     <a href="#faq" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">FAQ</a>
+    <a href="/blog/" style="padding:8px 12px;font-size:15px;color:#555">Guides</a>
     <a href="#" onClick="{{ goPortal }}" style="padding:8px 12px;font-size:15px;color:#151515;font-weight:500">Log in</a>
     </sc-if>
   </nav>
@@ -759,6 +760,11 @@ class Component extends DCLogic {
   caseRefs = [React.createRef(), React.createRef(), React.createRef()];
   caseOff = [0, 0, 0]; casePaused = [false, false, false]; caseDir = [-0.35, 0.28, -0.42];
   componentDidMount() {
+    this.onHashNav = () => { const h = (location.hash || '').slice(1);
+      if (h === 'order') { this.setState({ view: 'order', menuOpen: false }); window.scrollTo({ top: 0 }); }
+      else if (h === 'login') { this.setState({ view: this.state.portalIn ? 'portal' : 'login', menuOpen: false }); window.scrollTo({ top: 0 }); }
+      else if (h && /^[a-z]+$/.test(h)) { this.setState({ view: 'home' }, () => setTimeout(() => { const el = document.getElementById(h); if (el) el.scrollIntoView(); }, 60)); } };
+    window.addEventListener('hashchange', this.onHashNav); this.onHashNav();
     this.onResize = () => this.setState({ vw: window.innerWidth, vh: window.innerHeight });
     window.addEventListener('resize', this.onResize); this.onResize();
     const tick = () => {
@@ -967,7 +973,7 @@ class Component extends DCLogic {
     const menuOpen = !!this.state.menuOpen && mobV;
     sw.menuOpen = menuOpen; sw.toggleMenu = () => this.setState({ menuOpen: !this.state.menuOpen });
     sw.burgerPath = 'M3 6h14M3 14h14'; sw.closeMenuHome = e => { e && e.preventDefault && e.preventDefault(); this.setState({ menuOpen: false, view: 'home' }); window.scrollTo({ top: 0 }); };
-    sw.menuItems = [['How it works', '#how'], ['Pricing', '#pricing'], ['Cases', '#cases'], ['FAQ', '#faq'], ['Log in', '#']].map(([label, href]) => ({ label, href, go: e => { if (label === 'Log in') { e && e.preventDefault && e.preventDefault(); this.setState({ menuOpen: false, view: this.state.portalIn ? 'portal' : 'login' }); window.scrollTo({ top: 0 }); } else this.setState({ menuOpen: false, view: 'home' }); } }));
+    sw.menuItems = [['How it works', '#how'], ['Pricing', '#pricing'], ['Cases', '#cases'], ['FAQ', '#faq'], ['Guides', '/blog/'], ['Log in', '#']].map(([label, href]) => ({ label, href, go: e => { if (label === 'Log in') { e && e.preventDefault && e.preventDefault(); this.setState({ menuOpen: false, view: this.state.portalIn ? 'portal' : 'login' }); window.scrollTo({ top: 0 }); } else this.setState({ menuOpen: false, view: 'home' }); } }));
     const v = { ...this.renderBase(), ...sw }, c = v.cases, dbl = a => [...a, ...a].map((k, i) => ({ ...k, key: i }));
     return { ...v, caseRow0: dbl(c.slice(0, 12)), caseRow1: dbl(c.slice(12, 24)), caseRow2: dbl(c.slice(24, 36)) };
   }

@@ -1,0 +1,930 @@
+{
+ "updated": "Sep 30, 2026",
+ "author": {
+  "name": "Maximilian",
+  "role": "Founder, byereviews",
+  "bio": "[AUTHOR] – one-line bio: what you've done, how many profiles you've audited, LinkedIn link."
+ },
+ "cta": {
+  "title": "Not sure if your review can be removed?",
+  "text": "Send us your Google Business Profile link. We check every negative review against Google's policies and tell you, for free, which ones qualify for removal and what evidence it takes – within 24 hours. No removal promises for genuine reviews, no fake reviews, ever.",
+  "button": "Get my free review audit →"
+ },
+ "posts": [
+  {
+   "n": 1,
+   "slug": "how-to-remove-a-google-review",
+   "cluster": "Pillar guide",
+   "kw": "how to remove a google review",
+   "read": 11,
+   "title": "How to Remove a Google Review in 2026: Every Method That Actually Works",
+   "lead": "You can't delete a Google review yourself, but you can get it removed when it breaks Google's content policies or the law. The fastest route is reporting it through Google's Reviews Management Tool; if that fails you get one appeal, and for defamatory content there's a separate legal removal request.",
+   "sections": [
+    {
+     "h": "The short version",
+     "blocks": [
+      {
+       "ol": [
+        "Check whether the review actually violates a Google policy (fake, off-topic, conflict of interest, harassment, personal information and so on).",
+        "Report it from your Business Profile or through the Reviews Management Tool and pick the matching violation.",
+        "Wait for the decision (usually a few days) and check the status in the tool.",
+        "If Google says “no violation”, file the one-time appeal with evidence.",
+        "If the content is defamatory or illegal, file a legal removal request – a different process with different rules."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "Method 1: Report the review through your Business Profile",
+     "blocks": [
+      {
+       "p": "Open your Business Profile on Google Search or Maps, go to Reviews, click the three dots next to the review and choose “Report review”. Pick the violation that fits best. This is the fastest route and works for most clear-cut cases like spam or off-topic rants."
+      },
+      {
+       "shot": "[SCREENSHOT] Reporting a review from the Business Profile – three-dot menu open"
+      }
+     ]
+    },
+    {
+     "h": "Method 2: The Reviews Management Tool",
+     "blocks": [
+      {
+       "p": "Google's Reviews Management Tool replaced the old support form. It lets you report several reviews, see the status of each report (“Decision pending”, “No policy violation”, “Removed”) and file an appeal. Use it for anything you want to track – which should be everything."
+      },
+      {
+       "shot": "[SCREENSHOT] Reviews Management Tool – status overview"
+      },
+      {
+       "p": "If the status stays on “Decision pending”, that's normal for a few days. What to do when it's stuck or rejected is covered in [[5|our guide to the Google review appeal]]."
+      }
+     ]
+    },
+    {
+     "h": "Method 3: The one-time appeal",
+     "blocks": [
+      {
+       "p": "When Google decides a reported review doesn't violate policy, you can appeal once per review. The appeal is where most owners lose: they repeat the original report instead of adding evidence. Point to the exact policy, show why the reviewer can't be a real customer, and keep it factual."
+      }
+     ]
+    },
+    {
+     "h": "Method 4: Legal removal for defamation or illegal content",
+     "blocks": [
+      {
+       "p": "If a review makes false statements of fact that damage your business, or contains illegal content, you can file a legal removal request with Google. It's a separate process from policy reporting, and the rules depend on where you are – see [[9|defamatory Google reviews: legal removal in the US, UK and EU]]."
+      }
+     ]
+    },
+    {
+     "h": "Which reviews qualify?",
+     "blocks": [
+      {
+       "p": "Google removes reviews that break its policies – not reviews that are merely negative or unfair. The most common grounds:"
+      },
+      {
+       "ul": [
+        "Fake engagement: no real visit, bots, paid or incentivised reviews – see [[3|how to remove fake Google reviews]].",
+        "Conflict of interest: competitors or former employees – see [[6|reviews from competitors or ex-employees]].",
+        "Harassment, hate speech, profanity, personal information.",
+        "Off-topic content, advertising or links.",
+        "Coordinated attacks – see [[8|review bombing]]."
+       ]
+      },
+      {
+       "p": "The full list with examples is in [[4|which Google reviews can be removed]]."
+      }
+     ]
+    },
+    {
+     "h": "What doesn't work",
+     "blocks": [
+      {
+       "ul": [
+        "Flagging the same review over and over from multiple accounts – it doesn't speed anything up and can look like manipulation.",
+        "Paying anyone who promises “guaranteed” removal of genuine reviews – see [[2|the red flags of removal services]].",
+        "Paying someone who threatens more 1-star reviews – that's [[7|review extortion]], and Google has a separate report path for it.",
+        "Deleting your profile to start fresh – reviews are tied to the place, not to you."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "Can you just delete it as the owner?",
+     "blocks": [
+      {
+       "p": "No. Owners can reply to reviews and report them, but not delete them. The full explanation is in [[10|can a business owner delete Google reviews]]."
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "How long does Google take to remove a review?",
+     "a": "Clear violations are often decided within a few days. Appeals and legal requests take longer – anywhere from one to several weeks."
+    },
+    {
+     "q": "Can I see why Google rejected my report?",
+     "a": "Only in broad terms. The Reviews Management Tool shows the status, not a detailed reason. That's why the appeal needs your own evidence."
+    },
+    {
+     "q": "Will the reviewer know I reported them?",
+     "a": "No. Google doesn't notify reviewers who reported them."
+    },
+    {
+     "q": "Does replying to a review hurt my chances of removal?",
+     "a": "No. A calm, factual reply helps customers who read it and doesn't affect Google's decision."
+    }
+   ],
+   "img": "assets/blog/01-how-to-remove-a-google-review.png"
+  },
+  {
+   "n": 2,
+   "slug": "google-review-removal-service",
+   "cluster": "Services",
+   "kw": "google review removal service",
+   "read": 8,
+   "title": "Google Review Removal Services: What They Can Do, What They Cost, and the Red Flags",
+   "lead": "A legitimate Google review removal service can only do what you could do yourself: find reviews that break Google's policies, build the evidence, and report or appeal them properly. What you pay for is experience and time. Anyone promising to remove genuine reviews, or to do it “guaranteed”, is either lying or breaking the rules.",
+   "sections": [
+    {
+     "h": "What a legitimate service actually does",
+     "blocks": [
+      {
+       "ol": [
+        "Audits every negative review against Google's policies – see [[4|the full list of violations]].",
+        "Collects evidence: customer records, timelines, patterns across accounts.",
+        "Reports each review through the correct channel and tracks the status.",
+        "Writes the appeal when Google says “no violation” – see [[5|how the one-time appeal works]].",
+        "Escalates defamatory content to a legal removal request when it's warranted."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "What it costs",
+     "blocks": [
+      {
+       "p": "Pricing models vary a lot. The three common ones:"
+      },
+      {
+       "table": {
+        "head": [
+         "Model",
+         "Typical price",
+         "Risk for you"
+        ],
+        "rows": [
+         [
+          "Monthly retainer",
+          "$300–$1,500 / month",
+          "You pay whether anything is removed or not"
+         ],
+         [
+          "Upfront per review",
+          "$150–$500 per review",
+          "Paid even if Google keeps the review"
+         ],
+         [
+          "Pay on success",
+          "Per removed review",
+          "You only pay for results"
+         ]
+        ]
+       }
+      },
+      {
+       "p": "At byereviews it's pay on success: $90 per review posted within the last four weeks, $125 for older ones, with volume discounts from the second review. Nothing is charged until a review is actually gone."
+      }
+     ]
+    },
+    {
+     "h": "Red flags",
+     "blocks": [
+      {
+       "ul": [
+        "“100% guaranteed removal” – nobody controls Google's decisions.",
+        "Promises to remove honest, genuine reviews.",
+        "Upfront payment with no clear refund terms.",
+        "Offers to “bury” bad reviews with new 5-star ones – that's buying fake reviews, illegal under the FTC rule in the US and the DMCC Act in the UK.",
+        "Cold messages that mention your bad reviews and ask for money – often [[7|review extortion]]."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "Questions to ask before you hire anyone",
+     "blocks": [
+      {
+       "ol": [
+        "Which of my reviews do you think qualify, and under which policy?",
+        "What evidence will you need from me?",
+        "Do I pay if nothing is removed?",
+        "Do you ever post reviews or use multiple accounts to flag?",
+        "Who is the legal entity behind the service?"
+       ]
+      }
+     ]
+    },
+    {
+     "h": "Doing it yourself vs. hiring help",
+     "blocks": [
+      {
+       "p": "For one obvious spam review, report it yourself – [[1|here's how]]. A service is worth it when you have several reviews, a rejected report, or a pattern you can't prove on your own."
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Is it legal to pay for review removal?",
+     "a": "Yes, as long as the service only reports reviews that break Google's policies through Google's own channels. Paying to have genuine reviews suppressed or to post fake ones is not."
+    },
+    {
+     "q": "Can a service remove a review Google already rejected?",
+     "a": "Sometimes – through the appeal with better evidence, or a legal request if the review is defamatory. It can't overrule Google."
+    },
+    {
+     "q": "How fast do services work?",
+     "a": "Clear cases can be removed within days. Appeals take longer. Anyone quoting a fixed deadline for every case is guessing."
+    }
+   ],
+   "img": "assets/blog/02-google-review-removal-service.png"
+  },
+  {
+   "n": 3,
+   "slug": "remove-fake-google-reviews",
+   "cluster": "Fake reviews",
+   "kw": "remove fake google reviews",
+   "read": 9,
+   "title": "How to Remove Fake Google Reviews (and Prove They're Fake)",
+   "lead": "Fake Google reviews violate Google's fake engagement policy and can be removed – but Google wants a reason to believe the review isn't genuine. Check your records, look for patterns across the reviewer's profile, report under “fake engagement” and keep the evidence ready for the appeal.",
+   "sections": [
+    {
+     "h": "Signs a review is fake",
+     "blocks": [
+      {
+       "ul": [
+        "No record of the customer: no booking, invoice, table reservation or call.",
+        "The reviewer profile is new, has no photo and only one or two reviews.",
+        "Several reviews in a short window with similar wording.",
+        "Details that don't match your business: services you don't offer, wrong location, staff who never worked there.",
+        "The same account reviewed your direct competitors positively on the same day."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "Step by step: removing a fake review",
+     "blocks": [
+      {
+       "ol": [
+        "Search your records for the reviewer's name, date and details.",
+        "Open the reviewer's profile and screenshot their review history.",
+        "Report the review in your Business Profile and choose the fake engagement option.",
+        "Track the status in the Reviews Management Tool.",
+        "If it's rejected, file the appeal with your evidence – see [[5|how to win the one-time appeal]]."
+       ]
+      },
+      {
+       "shot": "[SCREENSHOT] Choosing the violation type when reporting a review"
+      }
+     ]
+    },
+    {
+     "h": "How to prove it",
+     "blocks": [
+      {
+       "p": "You don't need courtroom proof, but you need more than “this person was never here”. The strongest evidence:"
+      },
+      {
+       "ul": [
+        "A statement that no customer by that name or at that time exists in your system.",
+        "Screenshots showing the account's pattern (new account, many 1-star reviews, reviews in other cities on the same day).",
+        "Timeline of several reviews appearing together – see [[8|review bombing]] if it's a wave.",
+        "Any link to a competitor or former employee – see [[6|conflict-of-interest reviews]]."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "What if it's not clearly fake?",
+     "blocks": [
+      {
+       "p": "If a real customer left an exaggerated but genuine review, it probably won't qualify as fake. Check the [[4|other policy violations]] – harassment, off-topic content or personal information can still get it removed."
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Can Google see who wrote a fake review?",
+     "a": "Google has signals you don't – devices, locations, account history – which is why a well-documented report often succeeds even if you can't identify the person."
+    },
+    {
+     "q": "Should I reply to a fake review?",
+     "a": "A short, calm reply like “We have no record of your visit, please contact us” is fine and helps readers. Don't accuse or argue."
+    },
+    {
+     "q": "How many fake reviews can I report at once?",
+     "a": "As many as there are. Report each one individually and track them in the Reviews Management Tool."
+    }
+   ],
+   "img": "assets/blog/03-remove-fake-google-reviews.png"
+  },
+  {
+   "n": 4,
+   "slug": "which-google-reviews-can-be-removed",
+   "cluster": "Policy",
+   "kw": "google review policy violations",
+   "read": 8,
+   "title": "Which Google Reviews Can Be Removed? Every Policy Violation Explained",
+   "lead": "Google removes reviews that break its user-contributed content policy – not reviews that are negative, harsh or unfair. The main categories are fake engagement, conflict of interest, off-topic content, harassment and hate speech, personal information, offensive or sexual content, and illegal content.",
+   "sections": [
+    {
+     "h": "The policy violations, one by one",
+     "blocks": [
+      {
+       "table": {
+        "head": [
+         "Violation",
+         "What it means",
+         "Typical example"
+        ],
+        "rows": [
+         [
+          "Fake engagement",
+          "Not based on a real experience, paid, incentivised or posted by bots",
+          "“Never been here, heard it's awful”"
+         ],
+         [
+          "Conflict of interest",
+          "Posted by competitors, current or former employees, or the owner",
+          "A rival shop owner's 1-star review"
+         ],
+         [
+          "Off-topic",
+          "Not about the experience at this place",
+          "Political rants, complaints about a different business"
+         ],
+         [
+          "Harassment & hate speech",
+          "Attacks on individuals or groups",
+          "Insults aimed at a named employee"
+         ],
+         [
+          "Personal information",
+          "Phone numbers, addresses, private details",
+          "A staff member's home address"
+         ],
+         [
+          "Offensive & sexual content",
+          "Profanity, obscene or sexually explicit content",
+          "Slurs, explicit language"
+         ],
+         [
+          "Advertising & spam",
+          "Links, promotions, repeated content",
+          "“Visit my channel for real reviews”"
+         ],
+         [
+          "Impersonation",
+          "Pretending to be someone else",
+          "A review posted in a real customer's name"
+         ],
+         [
+          "Illegal or dangerous content",
+          "Content that breaks the law or promotes harm",
+          "Threats"
+         ]
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "h": "What doesn't count as a violation",
+     "blocks": [
+      {
+       "ul": [
+        "A genuine 1-star review that's unfair or exaggerated.",
+        "Criticism of prices, waiting times or service.",
+        "A review you disagree with factually – unless it's defamatory, which is a legal matter: see [[9|defamatory reviews]].",
+        "Star-only ratings without text – there's nothing for Google to assess."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "How to use this list",
+     "blocks": [
+      {
+       "p": "When you report a review, pick the one violation that fits best and be ready to explain why. For fake reviews, follow [[3|our guide to proving they're fake]]; for competitors and ex-employees, see [[6|conflict-of-interest reviews]]. If Google rejects the report, the [[5|appeal]] is your second chance."
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Can a review be removed just because it's unfair?",
+     "a": "No. Unfair isn't a policy violation. It has to break one of the rules above."
+    },
+    {
+     "q": "What about reviews in another language?",
+     "a": "Language alone isn't a reason. The content still has to break a policy."
+    },
+    {
+     "q": "Can old reviews be removed?",
+     "a": "Yes. There's no time limit on policy violations, though older reviews usually need more evidence."
+    }
+   ],
+   "img": "assets/blog/04-which-google-reviews-can-be-removed.png"
+  },
+  {
+   "n": 5,
+   "slug": "google-review-appeal",
+   "cluster": "Appeals",
+   "kw": "google review appeal",
+   "read": 8,
+   "title": "Google Review Appeal: “Decision Pending”, “No Violation” and How to Win the One-Time Appeal",
+   "lead": "After you report a review, the Reviews Management Tool shows its status. “Decision pending” means Google is still reviewing. “No policy violation” means the report was rejected – and you get one appeal per review. Win it by adding new evidence and naming the exact policy, not by repeating the report.",
+   "sections": [
+    {
+     "h": "What each status means",
+     "blocks": [
+      {
+       "table": {
+        "head": [
+         "Status",
+         "Meaning",
+         "What to do"
+        ],
+        "rows": [
+         [
+          "Decision pending",
+          "Still under review",
+          "Wait – usually a few days"
+         ],
+         [
+          "No policy violation",
+          "Report rejected",
+          "File the appeal with evidence"
+         ],
+         [
+          "Removed",
+          "Review taken down",
+          "Nothing – check it stays down"
+         ],
+         [
+          "Appeal rejected",
+          "Final policy decision",
+          "Only a legal request is left, if it applies"
+         ]
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "h": "How to file the appeal",
+     "blocks": [
+      {
+       "ol": [
+        "Open the Reviews Management Tool and select the rejected review.",
+        "Choose to appeal the decision.",
+        "Name the policy it breaks – see [[4|the list of violations]].",
+        "Add evidence the first report didn't include: records, screenshots, timeline.",
+        "Submit and track the status."
+       ]
+      },
+      {
+       "shot": "[SCREENSHOT] Appeal form in the Reviews Management Tool"
+      }
+     ]
+    },
+    {
+     "h": "What makes an appeal win",
+     "blocks": [
+      {
+       "ul": [
+        "One clear policy, not five.",
+        "Facts, not feelings: “No customer named X visited on that date” beats “this is unfair”.",
+        "Evidence Google can check – reviewer patterns are especially strong for [[3|fake reviews]].",
+        "Short and specific. Reviewers read a lot of appeals."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "When the appeal is rejected",
+     "blocks": [
+      {
+       "p": "The policy route is then closed for that review. If the review is defamatory or illegal, a legal removal request is still possible – see [[9|legal removal in the US, UK and EU]]. Otherwise, a calm public reply is your best option."
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "How long does “Decision pending” last?",
+     "a": "Usually a few days, occasionally a couple of weeks. If it's much longer, check that the report was submitted correctly."
+    },
+    {
+     "q": "Can I appeal twice?",
+     "a": "No. Each review gets one appeal, which is why it should include everything you have."
+    },
+    {
+     "q": "Can I report the review again instead?",
+     "a": "Reporting the same review again without new information rarely helps. Use the appeal."
+    }
+   ],
+   "img": "assets/blog/05-google-review-appeal.png"
+  },
+  {
+   "n": 6,
+   "slug": "remove-google-review-competitor-former-employee",
+   "cluster": "Conflict of interest",
+   "kw": "competitor fake google review",
+   "read": 7,
+   "title": "How to Remove a Google Review From a Competitor or Former Employee",
+   "lead": "Reviews from competitors, current or former employees violate Google's conflict-of-interest policy and can be removed. The challenge is showing the connection – so collect anything that links the reviewer to a rival business or your former staff before you report.",
+   "sections": [
+    {
+     "h": "Why these reviews break the rules",
+     "blocks": [
+      {
+       "p": "Google doesn't allow reviews from people with a stake in the business – positive or negative. A competitor or an ex-employee with a grudge isn't reviewing a customer experience, which makes it a conflict of interest."
+      }
+     ]
+    },
+    {
+     "h": "How to spot them",
+     "blocks": [
+      {
+       "ul": [
+        "The reviewer's name matches a former employee, or a nickname they used.",
+        "Inside details only staff would know: rotas, internal disputes, names of colleagues.",
+        "The account reviewed a competitor positively around the same time.",
+        "A spike of 1-star reviews right after someone left or a rival opened nearby."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "Step by step",
+     "blocks": [
+      {
+       "ol": [
+        "Document the connection: employment dates, the competitor link, matching timelines.",
+        "Report the review under conflict of interest.",
+        "Track it in the Reviews Management Tool.",
+        "If rejected, appeal with the documentation – see [[5|the appeal guide]]."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "When it's also fake",
+     "blocks": [
+      {
+       "p": "Competitors often post from accounts that never visited you. In that case the review is also [[3|fake engagement]] – report under whichever violation you can support best. The full list is in [[4|which reviews can be removed]]."
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Can I name the former employee in my reply?",
+     "a": "Don't. Naming people publicly can create legal trouble and breaks Google's personal information rules."
+    },
+    {
+     "q": "What if the ex-employee's review is true?",
+     "a": "It's still a conflict of interest under Google's policy, but expect Google to look at it carefully. Keep your evidence factual."
+    }
+   ],
+   "img": "assets/blog/06-remove-google-review-competitor-former-employee.png"
+  },
+  {
+   "n": 7,
+   "slug": "google-review-extortion-scam",
+   "cluster": "Extortion",
+   "kw": "google review extortion scam",
+   "read": 6,
+   "title": "Negative Review Extortion: What to Do When Someone Demands Money to Remove 1-Star Reviews",
+   "lead": "If someone posts 1-star reviews and then demands money to remove them – or threatens to post more – that's review extortion. Don't pay and don't negotiate. Screenshot everything, report the reviews and the extortion to Google through its dedicated report path, and report the attempt to the police.",
+   "sections": [
+    {
+     "h": "How the scam works",
+     "blocks": [
+      {
+       "ol": [
+        "A wave of 1-star reviews appears, often without text or with generic text.",
+        "You receive a message on WhatsApp, Telegram or email offering to “fix” it.",
+        "They demand payment, often in crypto or gift cards.",
+        "Paying usually leads to more demands, not fewer reviews."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "What to do right now",
+     "blocks": [
+      {
+       "ol": [
+        "Don't reply or pay.",
+        "Screenshot the messages, phone numbers, accounts and every review.",
+        "Report the reviews in your Business Profile.",
+        "Use Google's report form for review extortion so the case is handled as extortion, not just as single reviews.",
+        "Report the attempt to your local police or national fraud reporting service."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "If it turns into a wave",
+     "blocks": [
+      {
+       "p": "Extortion often comes together with a sudden wave of reviews. Read [[8|how to stop review bombing]] for the steps that protect your profile while Google investigates, and use [[5|the appeal]] for any review that isn't removed on the first try."
+      }
+     ]
+    },
+    {
+     "h": "How to tell a scam from a real service",
+     "blocks": [
+      {
+       "p": "Legitimate services never contact you because of reviews they posted, never demand crypto, and never threaten. See [[2|the red flags of removal services]]."
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Will paying make the reviews go away?",
+     "a": "Rarely. Extortionists often come back for more or never remove anything."
+    },
+    {
+     "q": "Does Google remove extortion reviews?",
+     "a": "Reviews posted as part of extortion break Google's policies. Reporting them with the extortion evidence gives Google the full picture."
+    }
+   ],
+   "img": "assets/blog/07-google-review-extortion-scam.png"
+  },
+  {
+   "n": 8,
+   "slug": "google-review-bombing",
+   "cluster": "Review bombing",
+   "kw": "review bombing google",
+   "read": 7,
+   "title": "Review Bombing on Google: How to Stop a Sudden Wave of 1-Star Reviews",
+   "lead": "Review bombing is a coordinated wave of negative reviews, often triggered by news, social media or a single angry post. Google has protections against unusual review activity and can remove reviews that aren't based on real experiences. Report fast, document the pattern and don't fuel it with public arguments.",
+   "sections": [
+    {
+     "h": "What counts as review bombing",
+     "blocks": [
+      {
+       "ul": [
+        "Many 1-star reviews in hours or days, far above your normal rate.",
+        "Reviews about a news story or a post, not about a visit.",
+        "Reviewers from other cities or countries.",
+        "Copy-paste wording across accounts."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "The first 24 hours",
+     "blocks": [
+      {
+       "ol": [
+        "Screenshot the review list with dates – the pattern is your evidence.",
+        "Report the reviews; off-topic and fake engagement are usually the right violations.",
+        "Don't reply to each review. One calm statement, if any.",
+        "Check the Reviews Management Tool daily and note which ones Google removes."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "Why Google usually sides with you",
+     "blocks": [
+      {
+       "p": "Reviews driven by news or social media rather than a customer experience break Google's rules. Google also watches for unexpected spikes and can limit new reviews for a while. Reviews that remain can often be removed individually as [[3|fake]] or off-topic."
+      }
+     ]
+    },
+    {
+     "h": "If someone demands money",
+     "blocks": [
+      {
+       "p": "A wave followed by a payment demand is extortion – follow [[7|the extortion steps]] instead. For any review that survives the first report, use [[5|the appeal]]."
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Will a review bomb hurt my ranking?",
+     "a": "It can dent your average rating and click-through rate for a while. Fast reporting limits the damage."
+    },
+    {
+     "q": "Should I turn off reviews?",
+     "a": "You can't turn off Google reviews for a Business Profile. Focus on reporting and documenting."
+    }
+   ],
+   "img": "assets/blog/08-google-review-bombing.png"
+  },
+  {
+   "n": 9,
+   "slug": "defamatory-google-review-removal",
+   "cluster": "Legal",
+   "kw": "defamatory google review",
+   "read": 9,
+   "title": "Defamatory Google Reviews: Legal Removal in the US, UK and EU",
+   "lead": "A review is defamatory when it states false facts that damage your reputation – “they steal from customers” – not when it shares a harsh opinion. Google has a legal removal request for this, separate from policy reports. What you need to show depends on whether you're in the US, the UK or the EU.",
+   "sections": [
+    {
+     "h": "Opinion vs. false statement of fact",
+     "blocks": [
+      {
+       "table": {
+        "head": [
+         "Probably opinion",
+         "Possibly defamatory"
+        ],
+        "rows": [
+         [
+          "“Worst pizza I've ever had”",
+          "“They use expired meat”"
+         ],
+         [
+          "“Rude and overpriced”",
+          "“The owner is a criminal”"
+         ],
+         [
+          "“Wouldn't recommend”",
+          "“They were shut down for health violations” (when untrue)"
+         ]
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "h": "United States",
+     "blocks": [
+      {
+       "p": "Section 230 protects Google from liability for what users post, so Google isn't obliged to remove defamatory reviews on request. In practice, a court order finding the content defamatory is the strongest route. Google still reviews legal removal requests and may act on clear cases."
+      }
+     ]
+    },
+    {
+     "h": "United Kingdom",
+     "blocks": [
+      {
+       "p": "Under the Defamation Act 2013, a statement has to cause, or be likely to cause, serious harm – for businesses, serious financial loss. Google can be put on notice through its legal removal request; a solicitor's letter adds weight."
+      }
+     ]
+    },
+    {
+     "h": "European Union",
+     "blocks": [
+      {
+       "p": "The Digital Services Act requires platforms to act on notices of illegal content, and defamation is illegal under national law. Submit a legal removal request explaining which statements are false and why. Personal data in reviews can additionally be challenged under the GDPR."
+      }
+     ]
+    },
+    {
+     "h": "Try the policy route first",
+     "blocks": [
+      {
+       "p": "Many defamatory reviews also break Google's policies – harassment, fake engagement or conflict of interest. That route is faster and cheaper. Check [[4|the list of violations]] and use [[5|the appeal]] before going legal."
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Do I need a lawyer?",
+     "a": "Not to file Google's legal removal request. For a court order – which is often needed in the US – yes."
+    },
+    {
+     "q": "Can I sue the reviewer?",
+     "a": "Yes, if you can identify them and the statement is defamatory. It's expensive and slow, so it's usually the last resort."
+    }
+   ],
+   "img": "assets/blog/09-defamatory-google-review-removal.png"
+  },
+  {
+   "n": 10,
+   "slug": "can-business-owner-delete-google-reviews",
+   "cluster": "Basics",
+   "kw": "can a business delete google reviews",
+   "read": 5,
+   "title": "Can a Business Owner Delete Google Reviews? The Honest Answer",
+   "lead": "No. A business owner can't delete Google reviews – not even on their own profile. You can reply to them, and you can report reviews that break Google's policies so Google removes them. Anyone who says you can simply delete reviews is wrong or selling something.",
+   "sections": [
+    {
+     "h": "What owners can do",
+     "blocks": [
+      {
+       "ul": [
+        "Reply publicly to any review.",
+        "Report reviews that break Google's policies – see [[4|which ones qualify]].",
+        "Track reports and appeal a rejection – see [[5|the appeal guide]].",
+        "Ask happy customers to leave honest reviews (never pay or incentivise them)."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "What owners can't do",
+     "blocks": [
+      {
+       "ul": [
+        "Delete or hide reviews.",
+        "Turn off reviews on a Business Profile.",
+        "Remove a review by deleting and recreating the profile – reviews are tied to the place.",
+        "Pay for positive reviews – illegal under the FTC rule in the US and the DMCC Act in the UK."
+       ]
+      }
+     ]
+    },
+    {
+     "h": "The fastest honest route",
+     "blocks": [
+      {
+       "p": "If a review is [[3|fake]] or clearly breaks a rule, report it today. The full process is in [[1|how to remove a Google review]]."
+      }
+     ]
+    }
+   ],
+   "faq": [
+    {
+     "q": "Can I delete a review I left as a customer?",
+     "a": "Yes – reviewers can delete their own reviews. Owners can't delete other people's."
+    },
+    {
+     "q": "Does replying help?",
+     "a": "Yes. A calm reply shows future customers how you handle problems, and it doesn't affect removal."
+    }
+   ],
+   "img": "assets/blog/10-can-business-owner-delete-google-reviews.png"
+  }
+ ],
+ "links": {
+  "1": [
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10
+  ],
+  "2": [
+   4,
+   5,
+   7
+  ],
+  "3": [
+   4,
+   5,
+   6,
+   8
+  ],
+  "4": [
+   3,
+   5,
+   6,
+   9
+  ],
+  "5": [
+   3,
+   4,
+   9
+  ],
+  "6": [
+   3,
+   4,
+   5
+  ],
+  "7": [
+   8,
+   5
+  ],
+  "8": [
+   3,
+   7,
+   5
+  ],
+  "9": [
+   4,
+   5
+  ],
+  "10": [
+   4,
+   3,
+   5
+  ]
+ }
+}

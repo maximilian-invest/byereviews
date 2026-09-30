@@ -30,3 +30,5 @@ Files in `deploy/` are reference copies. Changing them does **not** change the s
 - `public/index.html`: the site (design runtime in `support.js`, React served locally from `assets/vendor/`)
 - `public/order.php`: order form endpoint (emails team + customer, stores JSON copy, per-IP rate limit)
 - Legal pages: `imprint.html`, `terms.html`, `withdrawal.html`, `privacy.html`
+- Blog: `public/blog/` is **generated** from `content/blog-posts.json` by `python3 tools/build_blog.py` (static HTML, schema, sitemap). Edit the JSON, rerun the script, commit the output. Internal links in the JSON use `[[n|text]]` (n = post number). `[AUTHOR]` bios and `[SCREENSHOT]` blocks are hidden until real content replaces them. `content/blog-posts/*.md` are reference copies only.
+- Links into the app from static pages: `/#order` opens the order flow, `/#login` the login, `/#how` etc. scroll to sections.

@@ -27,6 +27,10 @@ One-time server setup (already done on 187.124.166.153):
    Without this file PHP `mail()` is used, which does not work on this VPS.
 5. Test: place a test order, both the team email and the customer confirmation should arrive.
 
+## Blog
+
+Posts live in `content/blog-posts.json`. After editing run `python3 tools/build_blog.py`; it regenerates `public/blog/**` and `public/sitemap.xml`. Commit both.
+
 ## Local preview
 
 ```
