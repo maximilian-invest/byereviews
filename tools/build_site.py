@@ -166,6 +166,74 @@ s = s[:idx] + '\n' + overrides + s[idx:]
 
 assert 'cdn.openart.ai' not in s and 'fonts.googleapis' not in s and 'href="#"' not in s.split('data-dc-script')[0], 'leftover external/dead link'
 
+HOME_LIKE = ('index.html', 'pricing/index.html', 'how-it-works/index.html', 'faq/index.html', 'results/index.html')
+
+# Intent landing pages for Google Ads ad groups: same page, hero + first section match the search.
+# Only claims we can back: policy-violating reviews only, no success guarantee, prices as on /pricing/.
+INTENTS = {
+    'fake-review-removal/index.html': dict(
+        title='Fake Google Review Removal – Pay Only Once It\'s Removed | byereviews',
+        desc='Fake account, no real visit, a competitor posing as a customer? We report fake Google reviews through Google\'s official channels. $90 per removed review, nothing upfront.',
+        grey='Fake Google review on your profile?', white='We get it removed.',
+        sub='Fake accounts, people who never visited, competitors posing as customers: all of it breaks Google\'s policies. We document each case and report it through the official channels. You pay $90 only once the review is actually gone.',
+        h2a='How to spot a fake review.', h2b='We check every one for free.',
+        cards=[('No real visit', 'The reviewer was never your customer: no booking, no order, no record. Google removes reviews that aren\'t based on a real experience.'),
+               ('Throwaway account', 'A new profile with one review, no photo and no history, often posted in a wave with others. A classic spam pattern.'),
+               ('Competitor or ex-employee', 'Reviews from people with a conflict of interest are against Google\'s rules, even when they sound like a customer.')]),
+    'remove-bad-google-reviews/index.html': dict(
+        title='Remove Bad Google Reviews – No Removal, No Fee | byereviews',
+        desc='Many 1-star reviews break Google\'s rules: off-topic rants, hate, conflicts of interest, reviews meant for someone else. Free check in 24h, pay only for reviews that are removed.',
+        grey='Unfair 1-star review?', white='Get it removed.',
+        sub='Not every bad review can go, but many break Google\'s rules: off-topic rants, insults, conflicts of interest, reviews meant for another business. We check yours for free and pursue removal of the ones that qualify. You pay only for what\'s actually removed.',
+        h2a='Which bad reviews qualify.', h2b='And which don\'t.',
+        cards=[('Off-topic or wrong business', 'Rants about politics, the city or the parking situation, or a review meant for someone else. Not about your business, so not allowed.'),
+               ('Insults, hate, harassment', 'Personal attacks on you or your staff, profanity, discrimination or threats violate Google\'s content policy.'),
+               ('Honest criticism stays', 'A fair review of a real visit is protected, even if it hurts. We tell you upfront, and you never pay for reviews we can\'t remove.')]),
+    'review-removal-service/index.html': dict(
+        title='Google Review Removal Service – $90 per Removed Review | byereviews',
+        desc='Google review removal with the price on the page: $90 per removed review (posted within 4 weeks), $125 for older ones. No deposit, no retainer, no sales call.',
+        grey='Google review removal service.', white='Pay only for what\'s gone.',
+        sub='The price is on the page: $90 per removed review posted within the last 4 weeks, $125 for older ones, up to 15% off for several. No deposit, no retainer, no sales call. Order online in about 2 minutes.',
+        h2a='Why businesses choose us.', h2b='No quote, no call, no risk.',
+        cards=[('Price shown upfront', 'Most removal services only quote after a call. Ours is fixed per review and on this page, including the volume discount.'),
+               ('No deposit, no retainer', 'Nothing is charged when you order. You get a payment link only for reviews that are actually removed.'),
+               ('Free check within 24h', 'We assess every review against Google\'s policies and tell you honestly which ones qualify before any work starts.')]),
+}
+
+
+def esc(t):
+    return t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
+
+
+def intent_page(html, it):
+    a = lambda t: esc(t).replace('&quot;', '"')
+    html = html.replace('<title>byereviews – Remove fake &amp; unfair Google reviews</title>', f'<title>{esc(it["title"])}</title>', 1)
+    html = html.replace('<meta property="og:title" content="byereviews – Remove fake &amp; unfair Google reviews">', f'<meta property="og:title" content="{esc(it["title"])}">', 1)
+    html = re.sub(r'<meta name="description" content="[^"]*">', lambda m: f'<meta name="description" content="{esc(it["desc"])}">', html, count=1)
+    html = re.sub(r'<meta property="og:description" content="[^"]*">', lambda m: f'<meta property="og:description" content="{esc(it["desc"])}">', html, count=1)
+    # hero text (template + prerender snapshot)
+    n0 = html.count('One fake review is costing you customers.')
+    html = html.replace('>One fake review is costing you customers.</span>', f'>{a(it["grey"])}</span>')
+    html, n1 = re.subn(r'>Get it removed\.</span>(\s*</h1>)', lambda m: f'>{a(it["white"])}</span>{m.group(1)}<p class="br-sub" style="margin:0;font-size:clamp(17px,1.5vw,20px);line-height:1.45;color:#CFCFCF;max-width:620px;text-wrap:pretty">{a(it["sub"])}</p>', html)
+    assert n0 >= 1 and n1 == n0, (n0, n1)
+    cards = ''.join(f'''
+    <div style="background:{'#151515' if i == 2 else '#FFFFFF'};color:{'#fff' if i == 2 else '#151515'};border-radius:28px;padding:clamp(22px,2.6vw,30px);display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:'Geist Mono',monospace;font-size:13px;color:{'#8A8A8A' if i == 2 else '#6B6B6B'}">0{i + 1}</span>
+      <h3 style="margin:0;font-size:24px;font-weight:500;letter-spacing:-.02em">{a(t)}</h3>
+      <p style="margin:0;font-size:16px;line-height:1.5;color:{'#B5B5B5' if i == 2 else '#555'};text-wrap:pretty">{a(d)}</p>
+    </div>''' for i, (t, d) in enumerate(it['cards']))
+    section = f'''<section data-screen-label="Intent" style="padding:clamp(56px,8vw,96px) clamp(6px,2.6vw,36px) clamp(8px,1vw,16px);display:flex;flex-direction:column;gap:clamp(28px,4vw,48px)">
+  <h2 style="margin:0;font-weight:500;font-size:clamp(36px,4.4vw,64px);line-height:1;letter-spacing:-.04em;max-width:900px"><span style="color:#9E9E9E">{a(it["h2a"])}</span> {a(it["h2b"])}</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:16px">{cards}
+  </div>
+</section>
+
+'''
+    html, n2 = re.subn(r'<section[^>]*\bid="how"', lambda m: section + m.group(0), html)
+    assert n2 == n0, n2
+    return html
+
+
 pages = {
     'index.html': ('/', ''),
     'order/index.html': ('/order/', ''),
@@ -173,18 +241,22 @@ pages = {
     'how-it-works/index.html': ('/', ''),
     'faq/index.html': ('/', ''),
     'results/index.html': ('/', ''),
+    **{k: ('/' + k[:-len('index.html')], '') for k in INTENTS},
     'order/thanks/index.html': ('/order/', '<meta name="robots" content="noindex, nofollow">\n'),
     'login/index.html': ('/login/', '<meta name="robots" content="noindex, follow">\n'),
     'dashboard/index.html': ('/dashboard/', '<meta name="robots" content="noindex, nofollow">\n'),
 }
+# the homepage snapshot (made by tools/prerender.js) is reused for every landing-page URL
+home = (PUBLIC / 'index.html').read_text(encoding='utf-8') if (PUBLIC / 'index.html').exists() else ''
+snap = re.search(r'<div id="prerender">.*?</div><!--/prerender-->', home, flags=re.S)
 for path, (canonical, robots) in pages.items():
     out = PUBLIC / path
     out.parent.mkdir(parents=True, exist_ok=True)
     html = s.replace('__CANONICAL__', canonical).replace('__ROBOTS__', robots)
-    prev = out.read_text(encoding='utf-8') if out.exists() else ''
-    # keep an existing prerender snapshot (made by tools/prerender.js)
-    snap = re.search(r'<div id="prerender">.*?</div><!--/prerender-->', prev, flags=re.S)
-    if snap and path in ('index.html', 'pricing/index.html', 'how-it-works/index.html', 'faq/index.html', 'results/index.html'):
+    if snap and (path in HOME_LIKE or path in INTENTS):
         html = html.replace('<!--PRERENDER-->', snap.group(0), 1)
+    if path in INTENTS:
+        html = html.replace('<meta property="og:url" content="https://byereviews.com/">', f'<meta property="og:url" content="https://byereviews.com{canonical}">', 1)
+        html = intent_page(html, INTENTS[path])
     out.write_text(html, encoding='utf-8')
 print('built', ', '.join(pages))

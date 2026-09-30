@@ -275,7 +275,7 @@ def build_post(p):
 
 
 def build_sitemap():
-    urls = [('/', 'weekly', '1.0'), ('/blog/', 'weekly', '0.8')] + [(url(p), 'monthly', '0.9' if p['n'] <= 2 else '0.7') for p in posts] \
+    urls = [('/', 'weekly', '1.0'), ('/fake-review-removal/', 'monthly', '0.9'), ('/remove-bad-google-reviews/', 'monthly', '0.9'), ('/review-removal-service/', 'monthly', '0.9'), ('/blog/', 'weekly', '0.8')] + [(url(p), 'monthly', '0.9' if p['n'] <= 2 else '0.7') for p in posts] \
         + [('/terms.html', 'yearly', '0.2'), ('/withdrawal.html', 'yearly', '0.2')]
     items = ''.join(f'  <url><loc>{SITE}{u}</loc><lastmod>{updated_iso}</lastmod><changefreq>{c}</changefreq><priority>{pr}</priority></url>\n' for u, c, pr in urls)
     (PUBLIC / 'sitemap.xml').write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{items}</urlset>\n', encoding='utf-8')
