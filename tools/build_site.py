@@ -92,6 +92,15 @@ rep('<a href="#" style="text-decoration:underline">Terms</a>', '<a href="/terms.
 rep('<a href="#" style="text-decoration:underline">Right of Withdrawal</a>', '<a href="/withdrawal.html" target="_blank" rel="noopener" style="text-decoration:underline">Right of Withdrawal</a>')
 rep('&lt;hello@byereviews.com&gt;', '&lt;info@byereviews.com&gt;')
 
+# reviews older than 4 weeks: show the removal probability
+rep('<span style="font-size:18px">Older than 4 weeks</span>',
+    '<span style="font-size:18px">Older than 4 weeks</span>\n      <span style="align-self:flex-start;font-size:13px;font-weight:500;background:#EFEFEF;border-radius:10px;padding:6px 10px">~70% removal probability</span>')
+rep("tag: noText ? '' : on ? '✓ ' + this.fmt(p.days <= 28 ? 90 : 125) : this.fmt(p.days <= 28 ? 90 : 125),",
+    "tag: noText ? '' : (on ? '✓ ' : '') + this.fmt(p.days <= 28 ? 90 : 125) + (p.days > 28 ? ' · ~70% removal chance' : ''),")
+rep('Older<span style="font-weight:500">{{ priceOlder }}</span>',
+    'Older<span style="font-weight:500">{{ priceOlder }}</span><span style="opacity:.7">· ~70% chance</span>')
+rep('<span>Older (&gt; 4 weeks) × {{ nOlder }}</span><span>{{ subOlder }}</span>', '<span>Older (&gt; 4 weeks) × {{ nOlder }}<span style="display:block;color:#8A8A8A;font-size:13px;margin-top:2px">~70% removal chance</span></span><span style="white-space:nowrap">{{ subOlder }}</span>')
+
 # no unverified rating claims
 s, n = re.subn(r'\s*<span[^>]*>Trustpilot ★ 4\.9</span>', '', s)
 assert n == 1, n

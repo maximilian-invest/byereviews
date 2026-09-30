@@ -208,6 +208,7 @@ input,textarea,select,button{font-family:inherit}
       <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">// older review</span>
       <span style="font-size:clamp(64px,7vw,88px);font-weight:500;letter-spacing:-.05em;line-height:1">{{ priceOlder }}</span>
       <span style="font-size:18px">Older than 4 weeks</span>
+      <span style="align-self:flex-start;font-size:13px;font-weight:500;background:#EFEFEF;border-radius:10px;padding:6px 10px">~70% removal probability</span>
       <span style="margin-top:auto;font-size:15px;color:#6B6B6B;line-height:1.5">Per removed review. Older reviews need more documentation — we still take them on.</span>
     </div>
     <div style="background:#151515;color:#fff;border-radius:28px;padding:clamp(24px,3vw,36px);display:flex;flex-direction:column;gap:clamp(12px,1.6vw,20px);min-height:clamp(240px,26vw,320px)">
@@ -630,7 +631,7 @@ input,textarea,select,button{font-family:inherit}
           </sc-if>
           <div style="padding-left:50px;display:flex;gap:6px;flex-wrap:wrap">
             <button onClick="{{ r.setRecent }}" style="cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-size:14px;display:flex;gap:8px;background:{{ r.recentBg }};color:{{ r.recentFg }}">Last 4 weeks<span style="font-weight:500">{{ priceRecent }}</span></button>
-            <button onClick="{{ r.setOlder }}" style="cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-size:14px;display:flex;gap:8px;background:{{ r.olderBg }};color:{{ r.olderFg }}">Older<span style="font-weight:500">{{ priceOlder }}</span></button>
+            <button onClick="{{ r.setOlder }}" style="cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-size:14px;display:flex;gap:8px;background:{{ r.olderBg }};color:{{ r.olderFg }}">Older<span style="font-weight:500">{{ priceOlder }}</span><span style="opacity:.7">· ~70% chance</span></button>
           </div>
         </div>
       </sc-for>
@@ -687,7 +688,7 @@ input,textarea,select,button{font-family:inherit}
     <div style="padding:20px 18px 8px;display:flex;flex-direction:column;gap:14px">
       <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">// your order</span>
       <div style="display:flex;justify-content:space-between;font-size:15px"><span>Recent (≤ 4 weeks) × {{ nRecent }}</span><span>{{ subRecent }}</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:15px"><span>Older (&gt; 4 weeks) × {{ nOlder }}</span><span>{{ subOlder }}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:15px"><span>Older (&gt; 4 weeks) × {{ nOlder }}<span style="display:block;color:#8A8A8A;font-size:13px;margin-top:2px">~70% removal chance</span></span><span style="white-space:nowrap">{{ subOlder }}</span></div>
     </div>
     <div style="padding:0 18px 8px;display:flex;flex-direction:column;gap:10px">
       <div style="display:flex;justify-content:space-between;font-size:15px;padding-top:12px;border-top:1px solid #E6E6E6"><span style="color:#6B6B6B">Subtotal</span><span>{{ subtotal }}</span></div>
@@ -1203,7 +1204,7 @@ class Component extends DCLogic {
         const on = !!s.selected[p.id], noText = !p.text;
         return { ...p, initial: p.name[0], when: this.whenFor(p.days), starsOn: '★'.repeat(p.stars), starsOff: '★'.repeat(5 - p.stars),
           textShown: noText ? 'Star rating only — no text, can\'t be removed' : p.text,
-          tag: noText ? '' : on ? '✓ ' + this.fmt(p.days <= 28 ? 90 : 125) : this.fmt(p.days <= 28 ? 90 : 125),
+          tag: noText ? '' : (on ? '✓ ' : '') + this.fmt(p.days <= 28 ? 90 : 125) + (p.days > 28 ? ' · ~70% removal chance' : ''),
           border: on ? '#151515' : 'transparent', opacity: noText ? 0.5 : 1, cursor: noText ? 'not-allowed' : 'pointer',
           boxBg: on ? '#151515' : '#FFFFFF', boxBd: on ? '#151515' : '#C8C8C8',
           toggle: () => { if (noText) return; this.setState(st => ({ selected: { ...st.selected, [p.id]: !st.selected[p.id] } })); } };
