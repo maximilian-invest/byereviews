@@ -81,6 +81,9 @@
     this.api('admin-wa', { body: { order: o.id, reviews: list.map(r => r.id) } }).then(r => r.ok ? this.replaceOrder(r.order) : this.fail(r, 'Could not save'));
   }
 
+  statusMeta(st) { return this._designStatusMeta(st) || ['Cancelled', '#FFFFFF', '#8A8A8A', '#D2D2D2']; }
+  payInfo(o) { const p = this._designPayInfo(o); return o.cancelled && (p[0] === '—' || p[0] === 'Paid') ? ['Cancelled', '#FFFFFF', '#D93025', '#D93025'] : p; }
+
   // real numbers for the analytics view, in the shape the design renders
   analytics(range, empty, mob) {
     const d = this.state.anData, s = this.state;
@@ -154,6 +157,13 @@
           this.api('admin-paylink', { body: { order: od.id } }).then(r => r.ok ? (this.replaceOrder(r.order), this.toast('Payment link created · emailed to customer')) : this.fail(r)); },
         resendLink: () => { if (busy('resend')) return; this.api('admin-paylink', { body: { order: od.id, resend: true } }).then(r => r.ok ? (this.replaceOrder(r.order), this.toast('Payment email resent')) : this.fail(r)); },
         markPaid: () => { if (!confirm('Mark ' + od.id + ' as paid?')) return; this.api('admin-markpaid', { body: { order: od.id } }).then(r => r.ok ? (this.replaceOrder(r.order), this.toast('Marked as paid')) : this.fail(r)); },
+        orderReason: s.orderReason || '', onOrderReason: e => this.setState({ orderReason: e.target.value }),
+        orderNotify: s.orderNotify !== false, onOrderNotify: e => this.setState({ orderNotify: e.target.checked }),
+        cancelOrder: () => { if (!confirm('Cancel ' + od.id + '? All open reviews stop.')) return;
+          this.api('admin-cancel', { body: { order: od.id, reason: s.orderReason || '', notify: s.orderNotify !== false } }).then(r => r.ok ? (this.replaceOrder(r.order), this.setState({ orderReason: '' }), this.toast('Order cancelled' + (s.orderNotify !== false ? ' · customer notified' : ''))) : this.fail(r, 'Could not cancel')); },
+        deleteOrder: () => { if (!confirm('Delete ' + od.id + '? It disappears from the list and the customer\'s account.')) return;
+          this.api('admin-delete', { body: { order: od.id, reason: s.orderReason || '', notify: s.orderNotify !== false } }).then(r => { if (!r.ok) return this.fail(r, 'Could not delete');
+            this.setState(st => ({ orders: st.orders.filter(x => x.id !== od.id), view: 'orders', openId: null, orderReason: '' })); this.toast('Order deleted' + (s.orderNotify !== false ? ' · customer notified' : '')); }); },
         sendPw: () => { if (!confirm('Send a new password to ' + od.cust.email + '?')) return; this.api('admin-resetpw', { body: { order: od.id } }).then(r => r.ok ? this.toast('New password emailed to ' + r.email) : this.fail(r)); }
       });
       // "Send all" = every review that is still active (submitted or already in progress), with its link
@@ -162,10 +172,14 @@
       if (v.o) {
         v.o.hasOpen = active.length > 0;
         const c = this.calc(od);
-        Object.assign(v.o, { subtotal: money(c.sub), discAmt: '– ' + money(c.disc), total: money(c.total),
+        Object.assign(v.o, { canCancel: !od.cancelled, cancelled: !!od.cancelled,
+          cancelledInfo: od.cancelled ? (od.cancelledAt ? this.fmtD(od.cancelledAt) : '') + ' · by ' + (od.cancelledBy === 'customer' ? 'customer' : 'team') + (od.cancelReason ? ' – ' + od.cancelReason : '') : '',
+          subtotal: money(c.sub), discAmt: '– ' + money(c.disc), total: money(c.total),
           mailto: 'mailto:' + od.cust.email + '?subject=' + encodeURIComponent('Your order ' + od.id), waCustomer: 'https://wa.me/' + (od.cust.phone || '').replace(/[^\d]/g, ''), hasPhone: !!(od.cust.phone || '').replace(/[^\d]/g, ''),
           paidVia: od.payment.via === 'manual' ? 'marked manually' : 'via Stripe' });
-        v.o.reviews = v.o.reviews.map(r => ({ ...r, price: money(r.age === 'recent' ? 90 : 125) }));
+        v.o.reviews = v.o.reviews.map(r => ({ ...r, price: money(r.age === 'recent' ? 90 : 125),
+          canQuick: r.canQuick && r.status !== 'cancelled',
+          textShown: !r.text ? (r.status === 'cancelled' ? 'Cancelled · ' : '') + 'Submitted by link – open it on Google' : (r.status === 'cancelled' ? 'Cancelled · ' : '') + r.textShown }));
       }
     }
     return v;

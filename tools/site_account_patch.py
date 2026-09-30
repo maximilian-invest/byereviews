@@ -93,3 +93,17 @@ reset_card = ('  <div style="width:100%;max-width:440px;background:#FFFFFF;borde
                       + f'<button onClick="{{{{ leaveReset }}}}" style="{BIG}">Send a new link</button>')
               + '</div>')
 s = s[:c0] + sc_if('loginMode', '\n' + login_card + '\n', 'true') + '\n' + sc_if('resetMode', '\n' + reset_card + '\n') + s[c1:]
+
+# ---------- cancel order (customer) ----------
+cancel_card = sc_if('pCanCancel',
+    f'<div style="{CARD};border:1px solid #D2D2D2"><span style="font-size:18px;font-weight:500">Cancel this order</span>'
+    '<span style="font-size:14px;color:#6B6B6B;line-height:1.5">We stop working on all reviews that are still open. Reviews that were already removed stay billable.</span>'
+    + sc_if('cancelOpen',
+            f'<textarea value="{{{{ cancelReason }}}}" onChange="{{{{ onCancelReason }}}}" rows="2" placeholder="Reason (optional)" style="{IN};resize:vertical"></textarea>'
+            f'<div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{{{ confirmCancel }}}}" style="{BTN}">Cancel order</button><button onClick="{{{{ closeCancel }}}}" style="{BTN2}">Keep order</button></div>')
+    + sc_if('cancelClosed', f'<button onClick="{{{{ openCancel }}}}" style="{BTN2}">Cancel order</button>', 'true')
+    + '</div>')
+rep('  <sc-if value="{{ pHasInvoice }}" hint-placeholder-val="{{ false }}">', cancel_card + '\n  <sc-if value="{{ pHasInvoice }}" hint-placeholder-val="{{ false }}">')
+rep(greet + sc_if('hasAccNotice', '<span style="font-size:14px;font-weight:500;background:#FFFFFF;border-radius:12px;padding:8px 12px;align-self:flex-start">{{ accNotice }}</span>'),
+    greet + sc_if('hasAccNotice', '<span style="font-size:14px;font-weight:500;background:#FFFFFF;border-radius:12px;padding:8px 12px;align-self:flex-start">{{ accNotice }}</span>')
+    + sc_if('pCancelled', '<span style="font-size:14px;font-weight:500;background:#FFFFFF;color:#D93025;border:1px solid #D93025;border-radius:12px;padding:8px 12px;align-self:flex-start">Order cancelled {{ pCancelledAt }}</span>'))

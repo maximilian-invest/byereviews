@@ -26,6 +26,7 @@ function admin_order_view(array $o): array {
     $status = ($p['status'] ?? 'unpaid') === 'paid' ? 'paid' : ((($p['status'] ?? '') === 'link_sent') ? 'link_sent' : 'unpaid');
     return [
         'id' => $o['id'], 'date' => ms($o['createdAt']), 'currency' => $o['currency'],
+        'cancelled' => ($o['status'] ?? '') === 'cancelled', 'cancelledAt' => ms($o['cancelledAt'] ?? null), 'cancelledBy' => $o['cancelledBy'] ?? '', 'cancelReason' => $o['cancelReason'] ?? '',
         'cust' => ['name' => $c['name'], 'company' => $c['company'] ?: $b['name'], 'email' => $c['email'], 'phone' => $c['phone'],
             'address' => trim(implode(', ', array_filter([$c['street'], $c['city']]))), 'country' => $c['country']],
         'biz' => ['name' => $b['name'] ?: ($c['company'] ?: '—'), 'address' => $b['address'], 'profile' => $profile,
@@ -235,4 +236,40 @@ function action_admin_analytics(): void {
     admin_required();
     $range = (int)($_GET['range'] ?? 30);
     json_out(['ok' => true] + analytics_data(in_array($range, [7, 30, 90], true) ? $range : 0));
+}
+
+function action_admin_cancel(): void {
+    admin_required();
+    $d = json_body();
+    $id = clean($d['order'] ?? '', 20);
+    $reason = clean($d['reason'] ?? '', 1000);
+    $o = cancel_order_record($id, 'team', $reason);
+    if (!$o) fail(409, store_get('order', $id) ? 'already_cancelled' : 'order_not_found');
+    @unlink(store_path('notify', $id));
+    log_event("order $id cancelled by admin");
+    if (!empty($d['notify'])) mail_order_cancelled($o, 'team', $reason);
+    json_out(['ok' => true, 'order' => admin_order_view($o)]);
+}
+
+/** Removes the order from the admin list and the customer's account. The record is archived
+ *  (public/orders/deleted/) because invoices must be kept – it is not destroyed. */
+function action_admin_delete(): void {
+    admin_required();
+    $d = json_body();
+    $id = clean($d['order'] ?? '', 20);
+    $o = store_get('order', $id) ?? fail(404, 'order_not_found');
+    if (!empty($o['payment']['linkId']) && ($o['payment']['status'] ?? '') === 'link_sent') stripe_deactivate_link($o['payment']['linkId']);
+    $o['deletedAt'] = date('c');
+    $o['deleteReason'] = clean($d['reason'] ?? '', 1000);
+    store_put('deleted', $id, $o);
+    @unlink(store_path('order', $id));
+    @unlink(store_path('notify', $id));
+    store_update('customers', customer_key($o['customer']['email']), function (?array $c) use ($id) {
+        if (!$c) return null;
+        $c['orders'] = array_values(array_filter($c['orders'] ?? [], fn($x) => $x !== $id));
+        return $c;
+    });
+    log_event("order $id deleted by admin");
+    if (!empty($d['notify'])) mail_order_deleted($o, $o['deleteReason']);
+    json_out(['ok' => true]);
 }

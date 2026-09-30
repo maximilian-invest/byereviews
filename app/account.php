@@ -196,3 +196,34 @@ function action_account_delete(): void {
     mail_deletion_requested($cust);
     json_out(['ok' => true, 'account' => customer_profile($cust)]);
 }
+
+// ---------- cancel / delete orders ----------
+
+/** Stops all work on the order: every review that isn't removed / not eligible becomes 'cancelled'. */
+function cancel_order_record(string $id, string $by, string $reason): ?array {
+    return store_update('order', $id, function (?array $o) use ($by, $reason) {
+        if (!$o || ($o['status'] ?? '') === 'cancelled') return null;
+        $now = date('c');
+        foreach ($o['reviews'] as &$r) if (in_array($r['status'], ['submitted', 'in_progress'], true)) { $r['status'] = 'cancelled'; $r['updatedAt'] = $now; }
+        unset($r);
+        $o['status'] = 'cancelled';
+        $o['cancelledAt'] = $now; $o['cancelledBy'] = $by; $o['cancelReason'] = $reason;
+        $o['timeline']['cancelled'] = $now;
+        return $o;
+    });
+}
+
+/** Customer cancels their own order from the dashboard. */
+function action_order_cancel(): void {
+    $d = json_body();
+    $cust = require_customer();
+    $id = clean($d['order'] ?? '', 20);
+    if (!in_array($id, $cust['orders'] ?? [], true)) fail(404, 'order_not_found');
+    $o = cancel_order_record($id, 'customer', clean($d['reason'] ?? '', 1000));
+    if (!$o) fail(409, 'already_cancelled');
+    @unlink(store_path('notify', $id));
+    log_event("order $id cancelled by customer");
+    mail_order_cancelled($o, 'customer', $o['cancelReason']);
+    mail_team_order_cancelled($o, $o['cancelReason']);
+    json_out(['ok' => true, 'orders' => customer_orders($cust)]);
+}

@@ -59,6 +59,7 @@ function order_view(array $o): array {
         'reviews' => array_map(fn($r) => ['id' => $r['id'], 'author' => $r['author'], 'stars' => $r['stars'], 'days' => $r['days'] + $elapsed,
             'text' => $r['text'], 'link' => $r['link'], 'tier' => $r['tier'], 'status' => $r['status'], 'updatedAt' => $r['updatedAt'] ?? null], $o['reviews']),
         'messages' => $o['messages'],
+        'cancelled' => ($o['status'] ?? '') === 'cancelled', 'cancelledAt' => $o['cancelledAt'] ?? null,
         'timeline' => $o['timeline'] ?? [],
         'payment' => ['status' => $o['payment']['status'] ?? 'unpaid', 'paidAt' => $o['payment']['paidAt'] ?? null,
             'canPay' => $inv['total'] > 0 && ($o['payment']['status'] ?? 'unpaid') !== 'paid'],

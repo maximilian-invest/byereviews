@@ -255,16 +255,16 @@
     const s = this.state, o = (s.orders || [])[s.orderIdx || 0];
     if (!s.customer || !o) return null;
     const cur = o.currency, fmt = n => cur === 'EUR' ? `${Number(n).toLocaleString('en-US')} €` : `$${Number(n).toLocaleString('en-US')}`;
-    const stMap = { submitted: 'submitted', in_progress: 'progress', removed: 'removed', not_eligible: 'cancelled' };
+    const stMap = { submitted: 'submitted', in_progress: 'progress', removed: 'removed', not_eligible: 'cancelled', cancelled: 'stopped' };
     const paid = o.payment.status === 'paid';
-    const look = { removed: ['✓ Removed', '#151515', '#FFFFFF', '#151515'], progress: ['In progress', '#FFFFFF', '#151515', '#151515'], submitted: ['Submitted', '#EFEFEF', '#555', '#EFEFEF'], cancelled: ['Not eligible', '#FFFFFF', '#8A8A8A', '#D2D2D2'] };
+    const look = { removed: ['✓ Removed', '#151515', '#FFFFFF', '#151515'], progress: ['In progress', '#FFFFFF', '#151515', '#151515'], submitted: ['Submitted', '#EFEFEF', '#555', '#EFEFEF'], cancelled: ['Not eligible', '#FFFFFF', '#8A8A8A', '#D2D2D2'], stopped: ['Cancelled', '#FFFFFF', '#8A8A8A', '#D2D2D2'] };
     const items = o.reviews.map(r => {
       const st = stMap[r.status] || 'submitted', price = r.tier === 'older' ? 125 : 90, m = look[st];
       return { initial: (r.author || 'R')[0], name: r.author || 'Review', stars: r.stars || '–', when: r.stars ? this.whenFor(r.days) : (r.tier === 'older' ? 'older than 4 weeks' : 'last 4 weeks'),
         text: r.text || r.link || 'Review link', st, price,
         textCol: st === 'removed' ? '#9E9E9E' : st === 'cancelled' ? '#8A8A8A' : '#333', deco: st === 'removed' ? 'line-through' : 'none',
         status: m[0], badgeBg: m[1], badgeFg: m[2], badgeBd: m[3],
-        priceNote: (r.updatedAt && new Date(r.updatedAt).toDateString() === new Date().toDateString() ? '● Updated today · ' : '') + (st === 'removed' ? (paid ? 'Paid ' + fmt(price) : fmt(price) + ' due') : st === 'cancelled' ? 'Cancelled · free' : fmt(price) + ' if removed') };
+        priceNote: (r.updatedAt && new Date(r.updatedAt).toDateString() === new Date().toDateString() ? '● Updated today · ' : '') + (st === 'removed' ? (paid ? 'Paid ' + fmt(price) : fmt(price) + ' due') : st === 'cancelled' || st === 'stopped' ? 'Cancelled · free' : fmt(price) + ' if removed') };
     });
     const inv = o.invoice, removed = items.filter(i => i.st === 'removed'), inProg = items.filter(i => i.st === 'progress').length;
     const tl = o.timeline || {}, fd = iso => iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
@@ -279,22 +279,29 @@
     const rb = o.business.ratingBefore, rn = o.business.ratingNow;
     return {
       pOrderId: o.id, pBiz: o.business.name || 'Your business', pFirst: (s.customer.name || '').split(' ')[0] || 'there', pEmail: s.customer.email,
-      pRemoved: removed.length, pTotal: items.filter(i => i.st !== 'cancelled').length, pProgress: inProg,
+      pRemoved: removed.length, pTotal: items.filter(i => i.st !== 'cancelled' && i.st !== 'stopped').length, pProgress: inProg,
       pRatingBefore: rb != null ? Number(rb).toFixed(1) : '–', pRatingNow: rn != null ? Number(rn).toFixed(1) : '–',
       pDue: fmt(paid ? 0 : inv.total), pPayLabel: paid ? 'Nothing due' : inv.total > 0 ? 'Due now' + (inv.rate > 0 ? ' · incl. volume discount' : '') : 'Nothing due yet',
       pCanPay: !!o.payment.canPay, pPaid: paid && removed.length > 0, payNow: pay,
       pSteps: [['Order received', fd(tl.received || o.createdAt)], ['In review', phase >= 2 ? fd(tl.review || tl.received) : '—'], ['Removed', phase >= 3 ? fd(tl.removed) : '—'], ['Paid', phase >= 4 ? fd(tl.paid) : '—']]
         .map(([label, date], i) => ({ label, date, bar: i < phase ? '#151515' : '#E4E4E4', fg: i < phase ? '#151515' : '#8A8A8A' })),
       pReviews: items,
-      pActive: items.filter(i => i.st === 'progress' || i.st === 'submitted'), pDone: items.filter(i => i.st === 'removed' || i.st === 'cancelled'),
-      pActiveCount: items.filter(i => i.st === 'progress' || i.st === 'submitted').length, pDoneCount: items.filter(i => i.st === 'removed' || i.st === 'cancelled').length,
-      pActiveEmpty: !items.some(i => i.st === 'progress' || i.st === 'submitted'), pDoneEmpty: !items.some(i => i.st === 'removed' || i.st === 'cancelled'),
+      pActive: items.filter(i => i.st === 'progress' || i.st === 'submitted'), pDone: items.filter(i => i.st === 'removed' || i.st === 'cancelled' || i.st === 'stopped'),
+      pActiveCount: items.filter(i => i.st === 'progress' || i.st === 'submitted').length, pDoneCount: items.filter(i => i.st === 'removed' || i.st === 'cancelled' || i.st === 'stopped').length,
+      pActiveEmpty: !items.some(i => i.st === 'progress' || i.st === 'submitted'), pDoneEmpty: !items.some(i => i.st === 'removed' || i.st === 'cancelled' || i.st === 'stopped'),
       pHasInvoice: removed.length > 0, pInvoiceNo: 'INV-' + o.id.replace('BR-', ''), pDueDate: fd(tl.removed),
       pLines: removed.map(i => ({ label: i.name + ' · ' + (i.price === 90 ? '≤ 4 weeks' : '> 4 weeks'), amount: fmt(i.price) })),
       pHasDisc: inv.rate > 0, pDiscPct: Math.round(inv.rate * 100) + '%', pDiscAmt: '– ' + fmt(inv.discount), pInvTotal: fmt(inv.total),
       pMsgs: msgs, sendSupport: send, onSupportKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } },
       pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pShowChatFab: tab === 'overview', pUnread: unread, openSupport: () => goTab('support'),
       pTabSettings: tab === 'settings', acc: this.accVals(),
+      pCancelled: !!o.cancelled, pCancelledAt: o.cancelledAt ? new Date(o.cancelledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+      pCanCancel: !o.cancelled && items.some(i => i.st === 'submitted' || i.st === 'progress'),
+      cancelOpen: !!s.cancelOpen, cancelClosed: !s.cancelOpen, openCancel: () => this.setState({ cancelOpen: true }), closeCancel: () => this.setState({ cancelOpen: false, cancelReason: '' }),
+      cancelReason: s.cancelReason || '', onCancelReason: e => this.setState({ cancelReason: e.target.value }),
+      confirmCancel: () => { if (!confirm('Cancel order ' + o.id + '?')) return;
+        this.api('order-cancel', { body: { order: o.id, reason: s.cancelReason || '' } }).then(r => { if (!r.ok) return alert(r.error === 'already_cancelled' ? 'This order is already cancelled.' : 'Could not cancel – please try again.');
+          this.setState({ orders: r.orders, cancelOpen: false, cancelReason: '', accNotice: 'Order ' + o.id + ' was cancelled – we sent you a confirmation.' }); window.scrollTo({ top: 0 }); }); },
       pTabs: [['overview', 'Overview'], ['support', 'Support'], ['settings', 'Settings']].map(([k, label]) => ({ label, go: () => goTab(k), bg: tab === k ? '#151515' : 'transparent', fg: tab === k ? '#FFFFFF' : '#555', hasDot: k === 'support' && unread, dot: '1', dotBg: '#151515', dotFg: '#FFFFFF' })),
       hasOrderSwitch: s.orders.length > 1,
       orderChips: s.orders.map((x, i) => ({ label: x.id, go: () => this.setState({ orderIdx: i }), bg: i === (s.orderIdx || 0) ? '#151515' : '#FFFFFF', fg: i === (s.orderIdx || 0) ? '#FFFFFF' : '#555' })),
@@ -338,6 +345,6 @@
     });
     const real = this.realPortal();
     if (real) Object.assign(v, real);
-    else Object.assign(v, { pTabSettings: false, acc: {}, hasOrderSwitch: false, orderChips: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
+    else Object.assign(v, { pTabSettings: false, acc: {}, pCanCancel: false, pCancelled: false, hasOrderSwitch: false, orderChips: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
     return v;
   }

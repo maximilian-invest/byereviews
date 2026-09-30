@@ -58,10 +58,31 @@ rep('<button onClick="{{ doLogin }}" style="height:56px;', '<sc-if value="{{ log
 rep('<input value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" placeholder="Email"', '<input type="email" autocomplete="username" value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" placeholder="Email"')
 rep('<input type="password" value="{{ loginPass }}"', '<input type="password" autocomplete="current-password" value="{{ loginPass }}"')
 
+# order actions: cancel / delete (not in the design yet) + cancelled banner
+rep('''<a href="{{ o.biz.profile }}" target="_blank" style="font-weight:500;color:#151515">Google profile ↗</a>
+        </div>
+      </div>''', '''<a href="{{ o.biz.profile }}" target="_blank" style="font-weight:500;color:#151515">Google profile ↗</a>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border-radius:28px;padding:clamp(18px,2.4vw,24px);display:flex;flex-direction:column;gap:10px;border:1px solid #E4E4E4">
+        <span style="font-size:20px;font-weight:600;letter-spacing:-.02em">Order</span>
+        <sc-if value="{{ o.cancelled }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#6B6B6B;line-height:1.5">Cancelled {{ o.cancelledInfo }}</span></sc-if>
+        <textarea value="{{ orderReason }}" onChange="{{ onOrderReason }}" rows="2" placeholder="Reason (optional, included in the customer email)" style="border:0;background:#F4F4F4;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.45;outline:none;resize:vertical"></textarea>
+        <label style="display:flex;gap:8px;align-items:center;font-size:13px;color:#555;cursor:pointer"><input type="checkbox" checked="{{ orderNotify }}" onChange="{{ onOrderNotify }}" style="accent-color:#151515">Email the customer</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <sc-if value="{{ o.canCancel }}" hint-placeholder-val="{{ true }}"><button onClick="{{ cancelOrder }}" style="border:1px solid #151515;background:#FFFFFF;cursor:pointer;border-radius:12px;padding:12px;font-size:14px;font-weight:500">Cancel order</button></sc-if>
+          <button onClick="{{ deleteOrder }}" style="border:1px solid #D93025;background:#FFFFFF;color:#D93025;cursor:pointer;border-radius:12px;padding:12px;font-size:14px;font-weight:500">Delete order</button>
+        </div>
+        <span style="font-size:12px;color:#8A8A8A;line-height:1.5">Cancel stops all open reviews – removed ones stay billable. Delete removes the order from the list and the customer's account (archived for bookkeeping).</span>
+      </div>''')
+rep('''<h1 style="margin:0;font-size:clamp(30px,3.6vw,48px);font-weight:600;letter-spacing:-.045em;line-height:1">{{ o.company }}</h1>''',
+    '''<h1 style="margin:0;font-size:clamp(30px,3.6vw,48px);font-weight:600;letter-spacing:-.045em;line-height:1">{{ o.company }}</h1>
+        <sc-if value="{{ o.cancelled }}" hint-placeholder-val="{{ false }}"><span style="align-self:flex-start;font-size:13px;font-weight:600;border-radius:10px;padding:6px 10px;background:#FFFFFF;color:#D93025;border:1px solid #D93025">Cancelled {{ o.cancelledInfo }}</span></sc-if>''')
+
 # logic: keep the design's methods under new names, inject the production layer
 for old, new in [('  componentDidMount() {', '  _designDidMount() {'), ('  componentWillUnmount() {', '  _designWillUnmount() {'),
                  ('  renderVals() {', '  _designRenderVals() {'), ('  setStatus(oid, rid, status) {', '  _designSetStatus(oid, rid, status) {'),
-                 ('  sendWa(o, list) {', '  _designSendWa(o, list) {'), ('  analytics(range, empty, mob) {', '  _designAnalytics(range, empty, mob) {')]:
+                 ('  sendWa(o, list) {', '  _designSendWa(o, list) {'), ('  statusMeta(st) {', '  _designStatusMeta(st) {'), ('  payInfo(o) {', '  _designPayInfo(o) {'), ('  analytics(range, empty, mob) {', '  _designAnalytics(range, empty, mob) {')]:
     rep(old, new)
 # no demo data; the customer-view preview needs a placeholder order when there are none
 rep("orders: this.seed(),", "orders: [],")
