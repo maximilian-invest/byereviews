@@ -445,7 +445,7 @@ input,textarea,select,button{font-family:inherit}
   </div>
 
   <sc-if value="{{ pTabOverview }}" hint-placeholder-val="{{ true }}">
-  <div style="display:flex;flex-direction:column;gap:16px"><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:0 4px"><span style="font-size:18px;font-weight:500">Your orders</span><span style="font-size:13px;color:#6B6B6B">{{ ordCount }}</span></div><sc-for list="{{ ordList }}" as="ol" hint-placeholder-count="2"><button onClick="{{ ol.go }}" style="width:100%;text-align:left;cursor:pointer;background:#FFFFFF;border-radius:20px;padding:14px 16px;display:grid;grid-template-columns:{{ ordCols }};gap:{{ ordGap }};align-items:center;font-size:14px;color:#151515;border:2px solid {{ ol.bd }}"><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ol.biz }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ ol.id }} · {{ ol.date }}</span></span><sc-if value="{{ ordWide }}" hint-placeholder-val="{{ true }}"><span style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:#555">{{ ol.progress }}</span><span style="height:5px;border-radius:3px;background:#EFEFEF;display:block;overflow:hidden"><span style="display:block;height:100%;width:{{ ol.pct }};background:#151515"></span></span></span></sc-if><sc-if value="{{ ordWide }}" hint-placeholder-val="{{ true }}"><span style="font-weight:500;text-align:right">{{ ol.amount }}</span></sc-if><span style="justify-self:end;font-size:12px;font-weight:600;border-radius:9px;padding:5px 9px;white-space:nowrap;background:{{ ol.chipBg }};color:{{ ol.chipFg }};border:1px solid {{ ol.chipBd }}">{{ ol.status }}</span></button></sc-for></div><div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:10px 4px 0"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ pOrderId }} · ordered {{ pOrderDate }}</span><span style="font-size:clamp(22px,2.4vw,30px);font-weight:500;letter-spacing:-.03em;line-height:1.1">{{ pBiz }}</span></div><span style="font-size:13px;font-weight:600;border-radius:10px;padding:7px 12px;white-space:nowrap;background:{{ pChipBg }};color:{{ pChipFg }};border:1px solid {{ pChipBd }}">{{ pStatus }}</span></div><sc-if value="{{ pCancelled }}" hint-placeholder-val="{{ false }}"><div style="background:#FFFFFF;border:1px solid #D93025;border-radius:18px;padding:12px 16px;font-size:14px;color:#D93025;line-height:1.5">This order was cancelled on {{ pCancelledAt }}. Open reviews were stopped{{ pCancelNote }}</div></sc-if>
+  <div style="display:flex;flex-direction:column;gap:16px">
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:10px">
     <div style="background:#FFFFFF;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;color:#6B6B6B">Removed</span><span style="font-size:48px;font-weight:500;letter-spacing:-.04em;line-height:1">{{ pRemoved }}<span style="color:#9E9E9E;font-size:24px"> / {{ pTotal }}</span></span></div>
     <div style="background:#FFFFFF;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;color:#6B6B6B">In progress</span><span style="font-size:48px;font-weight:500;letter-spacing:-.04em;line-height:1">{{ pProgress }}</span></div>
@@ -501,7 +501,7 @@ input,textarea,select,button{font-family:inherit}
     </div>
   </div>
 
-<sc-if value="{{ pCanCancel }}" hint-placeholder-val="{{ false }}"><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px;border:1px solid #D2D2D2"><span style="font-size:18px;font-weight:500">Cancel this order</span><span style="font-size:14px;color:#6B6B6B;line-height:1.5">We stop working on all reviews that are still open. Reviews that were already removed stay billable.</span><sc-if value="{{ cancelOpen }}" hint-placeholder-val="{{ false }}"><textarea value="{{ cancelReason }}" onChange="{{ onCancelReason }}" rows="2" placeholder="Reason (optional)" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%;resize:vertical"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ confirmCancel }}" style="align-self:flex-start;height:48px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 20px;font-size:15px;font-weight:500">Cancel order</button><button onClick="{{ closeCancel }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Keep order</button></div></sc-if><sc-if value="{{ cancelClosed }}" hint-placeholder-val="{{ true }}"><button onClick="{{ openCancel }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Cancel order</button></sc-if></div></sc-if>
+<sc-if value="{{ pCanCancel }}" hint-placeholder-val="{{ false }}"><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px;border:1px solid #D2D2D2"><span style="font-size:18px;font-weight:500">Cancel your order</span><span style="font-size:14px;color:#6B6B6B;line-height:1.5">We stop working on all reviews that are still open. Reviews that were already removed stay billable.</span><sc-if value="{{ cancelOpen }}" hint-placeholder-val="{{ false }}"><textarea value="{{ cancelReason }}" onChange="{{ onCancelReason }}" rows="2" placeholder="Reason (optional)" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%;resize:vertical"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ confirmCancel }}" style="align-self:flex-start;height:48px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 20px;font-size:15px;font-weight:500">Cancel order</button><button onClick="{{ closeCancel }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Keep order</button></div></sc-if><sc-if value="{{ cancelClosed }}" hint-placeholder-val="{{ true }}"><button onClick="{{ openCancel }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Cancel order</button></sc-if></div></sc-if>
   <sc-if value="{{ pHasInvoice }}" hint-placeholder-val="{{ false }}">
   <div ref="{{ payRef }}" style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:18px;font-weight:500">Invoice</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ pInvoiceNo }} · due {{ pDueDate }}</span></div>
@@ -1725,87 +1725,85 @@ class Component extends DCLogic {
     });
   }
 
-  orderStatus(x) {
-    const active = x.reviews.some(r => r.status === 'submitted' || r.status === 'in_progress');
-    if (x.cancelled) return ['Cancelled', '#FFFFFF', '#D93025', '#D93025'];
-    if (x.payment.status === 'paid') return ['Paid', '#151515', '#FFFFFF', '#151515'];
-    if (x.invoice.total > 0) return ['Payment due', '#FFFFFF', '#151515', '#151515'];
-    if (active) return ['In progress', '#EFEFEF', '#151515', '#EFEFEF'];
-    return ['Completed', '#EFEFEF', '#555', '#EFEFEF'];
-  }
   realPortal() {
-    const s = this.state, o = (s.orders || [])[s.orderIdx || 0];
+    // one dashboard for all of the customer's orders: reviews, payments and messages are merged
+    const s = this.state, all = s.orders || [], o = all[0];
     if (!s.customer || !o) return null;
     const cur = o.currency, fmt = n => cur === 'EUR' ? `${Number(n).toLocaleString('en-US')} €` : `$${Number(n).toLocaleString('en-US')}`;
     const stMap = { submitted: 'submitted', in_progress: 'progress', removed: 'removed', not_eligible: 'cancelled', cancelled: 'stopped' };
-    const paid = o.payment.status === 'paid';
+    const isPaid = x => x.payment.status === 'paid';
+    const withRemovals = all.filter(x => x.reviews.some(r => r.status === 'removed'));
+    const open = all.filter(x => x.invoice.total > 0 && !isPaid(x));
+    const paid = withRemovals.length > 0 && open.length === 0;
     const look = { removed: ['✓ Removed', '#151515', '#FFFFFF', '#151515'], progress: ['In progress', '#FFFFFF', '#151515', '#151515'], submitted: ['Submitted', '#EFEFEF', '#555', '#EFEFEF'], cancelled: ['Not eligible', '#FFFFFF', '#8A8A8A', '#D2D2D2'], stopped: ['Cancelled', '#FFFFFF', '#8A8A8A', '#D2D2D2'] };
-    const items = o.reviews.map(r => {
-      const st = stMap[r.status] || 'submitted', price = r.tier === 'older' ? 125 : 90, m = look[st];
-      return { initial: (r.author || 'R')[0], name: r.author || 'Review', stars: r.stars || '–', when: r.stars ? this.whenFor(r.days) : (r.tier === 'older' ? 'older than 4 weeks' : 'last 4 weeks'),
-        text: r.text || r.link || 'Review link', st, price,
+    const many = all.length > 1;
+    const items = [].concat(...all.map(x => x.reviews.map(r => {
+      const st = stMap[r.status] || 'submitted', price = r.tier === 'older' ? 125 : 90, m = look[st], pd = isPaid(x);
+      return { initial: (r.author || 'R')[0], name: r.author || 'Review', stars: r.stars || '–',
+        when: (r.stars ? this.whenFor(r.days) : (r.tier === 'older' ? 'older than 4 weeks' : 'last 4 weeks')) + (many ? ' · ' + x.id : ''),
+        text: r.text || r.link || 'Review link', st, price, orderId: x.id, paid: pd,
         textCol: st === 'removed' ? '#9E9E9E' : st === 'cancelled' ? '#8A8A8A' : '#333', deco: st === 'removed' ? 'line-through' : 'none',
         status: m[0], badgeBg: m[1], badgeFg: m[2], badgeBd: m[3],
-        priceNote: (r.updatedAt && new Date(r.updatedAt).toDateString() === new Date().toDateString() ? '● Updated today · ' : '') + (st === 'removed' ? (paid ? 'Paid ' + fmt(price) : fmt(price) + ' due') : st === 'cancelled' || st === 'stopped' ? 'Cancelled · free' : fmt(price) + ' if removed') };
-    });
-    const inv = o.invoice, removed = items.filter(i => i.st === 'removed'), inProg = items.filter(i => i.st === 'progress').length;
-    const tl = o.timeline || {}, fd = iso => iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
-    const phase = paid && removed.length ? 4 : removed.length ? 3 : (inProg || tl.review) ? 2 : 1;
-    const msgs = o.messages.map(m => ({ text: m.text, justify: m.from === 'me' ? 'flex-end' : 'flex-start', bg: m.from === 'me' ? '#151515' : '#F4F4F4', fg: m.from === 'me' ? '#FFFFFF' : '#151515',
+        priceNote: (r.updatedAt && new Date(r.updatedAt).toDateString() === new Date().toDateString() ? '● Updated today · ' : '') + (st === 'removed' ? (pd ? 'Paid ' + fmt(price) : fmt(price) + ' due') : st === 'cancelled' || st === 'stopped' ? 'Cancelled · free' : fmt(price) + ' if removed') };
+    })));
+    const removed = items.filter(i => i.st === 'removed'), inProg = items.filter(i => i.st === 'progress').length;
+    // invoice: the open (unpaid) orders, or – when everything is paid – all orders with removals
+    const invOrders = open.length ? open : withRemovals, invIds = invOrders.map(x => x.id);
+    const invItems = removed.filter(i => invIds.includes(i.orderId));
+    const sum = k => invOrders.reduce((t, x) => t + (Number(x.invoice[k]) || 0), 0);
+    const due = open.reduce((t, x) => t + (Number(x.invoice.total) || 0), 0), disc = sum('discount'), rate = Math.max(0, ...invOrders.map(x => x.invoice.rate || 0));
+    const dates = k => all.map(x => (x.timeline || {})[k]).filter(Boolean).sort();
+    const tl = { received: all.map(x => x.createdAt).sort()[0], review: dates('review')[0], removed: dates('removed').pop(), paid: dates('paid').pop() };
+    const fd = iso => iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+    const phase = paid ? 4 : removed.length ? 3 : (inProg || tl.review) ? 2 : 1;
+    const allMsgs = [].concat(...all.map(x => x.messages || [])).sort((p, q) => String(p.at).localeCompare(String(q.at)));
+    const msgs = allMsgs.map(m => ({ text: m.text, justify: m.from === 'me' ? 'flex-end' : 'flex-start', bg: m.from === 'me' ? '#151515' : '#F4F4F4', fg: m.from === 'me' ? '#FFFFFF' : '#151515',
       meta: (m.from === 'me' ? 'You' : 'byereviews team') + ' · ' + new Date(m.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) }));
-    const tab = s.portalTab || 'overview', lastTeam = o.messages.filter(m => m.from === 'team').length, unread = tab !== 'support' && lastTeam > (s.seenTeamMsgs || 1);
+    const tab = s.portalTab || 'overview', lastTeam = allMsgs.filter(m => m.from === 'team').length, unread = tab !== 'support' && lastTeam > (s.seenTeamMsgs || 1);
     const goTab = t => { this.setState({ portalTab: t, seenTeamMsgs: t === 'support' ? lastTeam : s.seenTeamMsgs }); window.scrollTo({ top: 0 }); };
+    // new messages go to the newest order that is still running
+    const msgOrder = all.find(x => !x.cancelled) || o;
     const send = () => { const t = (s.supportDraft || '').trim(); if (!t) return; this.setState({ supportDraft: '' });
-      this.api('message', { body: { order: o.id, text: t } }).then(r => { if (r.ok) this.setState({ orders: r.orders }); }); };
-    const pay = () => { location.href = '/order.php?a=pay&order=' + encodeURIComponent(o.id); };
-    const rb = o.business.ratingBefore, rn = o.business.ratingNow;
+      this.api('message', { body: { order: msgOrder.id, text: t } }).then(r => { if (r.ok) this.setState({ orders: r.orders }); }); };
+    const payable = all.filter(x => x.payment.canPay);
+    const pay = () => { const x = payable[payable.length - 1]; if (x) location.href = '/order.php?a=pay&order=' + encodeURIComponent(x.id); };
+    const oldest = all.filter(x => x.business.name === o.business.name).pop() || o;
+    const rb = oldest.business.ratingBefore, rn = o.business.ratingNow;
+    const isA = i => i.st === 'progress' || i.st === 'submitted', isD = i => !isA(i);
+    const cancellable = all.filter(x => !x.cancelled && x.reviews.some(r => r.status === 'submitted' || r.status === 'in_progress'));
     return {
-      pOrderId: o.id, pBiz: o.business.name || 'Your business', pFirst: (s.customer.name || '').split(' ')[0] || 'there', pEmail: s.customer.email,
+      pOrderId: '', pBiz: o.business.name || 'Your business', pFirst: (s.customer.name || '').split(' ')[0] || 'there', pEmail: s.customer.email,
       pRemoved: removed.length, pTotal: items.filter(i => i.st !== 'cancelled' && i.st !== 'stopped').length, pProgress: inProg,
       pRatingBefore: rb != null ? Number(rb).toFixed(1) : '–', pRatingNow: rn != null ? Number(rn).toFixed(1) : '–',
-      pDue: fmt(paid ? 0 : inv.total), pPayLabel: paid ? 'Nothing due' : inv.total > 0 ? 'Due now' + (inv.rate > 0 ? ' · incl. volume discount' : '') : 'Nothing due yet',
-      pCanPay: !!o.payment.canPay, pPaid: paid && removed.length > 0, payNow: pay,
-      pSteps: [['Order received', fd(tl.received || o.createdAt)], ['In review', phase >= 2 ? fd(tl.review || tl.received) : '—'], ['Removed', phase >= 3 ? fd(tl.removed) : '—'], ['Paid', phase >= 4 ? fd(tl.paid) : '—']]
+      pDue: fmt(due), pPayLabel: due > 0 ? 'Due now' + (rate > 0 ? ' · incl. volume discount' : '') : 'Nothing due' + (removed.length ? '' : ' yet'),
+      pCanPay: payable.length > 0, pPaid: paid, payNow: pay,
+      pSteps: [['Order received', fd(tl.received)], ['In review', phase >= 2 ? fd(tl.review || tl.received) : '—'], ['Removed', phase >= 3 ? fd(tl.removed) : '—'], ['Paid', phase >= 4 ? fd(tl.paid) : '—']]
         .map(([label, date], i) => ({ label, date, bar: i < phase ? '#151515' : '#E4E4E4', fg: i < phase ? '#151515' : '#8A8A8A' })),
       pReviews: items,
-      ...(() => { const mob = (s.vw || 1200) < 760, t = s.rvTab || 'all', isA = i => i.st === 'progress' || i.st === 'submitted';
-        const f = { all: () => true, active: isA, done: i => !isA(i) }, list = items.filter(f[t]);
+      ...(() => { const mob = (s.vw || 1200) < 760, t = s.rvTab || 'all';
+        const f = { all: () => true, active: isA, done: isD }, list = items.filter(f[t]);
         return { rvTabs: [['all', 'All'], ['active', 'Active'], ['done', 'Done']].map(([k, label]) => ({ label, count: items.filter(f[k]).length, bg: t === k ? '#151515' : 'transparent', fg: t === k ? '#FFFFFF' : '#555', go: () => this.setState({ rvTab: k }) })),
           rvRows: list.map(i => ({ ...i, mobStars: mob ? ' · ' + i.stars + ' ★' : '', priceShort: i.st === 'cancelled' || i.st === 'stopped' ? '—' : fmt(i.price) })),
           rvEmpty: list.length === 0, rvEmptyText: t === 'done' ? 'No finished reviews yet.' : 'Nothing in progress.',
           rvCols: mob ? 'minmax(0,1fr) auto' : 'minmax(150px,1fr) 64px minmax(0,2.4fr) 96px 132px', rvGap: mob ? '8px 12px' : '16px' }; })(),
-      pActive: items.filter(i => i.st === 'progress' || i.st === 'submitted'), pDone: items.filter(i => i.st === 'removed' || i.st === 'cancelled' || i.st === 'stopped'),
-      pActiveCount: items.filter(i => i.st === 'progress' || i.st === 'submitted').length, pDoneCount: items.filter(i => i.st === 'removed' || i.st === 'cancelled' || i.st === 'stopped').length,
-      pActiveEmpty: !items.some(i => i.st === 'progress' || i.st === 'submitted'), pDoneEmpty: !items.some(i => i.st === 'removed' || i.st === 'cancelled' || i.st === 'stopped'),
-      pHasInvoice: removed.length > 0, pInvoiceNo: 'INV-' + o.id.replace('BR-', ''), pDueDate: fd(tl.removed),
-      pLines: removed.map(i => ({ label: i.name + ' · ' + (i.price === 90 ? '≤ 4 weeks' : '> 4 weeks'), amount: fmt(i.price) })),
-      pHasDisc: inv.rate > 0, pDiscPct: Math.round(inv.rate * 100) + '%', pDiscAmt: '– ' + fmt(inv.discount), pInvTotal: fmt(inv.total),
+      pActive: items.filter(isA), pDone: items.filter(isD), pActiveCount: items.filter(isA).length, pDoneCount: items.filter(isD).length,
+      pActiveEmpty: !items.some(isA), pDoneEmpty: !items.some(isD),
+      pHasInvoice: invItems.length > 0, pInvoiceNo: invIds.map(id => 'INV-' + id.replace('BR-', '')).join(', '), pDueDate: fd(tl.removed),
+      pLines: invItems.map(i => ({ label: i.name + ' · ' + (i.price === 90 ? '≤ 4 weeks' : '> 4 weeks'), amount: fmt(i.price) })),
+      pHasDisc: disc > 0, pDiscPct: Math.round(rate * 100) + '%', pDiscAmt: '– ' + fmt(disc), pInvTotal: fmt(sum('total')),
       pMsgs: msgs, sendSupport: send, onSupportKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } },
       pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pShowChatFab: tab === 'overview', pUnread: unread, openSupport: () => goTab('support'),
       pTabSettings: tab === 'settings', pNotSettings: tab !== 'settings',
-      pCancelled: !!o.cancelled, pCancelledAt: o.cancelledAt ? new Date(o.cancelledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
-      pCanCancel: !o.cancelled && items.some(i => i.st === 'submitted' || i.st === 'progress'),
+      pCancelled: false, pCancelledAt: '',
+      pCanCancel: cancellable.length > 0,
       cancelOpen: !!s.cancelOpen, cancelClosed: !s.cancelOpen, openCancel: () => this.setState({ cancelOpen: true }), closeCancel: () => this.setState({ cancelOpen: false, cancelReason: '' }),
       cancelReason: s.cancelReason || '', onCancelReason: e => this.setState({ cancelReason: e.target.value }),
-      confirmCancel: () => { if (!confirm('Cancel order ' + o.id + '?')) return;
-        this.api('order-cancel', { body: { order: o.id, reason: s.cancelReason || '' } }).then(r => { if (!r.ok) return alert(r.error === 'already_cancelled' ? 'This order is already cancelled.' : 'Could not cancel – please try again.');
-          this.setState({ orders: r.orders, cancelOpen: false, cancelReason: '', accNotice: 'Order ' + o.id + ' was cancelled – we sent you a confirmation.' }); window.scrollTo({ top: 0 }); }); },
+      confirmCancel: () => { if (!confirm('Cancel your order? We stop working on all open reviews.')) return;
+        const reason = s.cancelReason || '';
+        cancellable.reduce((p, x) => p.then(acc => this.api('order-cancel', { body: { order: x.id, reason } }).then(r => r.ok ? r : (r.error === 'already_cancelled' ? acc : Promise.reject(r)))), Promise.resolve(null))
+          .then(r => { this.setState({ orders: r ? r.orders : s.orders, cancelOpen: false, cancelReason: '', accNotice: 'Your order was cancelled – we sent you a confirmation.' }); window.scrollTo({ top: 0 }); })
+          .catch(() => { alert('Could not cancel – please try again.'); this.api('me').then(r => r.ok && this.setState({ orders: r.orders || s.orders })); }); },
       pTabs: [['overview', 'Overview'], ['support', 'Support'], ['settings', 'Settings']].map(([k, label]) => ({ label, go: () => goTab(k), bg: tab === k ? '#151515' : 'transparent', fg: tab === k ? '#FFFFFF' : '#555', hasDot: k === 'support' && unread, dot: '1', dotBg: '#151515', dotFg: '#FFFFFF' })),
-      ...(() => { const mob = (s.vw || 1200) < 760, sel = s.orderIdx || 0;
-        const fmtFor = x => n => x.currency === 'EUR' ? `${Number(n).toLocaleString('en-US')} €` : `$${Number(n).toLocaleString('en-US')}`;
-        const st = this.orderStatus(o);
-        return {
-          ordCount: s.orders.length === 1 ? '1 order' : s.orders.length + ' orders', ordWide: !mob,
-          ordCols: mob ? 'minmax(0,1fr) auto' : 'minmax(0,1.6fr) minmax(0,1.2fr) 100px 120px', ordGap: mob ? '8px 12px' : '16px',
-          ordList: s.orders.map((x, i) => { const c = this.orderStatus(x), billable = x.reviews.filter(r => r.status !== 'not_eligible' && r.status !== 'cancelled'), rem = x.reviews.filter(r => r.status === 'removed').length;
-            return { id: x.id, biz: x.business.name || 'Your business', date: new Date(x.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-              progress: rem + ' of ' + billable.length + ' removed', pct: (billable.length ? rem / billable.length * 100 : 0) + '%',
-              amount: x.invoice.total > 0 ? fmtFor(x)(x.invoice.total) : '—', status: c[0], chipBg: c[1], chipFg: c[2], chipBd: c[3], bd: i === sel ? '#151515' : 'transparent',
-              go: () => { this.setState({ orderIdx: i, cancelOpen: false, rvTab: 'all' }); } }; }),
-          pOrderDate: new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-          pStatus: st[0], pChipBg: st[1] === '#EFEFEF' ? '#FFFFFF' : st[1], pChipFg: st[2], pChipBd: st[3] === '#EFEFEF' ? '#FFFFFF' : st[3],
-          pCancelNote: o.cancelled ? (o.invoice.total > 0 && o.payment.status !== 'paid' ? ' – reviews removed before that are still billed.' : ' – nothing is charged for this order.') : ''
-        }; })(),
       logout: () => { this.api('logout', { body: {} }); this.setState({ portalIn: false, customer: null, orders: [], view: 'login', loginPass: '' }); window.scrollTo({ top: 0 }); }
     };
   }
@@ -1845,7 +1843,7 @@ class Component extends DCLogic {
       // the design builds the eyebrow from its demo order; use the real one
       if (v.acc && (s.portalTab || 'overview') !== 'settings') v.acc.eyebrow = '// dashboard · ' + (s.account ? s.account.email : '');
     }
-    else Object.assign(v, { pCanCancel: false, pCancelled: false, ordList: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
+    else Object.assign(v, { pCanCancel: false, pCancelled: false, pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
     return v;
   }
 
