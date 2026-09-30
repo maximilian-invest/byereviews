@@ -15,7 +15,10 @@
 <meta property="og:title" content="byereviews – Remove fake &amp; unfair Google reviews">
 <meta property="og:description" content="No cure, no pay: you only pay for reviews that are actually removed.">
 <meta property="og:url" content="https://byereviews.com/">
-<meta property="og:image" content="https://byereviews.com/assets/media/hero-desktop-poster.webp">
+<meta property="og:image" content="https://byereviews.com/assets/media/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://byereviews.com/#org","name":"byereviews","url":"https://byereviews.com/","logo":"https://byereviews.com/assets/byereviews-logo.png","email":"info@byereviews.com"},{"@type":"WebSite","name":"byereviews","url":"https://byereviews.com/","publisher":{"@id":"https://byereviews.com/#org"}},{"@type":"Service","name":"Google review removal","provider":{"@id":"https://byereviews.com/#org"},"areaServed":["US","GB","CA","AU","EU"],"offers":[{"@type":"Offer","name":"Review posted within the last 4 weeks","price":"90","priceCurrency":"USD"},{"@type":"Offer","name":"Review older than 4 weeks","price":"125","priceCurrency":"USD"}]}]}</script>
 <style>html.js #prerender{display:none}html:not(.js) x-dc{display:none!important}</style>
@@ -31,7 +34,7 @@ window.__resources = {
 </head>
 <body>
 <!--PRERENDER-->
-<x-dc>
+<x-dc><template>
 <helmet>
 <link href="/assets/fonts/fonts.css" rel="stylesheet">
 <style>
@@ -79,7 +82,7 @@ input,textarea,select,button{font-family:inherit}
 <header style="display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:8px;z-index:20">
   <nav style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border-radius:20px;padding:8px clamp(10px,1.6vw,22px) 8px 10px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0">
     <a href="/" onClick="{{ goHome }}" style="display:flex;align-items:center;padding:8px 14px 8px 8px">
-      <img src="/assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block">
+      <img src="/assets/byereviews-logo-72.png" alt="byereviews" style="height:22px;width:auto;display:block">
     </a>
     <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
     <a href="/#how" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">How it works</a>
@@ -107,7 +110,7 @@ input,textarea,select,button{font-family:inherit}
 <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
   <div style="position:fixed;inset:0;z-index:300;background:#151515;color:#FFFFFF;padding:18px 20px 20px;display:flex;flex-direction:column;gap:4px;overflow:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:24px">
-      <a href="/" onClick="{{ closeMenuHome }}" style="display:flex;align-items:center;padding:8px 0"><img src="/assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block;filter:invert(1)"></a>
+      <a href="/" onClick="{{ closeMenuHome }}" style="display:flex;align-items:center;padding:8px 0"><img src="/assets/byereviews-logo-72.png" alt="byereviews" style="height:22px;width:auto;display:block;filter:invert(1)"></a>
       <button onClick="{{ toggleMenu }}" aria-label="Close menu" style="width:52px;height:52px;border:0;cursor:pointer;background:#2A2A2A;border-radius:18px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"></path></svg></button>
     </div>
     <sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="5">
@@ -120,7 +123,7 @@ input,textarea,select,button{font-family:inherit}
 </sc-if>
 <sc-if value="{{ isPortal }}" hint-placeholder-val="{{ false }}">
 <header data-screen-label="App header" style="display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:8px;z-index:40">
-  <a href="/dashboard/" onClick="{{ acc.goDash }}" style="display:flex;align-items:center;background:#FFFFFF;border-radius:20px;padding:16px 20px;box-shadow:0 1px 2px rgba(0,0,0,.04)"><img src="/assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block"></a>
+  <a href="/dashboard/" onClick="{{ acc.goDash }}" style="display:flex;align-items:center;background:#FFFFFF;border-radius:20px;padding:16px 20px;box-shadow:0 1px 2px rgba(0,0,0,.04)"><img src="/assets/byereviews-logo-72.png" alt="byereviews" style="height:22px;width:auto;display:block"></a>
   <div style="display:flex;align-items:center;gap:8px;position:relative">
     <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
       <button onClick="{{ newOrder }}" style="border:0;cursor:pointer;display:flex;align-items:center;gap:14px;background:#151515;color:#FFFFFF;border-radius:18px;padding:6px 18px 6px 6px;font-size:15px;font-weight:500;white-space:nowrap"><span style="width:40px;height:40px;flex:none;background:#FFFFFF;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#151515;font-size:22px;font-weight:300;line-height:1">+</span>New order</button>
@@ -143,8 +146,8 @@ input,textarea,select,button{font-family:inherit}
 
 <section data-screen-label="Hero" style="position:relative;border-radius:32px;overflow:hidden;min-height:clamp(640px,88vh,820px);background:#0E0E0E;color:#FFFFFF;display:flex;flex-direction:column;justify-content:space-between;gap:32px;padding:clamp(36px,6vw,72px) clamp(20px,4.4vw,56px) clamp(24px,3vw,40px)">
   <div style="position:absolute;inset:0;z-index:0;background:#0E0E0E">
-    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><video src="/assets/media/hero-desktop.mp4" poster="/assets/media/hero-desktop-poster.webp" ref="{{ vidRef }}" autoplay="" muted="" loop="" playsinline="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"></video></sc-if>
-    <sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}"><video src="/assets/media/hero-mobile.mp4" poster="/assets/media/hero-mobile-poster.webp" ref="{{ vidRef }}" autoplay="" muted="" loop="" playsinline="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"></video></sc-if>
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><video src="/assets/media/hero-desktop.mp4" poster="/assets/media/hero-desktop-poster-v2.webp" ref="{{ vidRef }}" autoplay="" muted="" loop="" playsinline="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"></video></sc-if>
+    <sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}"><video src="/assets/media/hero-mobile.mp4" poster="/assets/media/hero-mobile-poster-v2.webp" ref="{{ vidRef }}" autoplay="" muted="" loop="" playsinline="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block"></video></sc-if>
   </div>
   <div style="position:absolute;inset:0;z-index:1;pointer-events:none;background:{{ heroOverlay }}"></div>
   <div style="position:relative;z-index:2;display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;align-items:flex-start">
@@ -336,7 +339,7 @@ input,textarea,select,button{font-family:inherit}
           <span style="color:#151515;font-size:15px;font-weight:500">Your byereviews account · order {{ orderId }}</span>
         </div>
         <div style="padding:24px;display:flex;flex-direction:column;gap:14px;font-size:15px;line-height:1.55;color:#333">
-          <img src="/assets/byereviews-logo.png" alt="byereviews" style="height:20px;width:auto;align-self:flex-start">
+          <img src="/assets/byereviews-logo-72.png" alt="byereviews" style="height:20px;width:auto;align-self:flex-start">
           <span>Hi {{ firstName }}, thanks for your order. We've created your personal dashboard where you can follow every review live.</span>
           <div style="background:#F4F4F4;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;font-size:14px">
             <span><span style="color:#6B6B6B">Login:</span> {{ email }}</span>
@@ -603,7 +606,7 @@ input,textarea,select,button{font-family:inherit}
 </section>
 <sc-if value="{{ acc.sheetOpen }}" hint-placeholder-val="{{ false }}">
   <div style="position:fixed;inset:0;z-index:300;background:#EFEFEF;display:flex;flex-direction:column;padding:12px;overflow:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 4px 20px"><img src="/assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block;margin-left:14px"><button onClick="{{ acc.toggleMenu }}" aria-label="Close menu" style="width:52px;height:52px;border:0;cursor:pointer;background:#FFFFFF;border-radius:18px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="#151515" stroke-width="1.8" stroke-linecap="round"></path></svg></button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 4px 20px"><img src="/assets/byereviews-logo-72.png" alt="byereviews" style="height:22px;width:auto;display:block;margin-left:14px"><button onClick="{{ acc.toggleMenu }}" aria-label="Close menu" style="width:52px;height:52px;border:0;cursor:pointer;background:#FFFFFF;border-radius:18px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="#151515" stroke-width="1.8" stroke-linecap="round"></path></svg></button></div>
     <div style="display:flex;align-items:center;gap:12px;padding:0 10px 20px"><span style="width:48px;height:48px;flex:none;border-radius:50%;background:#151515;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600">{{ acc.initial }}</span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:17px;font-weight:600">{{ acc.name }}</span><span style="font-size:14px;color:#6B6B6B;overflow:hidden;text-overflow:ellipsis">{{ acc.email }}</span></div></div>
     <div style="display:flex;flex-direction:column;gap:6px"><sc-for list="{{ acc.menu }}" as="m" hint-placeholder-count="3"><button onClick="{{ m.go }}" style="border:0;cursor:pointer;text-align:left;background:#FFFFFF;border-radius:20px;padding:20px;font-size:22px;font-weight:500;letter-spacing:-.02em;color:{{ m.fg }}">{{ m.label }}</button></sc-for></div>
     <button onClick="{{ newOrder }}" style="margin-top:auto;height:64px;border:0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:#151515;color:#FFFFFF;border-radius:20px;padding:0 8px 0 22px;font-size:17px;font-weight:500">New order<span style="width:48px;height:48px;background:#FFFFFF;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#151515;font-size:24px;font-weight:300">+</span></button>
@@ -952,7 +955,7 @@ input,textarea,select,button{font-family:inherit}
 
 <footer style="margin-top:clamp(16px,3vw,40px);padding:clamp(28px,3vw,40px) clamp(10px,2.6vw,36px) {{ footerPadB }};display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;border-top:1px solid #DCDCDC">
   <div style="display:flex;flex-direction:column;gap:8px;max-width:360px">
-    <img src="/assets/byereviews-logo.png" alt="byereviews" style="height:24px;width:auto;display:block;align-self:flex-start">
+    <img src="/assets/byereviews-logo-72.png" alt="byereviews" style="height:24px;width:auto;display:block;align-self:flex-start">
     <span style="font-size:14px;color:#6B6B6B;line-height:1.5">Removal of individual false, unfair or policy-violating Google reviews. Not affiliated with Google.</span>
     <span style="font-size:14px;color:#6B6B6B">Questions? <a href="mailto:info@byereviews.com" style="text-decoration:underline">info@byereviews.com</a></span>
   </div>
@@ -964,7 +967,7 @@ input,textarea,select,button{font-family:inherit}
 </div>
 </div>
 </sc-if>
-</x-dc>
+</template></x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   newReview() { return { id: Math.random().toString(36).slice(2), value: '', name: '', age: 'recent', status: 'idle', preview: null }; }

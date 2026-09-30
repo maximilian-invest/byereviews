@@ -39,8 +39,12 @@ __ROBOTS__<link rel="icon" type="image/png" href="/assets/favicon.png">
 <meta property="og:title" content="byereviews – Remove fake &amp; unfair Google reviews">
 <meta property="og:description" content="No cure, no pay: you only pay for reviews that are actually removed.">
 <meta property="og:url" content="https://byereviews.com/">
-<meta property="og:image" content="https://byereviews.com/assets/media/hero-desktop-poster.webp">
+<meta property="og:image" content="https://byereviews.com/assets/media/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
+__PRELOAD__
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://byereviews.com/#org","name":"byereviews","url":"https://byereviews.com/","logo":"https://byereviews.com/assets/byereviews-logo.png","email":"info@byereviews.com"},{"@type":"WebSite","name":"byereviews","url":"https://byereviews.com/","publisher":{"@id":"https://byereviews.com/#org"}},{"@type":"Service","name":"Google review removal","provider":{"@id":"https://byereviews.com/#org"},"areaServed":["US","GB","CA","AU","EU"],"offers":[{"@type":"Offer","name":"Review posted within the last 4 weeks","price":"90","priceCurrency":"USD"},{"@type":"Offer","name":"Review older than 4 weeks","price":"125","priceCurrency":"USD"}]}]}</script>
 <style>html.js #prerender{display:none}html:not(.js) x-dc{display:none!important}</style>
 <script>
@@ -63,12 +67,12 @@ rep('<link rel="preconnect" href="https://fonts.googleapis.com">\n<link href="ht
 # self-hosted media
 rep('assets/video/hero-desktop.mp4', '/assets/media/hero-desktop.mp4')
 rep('assets/video/hero-mobile.mp4', '/assets/media/hero-mobile.mp4')
-rep('assets/video/hero-desktop-poster.webp', '/assets/media/hero-desktop-poster.webp')
-rep('assets/video/hero-mobile-poster.webp', '/assets/media/hero-mobile-poster.webp')
+rep('assets/video/hero-desktop-poster.webp', '/assets/media/hero-desktop-poster-v2.webp')
+rep('assets/video/hero-mobile-poster.webp', '/assets/media/hero-mobile-poster-v2.webp')
 rep("assets/img/step-1-pick.png", "/assets/media/image-1.webp")
 rep("assets/img/step-2-check.png", "/assets/media/image-2.webp")
 rep("assets/img/step-3-pay.png", "/assets/media/image-3.webp")
-s = s.replace('src="assets/byereviews-logo.png"', 'src="/assets/byereviews-logo.png"')
+s = s.replace('src="assets/byereviews-logo.png"', 'src="/assets/byereviews-logo-72.png"')  # 3x of the 24px max display height
 
 # real links instead of href="#"
 rep('<a href="#" onClick="{{ goHome }}" style="display:flex;align-items:center;padding:8px 14px 8px 8px">', '<a href="/" onClick="{{ goHome }}" style="display:flex;align-items:center;padding:8px 14px 8px 8px">')
@@ -164,8 +168,14 @@ overrides = (ROOT / 'tools' / 'site_overrides.js').read_text(encoding='utf-8')
 idx = s.rindex('\n}\n</script>')
 s = s[:idx] + '\n' + overrides + s[idx:]
 
+# inert template: the browser must not fetch the template's videos/images/iframe before the runtime renders
+rep('<x-dc>', '<x-dc><template>')
+rep('</x-dc>', '</template></x-dc>')
+
 assert 'cdn.openart.ai' not in s and 'fonts.googleapis' not in s and 'href="#"' not in s.split('data-dc-script')[0], 'leftover external/dead link'
 
+HERO_PRELOAD = ('<link rel="preload" as="image" href="/assets/media/hero-mobile-poster-v2.webp" media="(max-width: 759px)" fetchpriority="high">\n'
+                '<link rel="preload" as="image" href="/assets/media/hero-desktop-poster-v2.webp" media="(min-width: 760px)" fetchpriority="high">\n')
 HOME_LIKE = ('index.html', 'pricing/index.html', 'how-it-works/index.html', 'faq/index.html', 'results/index.html')
 
 # Intent landing pages for Google Ads ad groups: same page, hero + first section match the search.
@@ -253,6 +263,8 @@ for path, (canonical, robots) in pages.items():
     out = PUBLIC / path
     out.parent.mkdir(parents=True, exist_ok=True)
     html = s.replace('__CANONICAL__', canonical).replace('__ROBOTS__', robots)
+    # hero poster = LCP element on landing-page URLs: fetch it before the runtime renders the hero
+    html = html.replace('__PRELOAD__\n', HERO_PRELOAD if (path in HOME_LIKE or path in INTENTS) else '', 1)
     if snap and (path in HOME_LIKE or path in INTENTS):
         html = html.replace('<!--PRERENDER-->', snap.group(0), 1)
     if path in INTENTS:

@@ -86,7 +86,7 @@ def head(title, desc, canonical, og_image, schema):
 def header():
     return f'''<header class="hdr">
   <nav class="nav">
-    <a class="logo" href="/"><img src="/assets/byereviews-logo.png" alt="byereviews" width="107" height="22"></a>
+    <a class="logo" href="/"><img src="/assets/byereviews-logo-72.png" alt="byereviews" width="107" height="22"></a>
     <a class="lnk" href="/#how">How it works</a>
     <a class="lnk" href="/#pricing">Pricing</a>
     <a class="lnk" href="/#cases">Cases</a>
@@ -101,7 +101,7 @@ def header():
 </header>
 <div class="menu" id="menu" role="dialog" aria-label="Menu">
   <div class="menu-top">
-    <a href="/" style="display:flex;align-items:center;padding:8px 0"><img src="/assets/byereviews-logo.png" alt="byereviews"></a>
+    <a href="/" style="display:flex;align-items:center;padding:8px 0"><img src="/assets/byereviews-logo-72.png" alt="byereviews"></a>
     <button class="menu-close" type="button" aria-label="Close menu" onclick="brMenu(false)"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/></svg></button>
   </div>
   {''.join(f'<a class="item" href="{h}">{l}<span>→</span></a>' for l, h in [('How it works', '/#how'), ('Pricing', '/#pricing'), ('Cases', '/#cases'), ('FAQ', '/#faq'), ('Guides', '/blog/'), ('Log in', '/#login')])}
@@ -117,7 +117,7 @@ def footer():
 </section>
 <footer>
   <div class="l">
-    <img src="/assets/byereviews-logo.png" alt="byereviews" width="116" height="24">
+    <img src="/assets/byereviews-logo-72.png" alt="byereviews" width="116" height="24">
     <span>Removal of individual false, unfair or policy-violating Google reviews. Not affiliated with Google.</span>
     <span>Questions? <a href="mailto:info@byereviews.com" style="text-decoration:underline">info@byereviews.com</a></span>
   </div>
