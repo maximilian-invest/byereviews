@@ -169,6 +169,7 @@ assert 'cdn.openart.ai' not in s and 'fonts.googleapis' not in s and 'href="#"' 
 pages = {
     'index.html': ('/', ''),
     'order/index.html': ('/order/', ''),
+    'order/thanks/index.html': ('/order/', '<meta name="robots" content="noindex, nofollow">\n'),
     'login/index.html': ('/login/', '<meta name="robots" content="noindex, follow">\n'),
     'dashboard/index.html': ('/dashboard/', '<meta name="robots" content="noindex, nofollow">\n'),
 }

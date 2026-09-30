@@ -2324,9 +2324,10 @@ class Component extends DCLogic {
   }
 
   // ---------- routing: / · /order/ · /login/ · /dashboard/ ----------
-  paths = { home: '/', order: '/order/', success: '/order/', login: '/login/', forgot: '/login/', reset: '/login/', portal: '/dashboard/' };
+  paths = { home: '/', order: '/order/', success: '/order/thanks/', login: '/login/', forgot: '/login/', reset: '/login/', portal: '/dashboard/' };
   viewFromPath() {
     const p = location.pathname;
+    if (p.startsWith('/order/thanks')) return 'success';
     if (p.startsWith('/order')) return 'order';
     if (p.startsWith('/login')) return 'login';
     if (p.startsWith('/dashboard')) return 'portal';
@@ -2338,6 +2339,13 @@ class Component extends DCLogic {
     try { if (!sessionStorage.getItem('br_src')) { this.track('__init'); } } catch (e) {}
     const hash = (location.hash || '').slice(1);
     let v = this.viewFromPath();
+    // /order/thanks/ (conversion URL for Google Ads): only with a just-submitted order in this tab, otherwise back to the form
+    if (v === 'success') {
+      let done = null;
+      try { done = JSON.parse(sessionStorage.getItem('br_done') || 'null'); } catch (e) {}
+      if (done && done.orderId) this.setState({ submitted: true, orderId: done.orderId, newAccount: !!done.newAccount, orderedAt: done.at, loginEmail: done.email, confettiKey: Date.now() });
+      else { v = 'order'; history.replaceState(null, '', '/order/'); }
+    }
     if (v === 'home' && hash === 'order') v = 'order';
     if (v === 'home' && hash === 'login') v = 'login';
     const want = v;
@@ -2370,7 +2378,10 @@ class Component extends DCLogic {
     if (v === this._lastView) return;
     this._lastView = v;
     const path = this.paths[v] || '/';
-    if ((location.pathname !== path || location.hash) && !(v === 'reset' && location.pathname === path)) history.pushState(null, '', path);
+    if ((location.pathname !== path || location.hash) && !(v === 'reset' && location.pathname === path)) {
+      history.pushState(null, '', path);
+      try { if (window.gtag) window.gtag('event', 'page_view', { page_location: location.href, page_path: path }); } catch (e) {} // single-page app: report the new URL
+    }
     const titles = { order: 'Remove a Google review', login: 'Log in', forgot: 'Forgot your password?', reset: 'Set a new password', portal: 'Your dashboard', success: 'Order received' };
     document.title = titles[v] ? titles[v] + ' – byereviews' : this.homeTitle || document.title;
   }
@@ -2468,6 +2479,9 @@ class Component extends DCLogic {
         return this.setState({ submitting: false, submitError: msg, tried: true });
       }
       this.track('submit');
+      try { sessionStorage.setItem('br_done', JSON.stringify({ orderId: r.orderId, newAccount: !!r.newAccount, email: s.email, at: Date.now() })); } catch (e) {}
+      // Google Ads conversion (only if the Google tag is on the page)
+      try { if (window.gtag && window.BR_ADS_CONVERSION) window.gtag('event', 'conversion', { send_to: window.BR_ADS_CONVERSION, transaction_id: r.orderId }); } catch (e) {}
       this.setState({ submitting: false, submitted: true, view: 'success', confettiKey: Date.now(), orderId: r.orderId, newAccount: !!r.newAccount, orderedAt: Date.now(), loginEmail: s.email });
       window.scrollTo({ top: 0 });
     });
