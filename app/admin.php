@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/api.php';
 require_once __DIR__ . '/analytics.php';
 require_once __DIR__ . '/leads.php';
+require_once __DIR__ . '/inbox.php';
 
 const NOTIFY_DELAY = 60; // seconds: status changes within this window go out as one email
 

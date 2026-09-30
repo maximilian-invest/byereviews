@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="/assets/fonts/fonts.css" rel="stylesheet">
+</helmet>
+<section data-screen-label="Inbox" style="display:flex;flex-direction:column;gap:14px;font-family:'Geist',sans-serif;color:#151515">
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:8px 4px 0">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:600;letter-spacing:-.045em;line-height:1">Inbox</h1>
+      <span style="font-size:13px;color:#6B6B6B">{{ subline }}</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onClick="{{ openSettings }}" style="border:0;cursor:pointer;background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:15px;font-weight:500">Reply drafts</button>
+      <button onClick="{{ syncNow }}" style="border:0;cursor:pointer;background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:15px;font-weight:500;opacity:{{ syncOpacity }}">{{ syncLabel }}</button>
+      <button onClick="{{ newMail }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;padding:14px 20px;font-size:15px;font-weight:600">New email</button>
+    </div>
+  </div>
+
+  <sc-if value="{{ notConfigured }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#FFFFFF;border:1.5px solid #D93025;border-radius:24px;padding:18px 20px;font-size:14px;line-height:1.5;color:#555"><strong style="color:#151515">Mailbox not connected.</strong> The server needs the mailbox login in <span style="font-family:'Geist Mono',monospace;font-size:13px">/etc/byereviews/smtp.php</span> (the same one used for sending emails).</div>
+  </sc-if>
+  <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#FCE8E6;border-radius:18px;padding:12px 16px;font-size:14px;line-height:1.5"><strong style="color:#D93025">{{ errorText }}</strong></div>
+  </sc-if>
+  <sc-if value="{{ noAiKey }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#151515;color:#fff;border-radius:24px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:16px;font-weight:600">Automatic reply drafts are off</span><span style="font-size:13px;color:#B5B5B5">Add a Claude API key and every new customer email gets a ready-to-send draft, written in your style.</span></div>
+      <button onClick="{{ openSettings }}" style="border:0;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:12px;padding:11px 14px;font-size:14px;font-weight:600">Set up</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showSettings }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span style="font-size:20px;font-weight:600;letter-spacing:-.02em">Reply drafts</span><button onClick="{{ closeSettings }}" style="border:0;background:transparent;cursor:pointer;font-size:14px;color:#6B6B6B">× Close</button></div>
+      <span style="font-size:14px;color:#555;line-height:1.5">New customer emails get a draft automatically (every few minutes, also when your computer is off). Claude reads the conversation, the customer's order and your last own emails from "Sent" – so every reply you send teaches it how you write. About 1 cent per draft.</span>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">Claude API key <span style="font-weight:400;color:#6B6B6B">{{ keyStatus }} · create one at console.anthropic.com → API keys</span>
+        <input type="password" autocomplete="off" value="{{ aiKey }}" onChange="{{ onAiKey }}" placeholder="{{ keyPlaceholder }}" style="border:0;background:#F4F4F4;border-radius:14px;padding:13px 14px;font-size:14px;outline:none;font-family:'Geist Mono',monospace">
+      </label>
+      <div style="display:grid;grid-template-columns:{{ setCols }};gap:10px">
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">Model
+          <select value="{{ aiModel }}" onChange="{{ onAiModel }}" style="border:0;background:#F4F4F4;border-radius:14px;padding:13px 12px;font-size:14px;outline:none">
+            <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (recommended)</option>
+            <option value="claude-opus-5-5">Claude Opus 5.5 (best, ~5× cost)</option>
+            <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (cheapest)</option>
+          </select>
+        </label>
+        <button onClick="{{ toggleAuto }}" style="border:0;cursor:pointer;background:transparent;padding:22px 0 0;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:#151515;align-self:flex-start">
+          <span style="width:40px;height:24px;border-radius:12px;padding:3px;box-sizing:border-box;display:flex;justify-content:{{ autoJustify }};background:{{ autoBg }}"><span style="width:18px;height:18px;border-radius:50%;background:#FFFFFF;display:block"></span></span>
+          Write drafts automatically
+        </button>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">How should replies sound? <span style="font-weight:400;color:#6B6B6B">optional, e.g. "casual, first name, short, sign as Max"</span>
+        <textarea value="{{ aiTone }}" onChange="{{ onAiTone }}" rows="3" style="border:0;background:#F4F4F4;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.5;outline:none;resize:vertical"></textarea>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500">Signature
+        <textarea value="{{ aiSignature }}" onChange="{{ onAiSignature }}" rows="3" style="border:0;background:#F4F4F4;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.5;outline:none;resize:vertical"></textarea>
+      </label>
+      <button onClick="{{ saveSettings }}" style="align-self:flex-start;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:13px 20px;font-size:15px;font-weight:600">Save</button>
+    </div>
+  </sc-if>
+
+  <div style="display:grid;grid-template-columns:{{ cols }};gap:14px;align-items:start">
+
+    <sc-if value="{{ showList }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#FFFFFF;border-radius:28px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:0">
+      <div style="display:flex;gap:2px;overflow-x:auto;padding:2px">
+        <sc-for list="{{ folders }}" as="f" hint-placeholder-count="5"><button onClick="{{ f.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 12px;font-size:14px;font-weight:500;white-space:nowrap;display:flex;gap:6px;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}<span style="font-size:12px;opacity:.6">{{ f.count }}</span></button></sc-for>
+      </div>
+      <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Search mail" style="border:0;background:#F4F4F4;border-radius:14px;padding:12px 14px;font-size:14px;outline:none;margin:0 2px">
+      <sc-if value="{{ listLoading }}" hint-placeholder-val="{{ false }}"><div style="padding:24px;text-align:center;font-size:13px;color:#8A8A8A">Loading…</div></sc-if>
+      <sc-if value="{{ listEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:32px 16px;text-align:center;font-size:14px;color:#8A8A8A">{{ emptyText }}</div></sc-if>
+      <div style="display:flex;flex-direction:column;max-height:{{ listMax }};overflow-y:auto">
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+          <button onClick="{{ r.open }}" style="border:0;cursor:pointer;text-align:left;background:{{ r.bg }};border-radius:16px;padding:12px 12px 12px 10px;display:flex;gap:8px;color:#151515;min-width:0">
+            <span style="flex:none;width:8px;height:8px;border-radius:50%;margin-top:6px;background:{{ r.dot }}"></span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+              <span style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:14px;font-weight:{{ r.weight }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.who }}</span><span style="flex:none;font-size:12px;color:#8A8A8A">{{ r.when }}</span></span>
+              <span style="font-size:13px;font-weight:{{ r.weight }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.subject }}</span>
+              <span style="font-size:12px;color:#6B6B6B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.snippet }}</span>
+              <span style="display:flex;gap:4px;flex-wrap:wrap">
+                <sc-if value="{{ r.draft }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:600;background:#151515;color:#fff;border-radius:7px;padding:3px 7px">Draft ready</span></sc-if>
+                <sc-for list="{{ r.orders }}" as="o" hint-placeholder-count="1"><span style="font-size:11px;font-weight:500;background:#EEEEEE;border-radius:7px;padding:3px 7px;font-family:'Geist Mono',monospace">{{ o }}</span></sc-for>
+                <sc-if value="{{ r.att }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;background:#F4F4F4;border-radius:7px;padding:3px 7px">📎 {{ r.attCount }}</span></sc-if>
+                <sc-if value="{{ r.answered }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:#6B6B6B;border:1px solid #DCDCDC;border-radius:7px;padding:2px 6px">↩ replied</span></sc-if>
+              </span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ showPane }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ back }}" style="align-self:flex-start;border:0;background:transparent;cursor:pointer;font-size:14px;color:#6B6B6B;padding:4px 0">← All mail</button></sc-if>
+
+      <sc-if value="{{ paneEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border-radius:28px;padding:clamp(40px,7vw,80px) 24px;text-align:center;font-size:15px;color:#8A8A8A">Pick an email on the left.</div>
+      </sc-if>
+      <sc-if value="{{ threadLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border-radius:28px;padding:40px 24px;text-align:center;font-size:14px;color:#8A8A8A">Loading conversation…</div>
+      </sc-if>
+
+      <sc-if value="{{ hasThread }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start">
+            <h2 style="margin:0;font-size:clamp(20px,2.2vw,26px);font-weight:600;letter-spacing:-.03em;line-height:1.2;flex:1;min-width:200px">{{ t.subject }}</h2>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <sc-for list="{{ actions }}" as="a" hint-placeholder-count="4"><button onClick="{{ a.go }}" style="border:0;cursor:pointer;background:#F4F4F4;border-radius:11px;padding:8px 11px;font-size:13px;font-weight:500">{{ a.label }}</button></sc-for>
+            </div>
+          </div>
+          <sc-for list="{{ t.orders }}" as="o" hint-placeholder-count="1">
+            <a href="{{ o.href }}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#F4F4F4;border-radius:16px;padding:12px 14px;color:#151515;text-decoration:none">
+              <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600"><span style="font-family:'Geist Mono',monospace">{{ o.id }}</span> · {{ o.company }}</span><span style="font-size:12px;color:#6B6B6B">{{ o.summary }}</span></span>
+              <span style="font-size:13px;font-weight:500">Open order →</span>
+            </a>
+          </sc-for>
+        </div>
+
+        <sc-for list="{{ t.messages }}" as="m" hint-placeholder-count="2">
+          <div style="background:{{ m.bg }};border-radius:24px;padding:clamp(14px,2vw,20px);display:flex;flex-direction:column;gap:10px;min-width:0">
+            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+              <span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:14px;font-weight:600">{{ m.who }}</span><span style="font-size:12px;color:#6B6B6B;overflow:hidden;text-overflow:ellipsis">{{ m.addr }}</span></span>
+              <span style="font-size:12px;color:#6B6B6B">{{ m.when }}</span>
+            </div>
+            <div style="font-size:14px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere">{{ m.text }}</div>
+            <sc-if value="{{ m.hasAtt }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ m.att }}" as="x" hint-placeholder-count="1"><span style="font-size:12px;background:#F4F4F4;border-radius:9px;padding:6px 9px">📎 {{ x }}</span></sc-for></div><span style="font-size:11px;color:#8A8A8A">Attachments: open the email in webmail to download.</span></sc-if>
+            <sc-if value="{{ m.hasHtml }}" hint-placeholder-val="{{ false }}"><button onClick="{{ m.toggleHtml }}" style="align-self:flex-start;border:0;background:transparent;cursor:pointer;padding:0;font-size:12px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">{{ m.htmlLabel }}</button></sc-if>
+            <sc-if value="{{ m.showHtml }}" hint-placeholder-val="{{ false }}"><iframe title="Original email" sandbox="" srcdoc="{{ m.html }}" style="width:100%;height:520px;border:1px solid #EEEEEE;border-radius:14px;background:#FFFFFF"></iframe></sc-if>
+          </div>
+        </sc-for>
+      </sc-if>
+
+      <sc-if value="{{ showReply }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:10px;border:1.5px solid {{ replyBorder }}">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:18px;font-weight:600;letter-spacing:-.02em">{{ replyTitle }}</span>
+            <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <sc-if value="{{ draftBadge }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:600;background:#151515;color:#fff;border-radius:8px;padding:4px 8px">{{ draftBadge }}</span></sc-if>
+              <sc-if value="{{ canAi }}" hint-placeholder-val="{{ false }}"><button onClick="{{ regenerate }}" style="border:0;cursor:pointer;background:#F4F4F4;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:500;opacity:{{ genOpacity }}">{{ regenLabel }}</button></sc-if>
+            </span>
+          </div>
+          <input value="{{ rTo }}" onChange="{{ onTo }}" placeholder="To" style="border:0;background:#F4F4F4;border-radius:12px;padding:11px 13px;font-size:14px;outline:none">
+          <input value="{{ rSubject }}" onChange="{{ onSubject }}" placeholder="Subject" style="border:0;background:#F4F4F4;border-radius:12px;padding:11px 13px;font-size:14px;outline:none">
+          <textarea value="{{ rText }}" onChange="{{ onText }}" rows="{{ rRows }}" placeholder="Write your reply…" style="border:0;background:#F4F4F4;border-radius:14px;padding:13px 15px;font-size:14px;line-height:1.6;outline:none;resize:vertical"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <sc-if value="{{ isReply }}" hint-placeholder-val="{{ true }}"><button onClick="{{ toggleQuote }}" style="border:0;background:transparent;cursor:pointer;padding:0;display:flex;align-items:center;gap:7px;font-size:13px;color:#555"><span style="width:16px;height:16px;border-radius:5px;box-sizing:border-box;border:1.5px solid {{ quoteBd }};background:{{ quoteBg }};color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center">{{ quoteTick }}</span>Quote their email</button></sc-if>
+              <button onClick="{{ discard }}" style="border:0;background:transparent;cursor:pointer;padding:0;font-size:13px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">{{ discardLabel }}</button>
+              <span style="font-size:12px;color:#8A8A8A">{{ saveState }}</span>
+            </span>
+            <button onClick="{{ send }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:12px 8px 12px 18px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:12px;opacity:{{ sendOpacity }}">{{ sendLabel }}<span style="width:30px;height:30px;background:#FFFFFF;border-radius:9px;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:260;background:#151515;color:#fff;border-radius:16px;padding:14px 18px;font-size:14px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px)">{{ toast }}</div>
+  </sc-if>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { vw: (typeof window !== 'undefined' && window.innerWidth) || 1200, folders: [], folder: '', q: '', rows: [], listLoading: true, syncing: false, info: null,
+    sel: null, thread: null, threadLoading: false, compose: false, reply: null, quote: true, htmlOpen: {}, sending: false, generating: false, saveState: '',
+    showSettings: false, ai: { key: '', model: 'claude-sonnet-5-5', tone: '', signature: '', auto: true }, toast: '' };
+
+  api(action, opts = {}) {
+    const q = opts.query ? '&' + new URLSearchParams(opts.query).toString() : '';
+    const init = opts.body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(opts.body) } : { credentials: 'same-origin' };
+    return fetch('/order.php?a=' + action + q, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
+  }
+  componentDidMount() {
+    this.onResize = () => { const w = window.innerWidth || document.documentElement.clientWidth; if (w) this.setState({ vw: w }); };
+    window.addEventListener('resize', this.onResize); requestAnimationFrame(this.onResize);
+    this.load(true);
+    this.poll = setInterval(() => { if (!document.hidden) this.load(false, true); }, 60000);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this.onResize); clearInterval(this.poll); clearTimeout(this.tT); clearTimeout(this.qT); clearTimeout(this.dT); }
+  toast(t) { clearTimeout(this.tT); this.setState({ toast: t }); this.tT = setTimeout(() => this.setState({ toast: '' }), 2600); }
+  err(code) {
+    return { not_authed: 'Session expired – please sign in again', imap_connect_failed: "Can't reach the mail server", imap_login_failed: 'Mailbox login failed – check /etc/byereviews/smtp.php',
+      mail_not_configured: 'Mailbox not connected', send_failed: 'Sending failed – please try again', bad_recipient: 'Check the recipient address', empty_text: 'The message is empty',
+      ai_bad_key: 'The Claude API key was rejected', ai_not_configured: 'Add a Claude API key first', ai_failed: 'Claude could not write a draft – try again', bad_key: "That doesn't look like a Claude API key (sk-ant-…)",
+      network: 'No connection', too_many_requests: 'Too many emails in a short time' }[code] || 'Something went wrong';
+  }
+  load(first, silent, sync) {
+    const s = this.state;
+    if (!silent) this.setState({ listLoading: !s.rows.length || first, syncing: !!sync });
+    return this.api('admin-inbox', { query: { folder: s.folder, q: s.q, ...(sync ? { sync: 1 } : {}) } }).then(r => {
+      this.setState({ listLoading: false, syncing: false });
+      if (!r.ok) return silent ? null : this.toast(this.err(r.error));
+      const ai = first ? { key: '', model: r.ai.model, tone: r.ai.tone, signature: r.ai.signature, auto: r.ai.auto } : this.state.ai;
+      this.setState({ info: r, folders: r.folders, folder: r.folder || this.state.folder, rows: r.messages, ...(first ? { ai } : {}) });
+      if (sync && r.error) this.toast(this.err(r.error));
+    });
+  }
+  open(row) {
+    this.setState({ sel: { folder: row.folder, uid: row.uid }, compose: false, thread: null, reply: null, threadLoading: true, htmlOpen: {}, saveState: '' });
+    if (this.state.vw < 900) window.scrollTo({ top: 0 });
+    this.api('admin-inbox-thread', { query: { folder: row.folder, uid: row.uid } }).then(r => {
+      if (!r.ok) { this.setState({ threadLoading: false }); return this.toast(this.err(r.error)); }
+      const to = r.reply.to ? (r.reply.to.name ? r.reply.to.name + ' <' + r.reply.to.email + '>' : r.reply.to.email) : '';
+      this.setState(st => ({ threadLoading: false, thread: r, quote: true,
+        reply: { to, subject: r.reply.subject, text: r.draft ? r.draft.text : '', folder: r.reply.folder, uid: r.reply.uid, source: r.draft ? r.draft.source : '' },
+        rows: st.rows.map(x => x.folder === row.folder && x.uid === row.uid ? { ...x, seen: true } : x),
+        folders: st.folders.map(f => f.name === row.folder && !row.seen ? { ...f, unread: Math.max(0, f.unread - 1) } : f) }));
+    });
+  }
+  setReply(patch, saveDraft) {
+    this.setState(s => ({ reply: { ...s.reply, ...patch } }));
+    if (saveDraft && this.state.thread) {
+      clearTimeout(this.dT); this.setState({ saveState: 'Saving…' });
+      this.dT = setTimeout(() => this.api('admin-inbox-draft', { body: { thread: this.state.thread.thread, text: this.state.reply.text } }).then(r => this.setState({ saveState: r.ok ? 'Draft saved' : '' })), 900);
+    }
+  }
+  send() {
+    const s = this.state, r = s.reply;
+    if (!r || s.sending) return;
+    if (!r.to.trim()) return this.toast('Add a recipient');
+    if (!r.text.trim()) return this.toast('The message is empty');
+    this.setState({ sending: true });
+    clearTimeout(this.dT);
+    const body = { to: r.to, subject: r.subject, text: r.text, quote: s.quote, ...(s.compose ? {} : { folder: r.folder, uid: r.uid }) };
+    this.api('admin-inbox-send', { body }).then(x => {
+      this.setState({ sending: false });
+      if (!x.ok) return this.toast(this.err(x.error));
+      this.toast('Sent');
+      if (s.compose) this.setState({ compose: false, reply: null, sel: null });
+      else if (s.sel) { const row = s.rows.find(y => y.folder === s.sel.folder && y.uid === s.sel.uid) || { ...s.sel, seen: true }; this.open(row); }
+      this.load(false, true);
+    });
+  }
+  act(kind) {
+    const s = this.state, m = s.sel;
+    if (!m) return;
+    const body = kind === 'unread' ? { folder: m.folder, uid: m.uid, seen: false } : { folder: m.folder, uid: m.uid, move: kind };
+    this.api('admin-inbox-update', { body }).then(r => {
+      if (!r.ok) return this.toast(this.err(r.error) + (r.error && r.error.indexOf('no_') === 0 ? ' (folder missing)' : ''));
+      this.toast({ unread: 'Marked as unread', archive: 'Archived', trash: 'Moved to trash', spam: 'Moved to spam', inbox: 'Moved to inbox' }[kind]);
+      this.setState({ sel: null, thread: null, reply: null });
+      this.load(false, true);
+    });
+  }
+  renderVals() {
+    const s = this.state, info = s.info, mob = s.vw < 900;
+    const fmt = t => { const d = new Date(t * 1000), now = new Date(); return d.toDateString() === now.toDateString() ? d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', ...(d.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}) }); };
+    const long = t => new Date(t * 1000).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const cur = s.folders.find(f => f.name === s.folder) || {};
+    const sentFolder = cur.role === 'sent' || cur.role === 'drafts';
+    const ago = info && info.syncedAt ? Math.round((Date.now() / 1000 - info.syncedAt) / 60) : null;
+    const t = s.thread, r = s.reply;
+    const paneOpen = !!(s.sel || s.compose);
+    const vals = {
+      subline: info ? (info.address || 'info@byereviews.com') + (ago == null ? '' : ' · synced ' + (ago < 1 ? 'just now' : ago + ' min ago')) : 'Loading…',
+      notConfigured: !!(info && !info.configured), hasError: !!(info && info.configured && info.error), errorText: info ? this.err(info.error) : '',
+      noAiKey: !!(info && info.configured && !info.ai.hasKey && !s.showSettings),
+      syncNow: () => { if (!s.syncing) this.load(false, false, true); }, syncLabel: s.syncing ? 'Syncing…' : 'Sync', syncOpacity: s.syncing ? .5 : 1,
+      newMail: () => this.setState({ compose: true, sel: null, thread: null, quote: false, reply: { to: '', subject: '', text: s.ai.signature ? '\n\n' + s.ai.signature : '', source: '' } }),
+      openSettings: () => this.setState({ showSettings: true }), closeSettings: () => this.setState({ showSettings: false }),
+      showSettings: s.showSettings, setCols: mob ? 'minmax(0,1fr)' : 'minmax(0,1fr) minmax(0,1fr)',
+      keyStatus: info && info.ai.hasKey ? '✓ key saved' : 'no key yet', keyPlaceholder: info && info.ai.hasKey ? '•••••••• (leave empty to keep)' : 'sk-ant-…',
+      aiKey: s.ai.key, onAiKey: e => this.setState({ ai: { ...s.ai, key: e.target.value } }),
+      aiModel: s.ai.model, onAiModel: e => this.setState({ ai: { ...s.ai, model: e.target.value } }),
+      aiTone: s.ai.tone, onAiTone: e => this.setState({ ai: { ...s.ai, tone: e.target.value } }),
+      aiSignature: s.ai.signature, onAiSignature: e => this.setState({ ai: { ...s.ai, signature: e.target.value } }),
+      toggleAuto: () => this.setState({ ai: { ...s.ai, auto: !s.ai.auto } }), autoBg: s.ai.auto ? '#151515' : '#D2D2D2', autoJustify: s.ai.auto ? 'flex-end' : 'flex-start',
+      saveSettings: () => {
+        const body = { model: s.ai.model, tone: s.ai.tone, signature: s.ai.signature, auto: s.ai.auto, ...(s.ai.key.trim() ? { key: s.ai.key.trim() } : {}) };
+        this.api('admin-inbox-ai', { body }).then(x => {
+          if (!x.ok) return this.toast(this.err(x.error));
+          this.setState({ info: { ...s.info, ai: x.ai }, ai: { ...s.ai, key: '' }, showSettings: false });
+          this.toast(x.ai.hasKey ? 'Saved – new emails get drafts automatically' : 'Saved');
+        });
+      },
+      cols: mob ? 'minmax(0,1fr)' : 'minmax(300px,380px) minmax(0,1fr)',
+      showList: !mob || !paneOpen, showPane: !mob || paneOpen, showBack: mob && paneOpen, back: () => this.setState({ sel: null, compose: false, thread: null, reply: null }),
+      listMax: mob ? 'none' : 'calc(100vh - 260px)',
+      folders: s.folders.map(f => ({ label: f.label, count: f.unread && f.role !== 'sent' && f.role !== 'trash' ? f.unread : '', bg: f.name === s.folder ? '#151515' : 'transparent', fg: f.name === s.folder ? '#fff' : '#555',
+        go: () => { this.setState({ folder: f.name, rows: [], sel: null, thread: null, reply: null, listLoading: true }, () => this.load(false, false, !f.synced)); } })),
+      q: s.q, onQ: e => { this.setState({ q: e.target.value }); clearTimeout(this.qT); this.qT = setTimeout(() => this.load(false, true), 350); },
+      listLoading: s.listLoading && !s.rows.length, listEmpty: !s.listLoading && !s.rows.length && !!info,
+      emptyText: s.q ? 'No emails match.' : info && !info.configured ? 'Mailbox not connected.' : 'No emails here.',
+      rows: s.rows.map(x => {
+        const other = sentFolder ? (x.to[0] || { name: '', email: '' }) : x.from, on = s.sel && s.sel.folder === x.folder && s.sel.uid === x.uid;
+        return { who: (sentFolder ? 'To: ' : '') + (other.name || other.email || '—'), when: fmt(x.date), subject: x.subject || '(no subject)', snippet: x.snippet, weight: x.seen ? 400 : 600,
+          dot: x.seen ? 'transparent' : '#151515', bg: on ? '#EEEEEE' : 'transparent', draft: x.draft, orders: x.orders.map(o => o.id), att: x.attachments > 0, attCount: x.attachments, answered: x.answered && !sentFolder,
+          open: () => this.open(x) };
+      }),
+      paneEmpty: !paneOpen && !mob, threadLoading: s.threadLoading, hasThread: !!t && !s.compose,
+      t: t ? {
+        subject: t.subject || '(no subject)',
+        orders: t.orders.map(o => ({ id: o.id, company: o.company, href: '/admin/#' + o.id,
+          summary: Object.entries(o.reviews).map(([k, n]) => n + ' ' + k.replace('_', ' ')).join(' · ') + ' · payment: ' + o.payment.replace('_', ' ') })),
+        messages: t.messages.map((m, i) => ({ who: m.mine ? 'You (byereviews)' : (m.from.name || m.from.email), addr: m.mine ? 'to ' + m.to.map(a => a.email).join(', ') : m.from.email + (m.auto ? ' · automated' : ''),
+          when: long(m.date), text: m.text, bg: m.mine ? '#F7F7F7' : '#FFFFFF', hasAtt: m.attachments.length > 0, att: m.attachments.map(a => a.name + ' (' + Math.max(1, Math.round(a.size / 1024)) + ' KB)'),
+          hasHtml: !!m.html, showHtml: !!s.htmlOpen[i], html: m.html, htmlLabel: s.htmlOpen[i] ? 'Hide original layout' : 'Show original layout',
+          toggleHtml: () => this.setState(st => ({ htmlOpen: { ...st.htmlOpen, [i]: !st.htmlOpen[i] } })) }))
+      } : { subject: '', orders: [], messages: [] },
+      actions: cur.role === 'trash' || cur.role === 'spam' ? [{ label: 'Move to inbox', go: () => this.act('inbox') }]
+        : [{ label: 'Archive', go: () => this.act('archive') }, { label: 'Spam', go: () => this.act('spam') }, { label: 'Delete', go: () => this.act('trash') }, { label: 'Mark unread', go: () => this.act('unread') }],
+      showReply: !!r && (s.compose || (!!t && !sentFolder) || (!!t && !!r.text)),
+      replyTitle: s.compose ? 'New email' : 'Reply', isReply: !s.compose, replyBorder: r && r.source === 'ai' ? '#151515' : 'transparent',
+      draftBadge: r && r.source === 'ai' ? 'AI draft · check before sending' : r && r.source === 'edited' ? 'Your draft' : '',
+      canAi: !s.compose && !!(info && info.ai.hasKey), genOpacity: s.generating ? .5 : 1, regenLabel: s.generating ? 'Writing…' : r && r.text ? 'Rewrite with AI' : 'Write draft with AI',
+      regenerate: () => {
+        if (s.generating || !t) return;
+        this.setState({ generating: true });
+        this.api('admin-inbox-draft', { body: { thread: t.thread, regenerate: true } }).then(x => {
+          this.setState({ generating: false });
+          if (!x.ok) return this.toast(this.err(x.error));
+          this.setReply({ text: x.draft.text, source: 'ai' });
+          this.setState(st => ({ rows: st.rows.map(y => y.thread === t.thread ? { ...y, draft: true } : y) }));
+        });
+      },
+      rTo: r ? r.to : '', onTo: e => this.setReply({ to: e.target.value }), rSubject: r ? r.subject : '', onSubject: e => this.setReply({ subject: e.target.value }),
+      rText: r ? r.text : '', onText: e => this.setReply({ text: e.target.value, source: r.source === 'ai' ? 'edited' : r.source || 'edited' }, !s.compose), rRows: mob ? 10 : 12,
+      toggleQuote: () => this.setState({ quote: !s.quote }), quoteBg: s.quote ? '#151515' : '#FFFFFF', quoteBd: s.quote ? '#151515' : '#C8C8C8', quoteTick: s.quote ? '✓' : '',
+      discardLabel: s.compose ? 'Cancel' : 'Discard draft',
+      discard: () => {
+        if (s.compose) return this.setState({ compose: false, reply: null });
+        clearTimeout(this.dT);
+        this.setReply({ text: '', source: '' });
+        this.setState(st => ({ saveState: '', rows: st.rows.map(y => t && y.thread === t.thread ? { ...y, draft: false } : y) }));
+        if (t) this.api('admin-inbox-draft', { body: { thread: t.thread, discard: true } });
+      },
+      saveState: s.saveState, send: () => this.send(), sendLabel: s.sending ? 'Sending…' : 'Send', sendOpacity: s.sending ? .5 : 1,
+      hasToast: !!s.toast, toast: s.toast
+    };
+    return vals;
+  }
+}
+</script>
+</body>
+</html>

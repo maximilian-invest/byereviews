@@ -10,7 +10,8 @@
 window.__resources = {
   "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "/assets/vendor/react.production.min.js",
   "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "/assets/vendor/react-dom.production.min.js",
-  "./LeadFinder.dc.html": "/admin/LeadFinder.dc.html"
+  "./LeadFinder.dc.html": "/admin/LeadFinder.dc.html",
+  "./Inbox.dc.html": "/admin/Inbox.dc.html"
 };
 </script>
 <script src="/support.js"></script>
@@ -49,6 +50,7 @@ button,input,textarea{font-family:inherit}
   <nav style="display:flex;align-items:center;gap:4px;background:#FFFFFF;border-radius:20px;padding:6px;min-width:0;overflow-x:auto;white-space:nowrap">
     <a href="/admin/" onClick="{{ goOrders }}" style="display:flex;align-items:center;padding:8px 12px 8px 10px"><img src="/assets/byereviews-logo.png" alt="byereviews" style="height:20px;width:auto;display:block"></a>
     <button onClick="{{ goOrders }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;background:{{ navOrdersBg }};color:{{ navOrdersFg }}">Orders</button>
+    <button onClick="{{ goInbox }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px;background:{{ navInboxBg }};color:{{ navInboxFg }}">Inbox<sc-if value="{{ hasInboxBadge }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#D93025;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ inboxBadge }}</span></sc-if></button>
     <button onClick="{{ goLeads }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px;background:{{ navLeadBg }};color:{{ navLeadFg }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="{{ navLeadFg }}" stroke-width="2"></circle><path d="M16 16l4 4" stroke="{{ navLeadFg }}" stroke-width="2" stroke-linecap="round"></path></svg>Lead Finder</button>
     <button onClick="{{ goAnalytics }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;background:{{ navAnBg }};color:{{ navAnFg }}">Analytics</button>
     <button onClick="{{ goSettings }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;background:{{ navSetBg }};color:{{ navSetFg }}">Settings</button>
@@ -249,6 +251,9 @@ button,input,textarea{font-family:inherit}
 </section>
 </sc-if>
 
+<sc-if value="{{ isInbox }}" hint-placeholder-val="{{ false }}">
+<dc-import name="Inbox" hint-size="100%,900px"></dc-import>
+</sc-if>
 <sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}">
 <dc-import name="LeadFinder" hint-size="100%,900px"></dc-import>
 </sc-if>
@@ -659,12 +664,14 @@ class Component extends DCLogic {
       if (r.ok && r.authed) { this.setState({ screen: 'admin', authed: true, adminEmail: r.email }); this.load(true); }
       else this.setState({ screen: 'login', notConfigured: r.ok && !r.configured });
     });
-    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) this.load(false); }, 20000);
+    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) { this.load(false); this.loadUnread(); } }, 20000);
     window.addEventListener('hashchange', this.onHash = () => this.fromHash());
   }
   componentWillUnmount() { this._designWillUnmount(); clearInterval(this.poll); window.removeEventListener('hashchange', this.onHash); }
 
+  loadUnread() { this.api('admin-inbox-unread').then(r => { if (r.ok && r.unread !== this.state.inboxUnread) this.setState({ inboxUnread: r.unread }); }); }
   load(first) {
+    if (first) this.loadUnread();
     return this.api('admin-orders').then(r => {
       if (!r.ok) { if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false }); return; }
       const st = r.settings || {};
@@ -681,9 +688,10 @@ class Component extends DCLogic {
     else if (h === 'analytics') { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); }
     else if (h === 'settings') this.setState({ view: 'settings', openId: null });
     else if (h === 'leads') this.setState({ view: 'leads', openId: null });
+    else if (h === 'inbox') this.setState({ view: 'inbox', openId: null });
   }
   componentDidUpdate() {
-    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : '';
+    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : s.view === 'inbox' ? '#inbox' : '';
     if (s.authed && this._hashReady && (location.hash || '') !== h) history.replaceState(null, '', location.pathname + h);
     if (s.view === 'analytics' && (s.range || 30) !== this._anRange) this.loadAnalytics();
   }
@@ -787,6 +795,8 @@ class Component extends DCLogic {
     Object.assign(v, {
       isLogin: s.screen === 'login', isAdmin: s.screen === 'admin', isCustDash: false, isEmail: false,
       adminInitial: (s.adminEmail || 'A')[0].toUpperCase(),
+      goInbox: () => { this.setState({ view: 'inbox', openId: null }); window.scrollTo({ top: 0 }); }, isInbox: s.view === 'inbox',
+      navInboxBg: s.view === 'inbox' ? '#151515' : 'transparent', navInboxFg: s.view === 'inbox' ? '#FFFFFF' : '#555', inboxBadge: s.inboxUnread ? String(s.inboxUnread) : '', hasInboxBadge: !!s.inboxUnread,
       doLogin: () => this.login(), onLoginKey: e => { if (e.key === 'Enter') this.login(); },
       logout: () => { this.api('admin-logout', { body: {} }); this.setState({ screen: 'login', authed: false, loginPass: '', orders: [], view: 'orders', openId: null }); },
       goAnalytics: () => { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); window.scrollTo({ top: 0 }); },

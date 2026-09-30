@@ -13,12 +13,14 @@
       if (r.ok && r.authed) { this.setState({ screen: 'admin', authed: true, adminEmail: r.email }); this.load(true); }
       else this.setState({ screen: 'login', notConfigured: r.ok && !r.configured });
     });
-    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) this.load(false); }, 20000);
+    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) { this.load(false); this.loadUnread(); } }, 20000);
     window.addEventListener('hashchange', this.onHash = () => this.fromHash());
   }
   componentWillUnmount() { this._designWillUnmount(); clearInterval(this.poll); window.removeEventListener('hashchange', this.onHash); }
 
+  loadUnread() { this.api('admin-inbox-unread').then(r => { if (r.ok && r.unread !== this.state.inboxUnread) this.setState({ inboxUnread: r.unread }); }); }
   load(first) {
+    if (first) this.loadUnread();
     return this.api('admin-orders').then(r => {
       if (!r.ok) { if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false }); return; }
       const st = r.settings || {};
@@ -35,9 +37,10 @@
     else if (h === 'analytics') { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); }
     else if (h === 'settings') this.setState({ view: 'settings', openId: null });
     else if (h === 'leads') this.setState({ view: 'leads', openId: null });
+    else if (h === 'inbox') this.setState({ view: 'inbox', openId: null });
   }
   componentDidUpdate() {
-    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : '';
+    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : s.view === 'inbox' ? '#inbox' : '';
     if (s.authed && this._hashReady && (location.hash || '') !== h) history.replaceState(null, '', location.pathname + h);
     if (s.view === 'analytics' && (s.range || 30) !== this._anRange) this.loadAnalytics();
   }
@@ -141,6 +144,8 @@
     Object.assign(v, {
       isLogin: s.screen === 'login', isAdmin: s.screen === 'admin', isCustDash: false, isEmail: false,
       adminInitial: (s.adminEmail || 'A')[0].toUpperCase(),
+      goInbox: () => { this.setState({ view: 'inbox', openId: null }); window.scrollTo({ top: 0 }); }, isInbox: s.view === 'inbox',
+      navInboxBg: s.view === 'inbox' ? '#151515' : 'transparent', navInboxFg: s.view === 'inbox' ? '#FFFFFF' : '#555', inboxBadge: s.inboxUnread ? String(s.inboxUnread) : '', hasInboxBadge: !!s.inboxUnread,
       doLogin: () => this.login(), onLoginKey: e => { if (e.key === 'Enter') this.login(); },
       logout: () => { this.api('admin-logout', { body: {} }); this.setState({ screen: 'login', authed: false, loginPass: '', orders: [], view: 'orders', openId: null }); },
       goAnalytics: () => { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); window.scrollTo({ top: 0 }); },

@@ -55,7 +55,15 @@ $routes = [
     'admin-leads-cancel' => 'action_admin_leads_cancel',
     'admin-lead' => 'action_admin_lead',
     'admin-leads-limit' => 'action_admin_leads_limit',
+    'admin-inbox' => 'action_admin_inbox',
+    'admin-inbox-unread' => 'action_admin_inbox_unread',
+    'admin-inbox-thread' => 'action_admin_inbox_thread',
+    'admin-inbox-draft' => 'action_admin_inbox_draft',
+    'admin-inbox-send' => 'action_admin_inbox_send',
+    'admin-inbox-update' => 'action_admin_inbox_update',
+    'admin-inbox-ai' => 'action_admin_inbox_ai',
 ];
 if (!isset($routes[$action])) fail(404, 'unknown_action');
 flush_notifications();
+register_shutdown_function('inbox_background'); // mailbox sync + AI drafts after the response (php-fpm only)
 $routes[$action]();

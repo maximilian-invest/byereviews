@@ -32,7 +32,8 @@ rep('<html>\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="widt
 window.__resources = {
   "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "/assets/vendor/react.production.min.js",
   "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "/assets/vendor/react-dom.production.min.js",
-  "./LeadFinder.dc.html": "/admin/LeadFinder.dc.html"
+  "./LeadFinder.dc.html": "/admin/LeadFinder.dc.html",
+  "./Inbox.dc.html": "/admin/Inbox.dc.html"
 };
 </script>
 <script src="/support.js"></script>''')
@@ -50,6 +51,9 @@ s, n = re.subn(r'\s*<button onClick="\{\{ simulatePaid \}\}"[^>]*>Simulate Strip
 assert n == 1
 
 rep('<a href="#" onClick="{{ goOrders }}"', '<a href="/admin/" onClick="{{ goOrders }}"')
+# Inbox (design/Inbox.dc.html, own component): nav item with unread badge + view
+rep('color:{{ navOrdersFg }}">Orders</button>', 'color:{{ navOrdersFg }}">Orders</button>\n    <button onClick="{{ goInbox }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px;background:{{ navInboxBg }};color:{{ navInboxFg }}">Inbox<sc-if value="{{ hasInboxBadge }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#D93025;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ inboxBadge }}</span></sc-if></button>')
+rep('<sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}">', '<sc-if value="{{ isInbox }}" hint-placeholder-val="{{ false }}">\n<dc-import name="Inbox" hint-size="100%,900px"></dc-import>\n</sc-if>\n<sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}">')
 rep('justify-content:center;font-size:14px">M</span>{{ logoutLabel }}', 'justify-content:center;font-size:14px">{{ adminInitial }}</span>{{ logoutLabel }}')
 rep('<span style="font-size:12px;color:#B5B5B5">{{ o.paidAt }} · via Stripe</span>', '<span style="font-size:12px;color:#B5B5B5">{{ o.paidAt }} · {{ o.paidVia }}</span>')
 rep('''<span style="width:10px;height:10px;border-radius:50%;background:#151515;display:block"></span><span style="font-size:15px;font-weight:500;flex:1">Connected</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">acct_…8F2k</span>''',
@@ -149,3 +153,6 @@ s = s[:idx] + '\n' + overrides + s[idx:]
 assert 'fonts.googleapis' not in s and 'STATE</span>' not in s
 (ROOT / 'public' / 'admin' / 'LeadFinder.dc.html').write_text(s, encoding='utf-8')
 print('built public/admin/LeadFinder.dc.html')
+
+(ROOT / 'public' / 'admin' / 'Inbox.dc.html').write_text((ROOT / 'design' / 'Inbox.dc.html').read_text(encoding='utf-8'), encoding='utf-8')
+print('built public/admin/Inbox.dc.html')
