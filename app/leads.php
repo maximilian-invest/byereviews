@@ -1,12 +1,12 @@
 <?php
 // Lead Finder for the admin panel: small UK/US businesses with a fresh bad Google review.
-// Google Places API (New): Text Search to find places, Place Details (with reviews) for small profiles only.
+// Google Places API (New): one Text Search call returns 20 places incl. their (max. 5) reviews – no Place Details calls needed.
 // A run is a queue of tasks that the admin page works through with short requests (admin-leads-step),
 // so no request runs longer than ~20 s and the page can show progress and cancel.
 declare(strict_types=1);
 
-const LEADS_TEXT_MASK = 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus';
-const LEADS_DETAILS_MASK = 'id,displayName,formattedAddress,rating,userRatingCount,websiteUri,googleMapsUri,nationalPhoneNumber,internationalPhoneNumber,businessStatus,reviews';
+const LEADS_TEXT_MASK = 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.websiteUri,places.googleMapsUri,places.nationalPhoneNumber,places.internationalPhoneNumber,places.reviews,nextPageToken';
+const LEADS_PAGES = 3;          // Text Search pages per query (20 places each, max. 60)
 const LEADS_KEEP_DAYS = 30;     // Google Maps terms: Places content is not kept longer; only place ID + own status/notes stay
 const LEADS_STEP_SECONDS = 20;  // work per request
 const LEADS_QUERIES = [
@@ -78,18 +78,12 @@ function leads_mock_search(string $q): array {
     for ($i = 0; $i < 12; $i++) {
         $places[] = ['id' => 'mock_' . md5($q . $i), 'displayName' => ['text' => ucfirst(explode(',', $q)[0]) . ' ' . ['Corner', 'House', 'Studio', 'Co.', 'Bar', 'Kitchen'][$i % 6] . ' ' . ($i + 1)],
             'formattedAddress' => ($i + 3) . ' High St, ' . trim(explode(',', $q)[1] ?? 'London'), 'rating' => [4.3, 4.9, 4.5, 3.9][($n + $i) % 4],
-            'userRatingCount' => [12, 250, 22, 9, 31][($n + $i) % 5], 'businessStatus' => 'OPERATIONAL'];
+            'userRatingCount' => [12, 250, 22, 9, 31][($n + $i) % 5], 'businessStatus' => 'OPERATIONAL', 'websiteUri' => '', 'googleMapsUri' => 'https://maps.google.com/?cid=' . ($n + $i),
+            'internationalPhoneNumber' => '+44 20 5550 ' . (($n + $i) % 9000 + 1000),
+            'reviews' => [['rating' => 5, 'publishTime' => gmdate('Y-m-d\TH:i:s.123456789\Z', time() - 86400)],
+                ['rating' => 1 + ($n + $i) % 3, 'publishTime' => gmdate('Y-m-d\TH:i:s\Z', time() - [2, 40, 9, 19, 75, 120][($n + $i) % 6] * 86400), 'originalText' => ['text' => 'Waited ages and the food was cold.'], 'authorAttribution' => ['displayName' => 'Sam T.']]]];
     }
-    return ['ok' => true, 'data' => ['places' => $places]];
-}
-
-function leads_mock_details(string $id): array {
-    $n = abs(crc32($id));
-    $days = [2, 40, 9, 19, 75][$n % 5];
-    return ['ok' => true, 'data' => ['id' => $id, 'displayName' => ['text' => 'Mock Place ' . substr($id, 5, 4)], 'formattedAddress' => '1 Mock St, London', 'rating' => 4.4, 'userRatingCount' => 18,
-        'websiteUri' => '', 'googleMapsUri' => 'https://maps.google.com/?cid=' . $n, 'internationalPhoneNumber' => '+44 20 5550 ' . ($n % 9000 + 1000), 'businessStatus' => 'OPERATIONAL',
-        'reviews' => [['rating' => 5, 'publishTime' => gmdate('Y-m-d\TH:i:s.123456789\Z', time() - 86400)],
-            ['rating' => 1 + $n % 2, 'publishTime' => gmdate('Y-m-d\TH:i:s\Z', time() - $days * 86400), 'originalText' => ['text' => 'Waited ages and the food was cold.'], 'authorAttribution' => ['displayName' => 'Sam T.']]]]];
+    return ['ok' => true, 'data' => ['places' => $places, 'nextPageToken' => substr($q, -1) === '1' ? 'tok' : '']];
 }
 
 function leads_find_instagram(string $website): string {
@@ -165,46 +159,11 @@ function leads_run_view(?array $r): ?array {
     return ['id' => $r['id'], 'status' => $r['status'], 'region' => $r['region'], 'total' => $r['total'], 'i' => $r['done'],
         'current' => $r['current'] ?? '', 'startedAt' => $r['startedAt'], 'endedAt' => $r['endedAt'] ?? null, 'stopReason' => $r['stopReason'] ?? '',
         'remaining' => count(array_filter($r['tasks'], fn($t) => $t['t'] === 'search')),
-        'pending' => count(array_filter($r['tasks'], fn($t) => $t['t'] === 'details'))] + $r['stats'];
+        'pending' => 0] + $r['stats'];
 }
 
-/** Executes one task. Returns false when the run has to stop (quota / key error). */
-function leads_task(array &$run, array $t): bool {
-    $crit = $run['crit'];
-    if ($t['t'] === 'search') {
-        if (!leads_take('text')) { $run['stopReason'] = 'quota_text'; return false; }
-        $run['current'] = $t['q'];
-        $res = config('mock_google') ? leads_mock_search($t['q'])
-            : leads_google('POST', 'https://places.googleapis.com/v1/places:searchText', LEADS_TEXT_MASK,
-                ['textQuery' => $t['q'], 'pageSize' => 20, 'regionCode' => $run['region'], 'languageCode' => 'en']);
-        if (!$res['ok']) { if (!empty($res['fatal'])) { $run['stopReason'] = 'api_error'; return false; } $run['done']++; return true; }
-        $seen = store_get('leadsys', 'seen') ?? [];
-        $skipAfter = time() - $crit['skip'] * 86400;
-        foreach ($res['data']['places'] ?? [] as $p) {
-            $run['stats']['places']++;
-            $id = (string)($p['id'] ?? ''); $n = (int)($p['userRatingCount'] ?? 0); $rating = (float)($p['rating'] ?? 0);
-            if ($id === '' || ($p['businessStatus'] ?? 'OPERATIONAL') !== 'OPERATIONAL') continue;
-            if ($n < $crit['revMin'] || $n > $crit['revMax'] || $rating > $crit['ratingMax']) continue;
-            $run['stats']['small']++;
-            if (($seen[$id] ?? 0) > $skipAfter || store_get('leads', $id) || in_array($id, $run['queued'], true)) { $run['stats']['skip']++; continue; }
-            $run['queued'][] = $id;
-            $run['tasks'][] = ['t' => 'details', 'id' => $id, 'q' => $t['q']];
-        }
-        $run['done']++;
-        return true;
-    }
-    // details of one small profile
-    if (!leads_take('details')) { $run['stopReason'] = 'quota_details'; return false; }
-    $res = config('mock_google') ? leads_mock_details($t['id'])
-        : leads_google('GET', 'https://places.googleapis.com/v1/places/' . rawurlencode($t['id']) . '?languageCode=en', LEADS_DETAILS_MASK);
-    if (!$res['ok']) { if (!empty($res['fatal'])) { $run['stopReason'] = 'api_error'; return false; } return true; }
-    $run['stats']['rev']++;
-    store_update('leadsys', 'seen', function (?array $s) use ($t) {
-        $s = $s ?? []; $s[$t['id']] = time();
-        if (count($s) > 20000) { asort($s); $s = array_slice($s, -15000, null, true); }
-        return $s;
-    });
-    $p = $res['data'];
+/** Up to 5 reviews per place come back with the search (Google picks them by relevance) → fresh bad ones. */
+function leads_bad_reviews(array $p, array $crit): array {
     $bad = [];
     foreach ($p['reviews'] ?? [] as $r) {
         $stars = (int)($r['rating'] ?? 0); $at = strtotime((string)($r['publishTime'] ?? '')) ?: 0;
@@ -212,20 +171,55 @@ function leads_task(array &$run, array $t): bool {
         $bad[] = ['stars' => $stars, 'at' => $at * 1000, 'author' => (string)($r['authorAttribution']['displayName'] ?? 'Google user'),
             'text' => (string)($r['originalText']['text'] ?? $r['text']['text'] ?? ''), 'link' => (string)($r['googleMapsUri'] ?? '')];
     }
-    if (!$bad) return true;
     usort($bad, fn($a, $b) => $b['at'] <=> $a['at']);
-    $website = (string)($p['websiteUri'] ?? '');
-    $content = ['name' => (string)($p['displayName']['text'] ?? ''), 'address' => (string)($p['formattedAddress'] ?? ''),
-        'rating' => (float)($p['rating'] ?? 0), 'count' => (int)($p['userRatingCount'] ?? 0),
-        'phone' => (string)($p['internationalPhoneNumber'] ?? $p['nationalPhoneNumber'] ?? ''), 'web' => $website,
-        'maps' => (string)($p['googleMapsUri'] ?? ''), 'ig' => $run['ig'] ? leads_find_instagram($website) : '', 'reviews' => $bad];
-    store_update('leads', $t['id'], function (?array $l) use ($t, $run, $content) {
-        if ($l && !empty($l['content'])) return $l;
-        return ['placeId' => $t['id'], 'region' => $run['region'], 'status' => $l['status'] ?? 'New', 'notes' => $l['notes'] ?? '',
-            'foundAt' => date('c'), 'query' => $t['q'], 'content' => $content];
-    });
-    $run['stats']['leads']++;
-    $run['newIds'][] = $t['id'];
+    return $bad;
+}
+
+/** Executes one task. Returns false when the run has to stop (quota / key error). */
+function leads_task(array &$run, array $t): bool {
+    $crit = $run['crit'];
+    if ($t['t'] === 'ig') { // Instagram handle from the business website (no Google call)
+        $ig = leads_find_instagram($t['web']);
+        if ($ig !== '') store_update('leads', $t['id'], function (?array $l) use ($ig) { if ($l && !empty($l['content'])) $l['content']['ig'] = $ig; return $l; });
+        return true;
+    }
+    if ($t['t'] !== 'search') return true; // e.g. a queued task from an older version
+    // one Text Search call = 20 places incl. rating, website, phone and their reviews (SKU Text Search Enterprise + Atmosphere)
+    if (!leads_take('text')) { $run['stopReason'] = 'quota_text'; return false; }
+    $run['current'] = $t['q'] . (($t['page'] ?? 1) > 1 ? ' · page ' . $t['page'] : '');
+    $body = ['textQuery' => $t['q'], 'pageSize' => 20, 'regionCode' => $run['region'], 'languageCode' => 'en'];
+    if (!empty($t['token'])) $body['pageToken'] = $t['token'];
+    $res = config('mock_google') ? leads_mock_search($t['q'] . ($t['page'] ?? 1))
+        : leads_google('POST', 'https://places.googleapis.com/v1/places:searchText', LEADS_TEXT_MASK, $body);
+    $page = (int)($t['page'] ?? 1);
+    if (!$res['ok']) { if (!empty($res['fatal'])) { $run['stopReason'] = 'api_error'; return false; } $run['done']++; return true; }
+    foreach ($res['data']['places'] ?? [] as $p) {
+        $run['stats']['places']++;
+        $id = (string)($p['id'] ?? ''); $n = (int)($p['userRatingCount'] ?? 0); $rating = (float)($p['rating'] ?? 0);
+        if ($id === '' || ($p['businessStatus'] ?? 'OPERATIONAL') !== 'OPERATIONAL' || in_array($id, $run['queued'], true)) continue;
+        $run['queued'][] = $id;
+        if ($n < $crit['revMin'] || $n > $crit['revMax'] || $rating > $crit['ratingMax']) continue;
+        $run['stats']['small']++;
+        $run['stats']['rev'] += count($p['reviews'] ?? []);
+        $existing = store_get('leads', $id);
+        if ($existing && !empty($existing['content'])) { $run['stats']['skip']++; continue; }
+        $bad = leads_bad_reviews($p, $crit);
+        if (!$bad) continue;
+        $website = (string)($p['websiteUri'] ?? '');
+        $content = ['name' => (string)($p['displayName']['text'] ?? ''), 'address' => (string)($p['formattedAddress'] ?? ''),
+            'rating' => $rating, 'count' => $n, 'phone' => (string)($p['internationalPhoneNumber'] ?? $p['nationalPhoneNumber'] ?? ''), 'web' => $website,
+            'maps' => (string)($p['googleMapsUri'] ?? ''), 'ig' => stripos($website, 'instagram.com') !== false ? leads_find_instagram($website) : '', 'reviews' => $bad];
+        store_update('leads', $id, function (?array $l) use ($id, $run, $content, $t) {
+            return ['placeId' => $id, 'region' => $run['region'], 'status' => $l['status'] ?? 'New', 'notes' => $l['notes'] ?? '',
+                'foundAt' => date('c'), 'query' => $t['q'], 'content' => $content];
+        });
+        $run['stats']['leads']++;
+        $run['newIds'][] = $id;
+        if ($run['ig'] && $website !== '' && $content['ig'] === '') array_unshift($run['tasks'], ['t' => 'ig', 'id' => $id, 'web' => $website]);
+    }
+    $next = (string)($res['data']['nextPageToken'] ?? '');
+    if ($next !== '' && $page < LEADS_PAGES) $run['tasks'][] = ['t' => 'search', 'q' => $t['q'], 'page' => $page + 1, 'token' => $next];
+    else $run['done']++;
     return true;
 }
 
@@ -283,8 +277,7 @@ function action_admin_leads_run(): void {
     $resume = $prev && $prev['status'] === 'quota' && $prev['region'] === $region && $prev['queries'] === $queries && $prev['crit'] === $crit;
     if (!empty($d['dry'])) {
         $pending = $resume ? count(array_filter($prev['tasks'], fn($t) => $t['t'] === 'search')) : count($queries);
-        $profiles = $resume ? count($prev['tasks']) - $pending : 0;
-        json_out(['ok' => true, 'dry' => ['queries' => $pending, 'text' => $pending, 'details' => $profiles + (int)round($pending * 1.6),
+        json_out(['ok' => true, 'dry' => ['queries' => $pending, 'text' => $pending * LEADS_PAGES, 'details' => 0,
             'textLeft' => leads_quota_left('text'), 'detailsLeft' => leads_quota_left('details'), 'resume' => $resume]]);
     }
     if ($prev && $prev['status'] === 'running' && strtotime($prev['touchedAt'] ?? $prev['startedAt']) > time() - 120) fail(409, 'already_running');

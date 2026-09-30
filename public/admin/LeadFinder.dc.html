@@ -473,17 +473,20 @@ class Component extends DCLogic {
     const u = s.usage || { text: { month: 0, day: 0 }, details: { month: 0, day: 0 } };
     const lim = s.limits || { text: { day: 30, month: 930 }, details: { day: 30, month: 930 } };
     const col = p => p >= 1 ? '#D93025' : p >= .8 ? '#E8A33D' : '#151515';
-    const full = ['text', 'details'].some(k => u[k].day >= lim[k].day || u[k].month >= lim[k].month);
-    const warn = !full && ['text', 'details'].some(k => u[k].day / lim[k].day >= .8);
-    // free tier: 1,000 calls per SKU and month, then $35 (Text Search) / $25 (Place Details) per 1,000
-    const cost = Math.max(0, u.text.month - 1000) * .035 + Math.max(0, u.details.month - 1000) * .025;
+    // only Text Search is used (it returns the reviews too)
+    const full = u.text.day >= lim.text.day || u.text.month >= lim.text.month;
+    const warn = !full && u.text.day / lim.text.day >= .8;
+    // free tier: 1,000 calls per month, then $40 per 1,000 (Text Search Enterprise + Atmosphere); older runs may have used Place Details
+    const cost = Math.max(0, u.text.month - 1000) * .04 + Math.max(0, u.details.month - 1000) * .025;
     const when = t => { if (!t) return ''; const d = new Date(t), today = new Date().toDateString() === d.toDateString();
       return (today ? 'today' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })) + ', ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); };
     const stoppedQuota = !!(run && run.status === 'quota');
-    const quotaSku = run && run.stopReason === 'quota_details' ? 'Place Details' : 'Text Search';
+    const relabel = t => ({ ...t, label: { 'Small profiles': 'Small profiles (5–30)', 'Reviews checked': 'Reviews read', 'Skipped · checked recently': 'Already in list' }[t.label] || t.label });
     Object.assign(v, {
+      criteria: v.criteria.filter(c => c.label !== 'Skip if checked within'),
+      liveTiles: v.liveTiles.map(relabel), lastTiles: v.lastTiles.map(relabel),
       isEmpty: s.ready && v.isEmpty,
-      quota: [['Text Search', u.text, lim.text], ['Place Details', u.details, lim.details]].map(([label, x, l]) => ({ label, month: x.month, today: x.day, monthMax: l.month, todayMax: l.day,
+      quota: [['Google searches (incl. reviews)', u.text, lim.text]].map(([label, x, l]) => ({ label, month: x.month, today: x.day, monthMax: l.month, todayMax: l.day,
         monthPct: Math.min(100, x.month / l.month * 100) + '%', monthCol: col(x.month / l.month), todayPct: Math.min(100, x.day / l.day * 100) + '%', todayCol: col(x.day / l.day) })),
       cost: '€' + cost.toFixed(2), quotaWarn: warn, quotaFull: full, quotaBorder: full ? '#D93025' : warn ? '#E8A33D' : 'transparent',
       runOpacity: full || !s.configured || running || s.busy ? .4 : 1,
@@ -494,13 +497,13 @@ class Component extends DCLogic {
       showLastRun: !!run && !running,
       quotaStopped: stoppedQuota,
       quotaStopText: stoppedQuota ? 'Stopped at query ' + run.i + ' of ' + run.total + '.' : '',
-      quotaStopMore: stoppedQuota ? ' The daily ' + quotaSku + ' limit was reached, so the run ended early to stay inside the free tier. Press Run search tomorrow to continue with the remaining ' + [run.remaining ? run.remaining + ' quer' + (run.remaining === 1 ? 'y' : 'ies') : '', run.pending ? run.pending + ' profile' + (run.pending === 1 ? '' : 's') + ' to check' : ''].filter(Boolean).join(' and ') + '.' : '',
+      quotaStopMore: stoppedQuota ? ' The daily Google limit was reached, so the run ended early to stay inside the free tier. Press Run search tomorrow to continue with the remaining ' + run.remaining + ' search' + (run.remaining === 1 ? '' : 'es') + '.' : '',
       lastRunTitle: !run ? 'Last run' : run.status === 'quota' ? 'Last run · stopped early' : run.status === 'cancelled' ? 'Last run · cancelled' : run.status === 'error' ? 'Last run · API error' : 'Last run',
       lastRunWhen: run ? when(run.endedAt || run.startedAt) : '',
       dryRun: () => this.api('admin-leads-run', { body: this.payload({ dry: true }) }).then(r => {
         if (!r.ok) return this.failRun(r);
-        const d = r.dry, fits = d.text <= d.textLeft && d.details <= d.detailsLeft;
-        this.toast((d.resume ? 'Resumes: ' : 'Dry run: ') + d.text + ' Text Search + ~' + d.details + ' Place Details calls · left today ' + d.textLeft + ' / ' + d.detailsLeft + (fits ? ' · €0.00' : ' · stops early at the limit'));
+        const d = r.dry, fits = d.text <= d.textLeft;
+        this.toast((d.resume ? 'Resumes: ' : 'Dry run: ') + 'up to ' + d.text + ' Google searches (' + d.queries + ' queries × 3 pages, 20 places each) · ' + d.textLeft + ' left today' + (fits ? ' · €0.00' : ' · stops at the limit, continue tomorrow'));
       }),
       fixError: () => this.toast('Add google_places_key in /etc/byereviews/config.php (Places API (New) enabled)'),
       regionTabs: ['England', 'USA'].map(k => ({ label: k, bg: s.region === k ? '#FFFFFF' : 'transparent', fg: s.region === k ? '#151515' : '#8A8A8A', sh: s.region === k ? '0 1px 3px rgba(0,0,0,.08)' : 'none',
