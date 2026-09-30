@@ -37,6 +37,11 @@ $routes = [
     'admin-resetpw' => 'action_admin_resetpw',
     'admin-settings' => 'action_admin_settings',
     'admin-analytics' => 'action_admin_analytics',
+    'admin-leads' => 'action_admin_leads',
+    'admin-leads-run' => 'action_admin_leads_run',
+    'admin-leads-step' => 'action_admin_leads_step',
+    'admin-leads-cancel' => 'action_admin_leads_cancel',
+    'admin-lead' => 'action_admin_lead',
 ];
 if (!isset($routes[$action])) fail(404, 'unknown_action');
 flush_notifications();

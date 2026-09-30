@@ -7,6 +7,11 @@ return [
     // (restrict the key to the Places API; server-side key, no referrer restriction)
     'google_places_key' => '',
 
+    // Lead Finder (admin → Lead Finder): hard stops per SKU so the Places free tier (1,000/month each) is never exceeded.
+    // Also set the same daily quotas in Google Cloud (Places API (New) → Quotas) as a second lock.
+    'leads_daily_text' => 30, 'leads_monthly_text' => 930,
+    'leads_daily_details' => 30, 'leads_monthly_details' => 930,
+
     // serpapi.com → API key. Loads the complete review list of a business (Places API alone returns max. 5 reviews).
     'serpapi_key' => '',
     'serpapi_pages' => 4,            // 4 pages ≈ up to ~70 reviews, lowest rating first

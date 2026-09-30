@@ -31,7 +31,8 @@ rep('<html>\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="widt
 <script>
 window.__resources = {
   "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "/assets/vendor/react.production.min.js",
-  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "/assets/vendor/react-dom.production.min.js"
+  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "/assets/vendor/react-dom.production.min.js",
+  "./LeadFinder.dc.html": "/admin/LeadFinder.dc.html"
 };
 </script>
 <script src="/support.js"></script>''')
@@ -75,3 +76,34 @@ out = ROOT / 'public' / 'admin' / 'index.html'
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(s, encoding='utf-8')
 print('built public/admin/index.html')
+
+
+# ---------- Lead Finder (design/LeadFinder.dc.html, imported by the admin page via <dc-import name="LeadFinder">) ----------
+s = (ROOT / 'design' / 'LeadFinder.dc.html').read_text(encoding='utf-8')
+rep('<script src="./support.js"></script>', '<script src="/support.js"></script>')
+rep('<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">',
+    '<link href="/assets/fonts/fonts.css" rel="stylesheet">')
+# the dark "STATE / DETAIL AS" bar is prototype-only
+s, n = re.subn(r'\n  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:#151515;border-radius:16px;padding:6px">.*?\n  </div>\n', '\n', s, count=1, flags=re.S)
+assert n == 1
+rep('<span style="font-size:28px;font-weight:600;letter-spacing:-.03em">€0.00</span>', '<span style="font-size:28px;font-weight:600;letter-spacing:-.03em">{{ cost }}</span>')
+rep('{{ q.month }} / 930 this month', '{{ q.month }} / {{ q.monthMax }} this month')
+rep('{{ q.today }} / 30</span>', '{{ q.today }} / {{ q.todayMax }}</span>')
+s, n = re.subn(r'<strong style="font-weight:600;color:#D93025">Stopped at query 18 of 25\.</strong>[^<]*</div>',
+               '<strong style="font-weight:600;color:#D93025">{{ quotaStopText }}</strong>{{ quotaStopMore }}</div>', s, count=1)
+assert n == 1
+rep('<a href="{{ d.maps }}" target="_blank" style="align-self:flex-start;background:#F4F4F4;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500">Open review on Google ↗</a>',
+    '<a href="{{ rv.link }}" target="_blank" style="align-self:flex-start;background:#F4F4F4;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500">Open review on Google ↗</a>')
+rep('Stored: <span style="font-family:\'Geist Mono\',monospace">place_id, status, notes</span>. Review text is loaded live from Google.',
+    'Google details are kept for 30 days (Google Maps terms), after that only <span style="font-family:\'Geist Mono\',monospace">place_id, status, notes</span> stay.')
+for old, new in [('  componentDidMount() {', '  _designDidMount() {'), ('  componentWillUnmount() {', '  _designWillUnmount() {'),
+                 ('  renderVals() {', '  _designRenderVals() {'), ('  setLead(id, patch) {', '  _designSetLead(id, patch) {'),
+                 ('  startRun() {', '  _designStartRun() {'), ('  open(id) {', '  _designOpen(id) {')]:
+    rep(old, new)
+rep('leads: this.leadsSeed(),', 'leads: [],')
+overrides = (ROOT / 'tools' / 'leads_overrides.js').read_text(encoding='utf-8')
+idx = s.rindex('\n}\n</script>')
+s = s[:idx] + '\n' + overrides + s[idx:]
+assert 'fonts.googleapis' not in s and 'STATE</span>' not in s
+(ROOT / 'public' / 'admin' / 'LeadFinder.dc.html').write_text(s, encoding='utf-8')
+print('built public/admin/LeadFinder.dc.html')

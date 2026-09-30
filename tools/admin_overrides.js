@@ -30,13 +30,15 @@
   // #BR-12345 opens an order, #analytics / #settings the views
   fromHash() {
     const h = decodeURIComponent((location.hash || '').slice(1));
+    this._hashReady = true;
     if (/^BR-\d{5}$/.test(h) && this.state.orders.some(o => o.id === h)) this.setState({ view: 'detail', openId: h, sel: {}, draft: '' });
     else if (h === 'analytics') { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); }
     else if (h === 'settings') this.setState({ view: 'settings', openId: null });
+    else if (h === 'leads') this.setState({ view: 'leads', openId: null });
   }
   componentDidUpdate() {
-    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : '';
-    if (s.authed && (location.hash || '') !== h) history.replaceState(null, '', location.pathname + h);
+    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : '';
+    if (s.authed && this._hashReady && (location.hash || '') !== h) history.replaceState(null, '', location.pathname + h);
     if (s.view === 'analytics' && (s.range || 30) !== this._anRange) this.loadAnalytics();
   }
   loadAnalytics() {

@@ -194,3 +194,34 @@ Range switch 7 / 30 / 90 days / All, "compared to previous period".
 - `assets.html`, `download-assets.sh`, `download-assets.ps1`, `assets/manifest.json` – image & video download.
 - `blog-posts/*.md` – the 10 blog posts as Markdown.
 - `support.js` – runtime needed only to open the prototypes in a browser (not for production).
+
+---
+
+## Lead Finder (`LeadFinder.dc.html`, mounted in Admin as nav item "Lead Finder" with search icon)
+
+Purpose: the backend (`app/leads.php`) uses the Google Places API (New) to find small businesses in **England / USA** with a recent bad review; the owner follows them on Instagram and contacts them. English UI, same visual system as Admin.
+The dark "STATE / DETAIL AS" bar at the top is prototype-only (switches Normal / Empty / Running / Quota reached / API error and Drawer / Page).
+
+**List page**
+- Header "Lead Finder" + "Dry run" (secondary: estimates calls, no API spend) + "Run search" (primary; disabled look when quota full or key error).
+- **Search setup:** Region segmented England | USA · Queries textarea (one per line, live count) · Criteria number chips: Reviews 5–30, Rating max 4.8 ★, Bad review 1–2 ★, Max age 28 days, Skip if checked within 7 days · toggle "Find Instagram via website".
+- **Google quota card:** Cost this month €0.00; Text Search month x/930 + today x/30 bars; Place Details month x/930 + today x/30 bars. ≥80% → orange `#E8A33D` + "Over 80 % of today's limit used"; 100% → red `#D93025` card border + "Limit reached – next run tomorrow".
+- **Run status:** running = black card "Searching… Query n of N", progress bar, current query (mono), live tiles, Cancel. Done = "Last run" tiles: Queries · Places scanned · Small profiles · Reviews checked · New leads (black tile) · Skipped · checked recently. Quota stop = red notice "Stopped at query 18 of 25… remaining queries run automatically tomorrow."
+- **API error:** red-bordered card "Google API key missing or invalid" (REQUEST_DENIED), mentions `GOOGLE_PLACES_API_KEY` + Places API (New), button "Open Settings".
+- **Leads table:** tabs All · New · Followed · Contacted · Won · Ignored (counts) · search · region filter All/England/USA · "Export CSV" (name,address,region,rating,reviews,bad_stars,bad_date,instagram,status). Columns: Business (name + address) | Google (rating ★ + count) | Bad review (badge 1★ red `#FCE8E6/#D93025`, 2★ orange `#FEF3E2/#B45309`, "x days ago", quote clamped to 2 lines) | Instagram (@handle or "not found" grey) | Status pill (New black · Followed outlined · Contacted grey · Won green `#E6F4EA/#1E8E3E` · Ignored outlined grey) | Actions (Maps, Instagram – disabled if none, open lead). Sorted newest bad review first. < 760px → rows become cards.
+- **Review age filter** (own row under the toolbar): `REVIEW AGE` segmented Any · 3 days · 7 days · 14 days · 28 days · Custom; Custom shows two number fields "from x to y days ago". Age = days since the **newest** bad review of the lead, computed at render time from the stored review date (never store `age_days`, it goes stale).
+- **Result row** above the table: "8 leads · 3 from the last 7 days" (live) + sort toggle "Newest review first ↓ / Oldest review first ↑" (the BAD REVIEW column header toggles the same sort). Right side: active filters as black removable chips (Status, Region, Review age, search term, each with ×) + "Reset filters".
+- **Empty:** "No leads yet – Add a few queries, then start with a dry run…" + "Run first search".
+
+**Lead detail** (right drawer 560px with dim overlay, or own page max 760px with "← All leads")
+- Name, rating, reviews, address, phone, "Google Maps ↗", "Website ↗", status pill.
+- **Loading skeleton** ("loading review from Google…") because review text is fetched live – only `place_id, status, notes` are stored (dashed info box at bottom states this).
+- Bad review card(s): star badge, author, date · x days ago, full quote, "Open review on Google ↗"; multiple bad reviews listed. Deleted review → "Review no longer online – maybe not worth contacting anymore."
+- Instagram block: handle, "Open profile ↗", "Mark as followed" (New → Followed). No Instagram → hint + "Search on Instagram ↗".
+- DM draft textarea (prefilled) + "Copy DM" → copies and sets status **Contacted** (toast).
+- Status segmented New / Followed / Contacted / Won / Ignored · Notes textarea.
+- Actions: "Create offer" (primary), "Message on WhatsApp" (wa.me/phone).
+
+**Backend notes:** persist per place_id: status, notes, last_checked_at, region, instagram handle; respect daily caps (30 Text Search, 30 Place Details) and monthly 930 to stay free; skip places checked within N days.
+
+---

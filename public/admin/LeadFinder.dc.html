@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="/assets/fonts/fonts.css" rel="stylesheet">
+</helmet>
+<section data-screen-label="06 Lead Finder" style="display:flex;flex-direction:column;gap:14px;font-family:'Geist',sans-serif;color:#151515">
+
+
+  <sc-if value="{{ showList }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:8px 4px 0">
+    <h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:600;letter-spacing:-.045em;line-height:1">Lead Finder</h1>
+    <div style="display:flex;gap:8px">
+      <button onClick="{{ dryRun }}" style="border:0;cursor:pointer;background:#FFFFFF;border-radius:16px;padding:14px 18px;font-size:15px;font-weight:500">Dry run</button>
+      <button onClick="{{ runSearch }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;padding:14px 20px;font-size:15px;font-weight:600;opacity:{{ runOpacity }}">Run search</button>
+    </div>
+  </div>
+
+  <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#FFFFFF;border:1.5px solid #D93025;border-radius:24px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+      <span style="flex:none;width:40px;height:40px;border-radius:12px;background:#FCE8E6;color:#D93025;display:flex;align-items:center;justify-content:center;font-weight:700">!</span>
+      <div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:600">Google API key missing or invalid</span><span style="font-size:14px;color:#555;line-height:1.5">The Places API rejected the request (REQUEST_DENIED). Add a valid key as <span style="font-family:'Geist Mono',monospace;font-size:13px;background:#F4F4F4;border-radius:6px;padding:1px 6px">GOOGLE_PLACES_API_KEY</span> and make sure Places API (New) is enabled.</span></div>
+      <button onClick="{{ fixError }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:12px;padding:11px 14px;font-size:14px;font-weight:500">Open Settings</button>
+    </div>
+  </sc-if>
+
+  <div style="display:grid;grid-template-columns:{{ setupCols }};gap:14px;align-items:start">
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:20px;font-weight:600;letter-spacing:-.02em">Search setup</span>
+        <div style="display:flex;background:#F4F4F4;border-radius:14px;padding:3px;gap:2px">
+          <sc-for list="{{ regionTabs }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.go }}" style="border:0;cursor:pointer;border-radius:11px;padding:8px 14px;font-size:14px;font-weight:500;background:{{ t.bg }};color:{{ t.fg }};box-shadow:{{ t.sh }}">{{ t.label }}</button></sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="font-weight:500">Queries · one per line</span><span style="color:#6B6B6B">{{ queryCount }} queries</span></div>
+        <textarea value="{{ queries }}" onChange="{{ onQueries }}" rows="6" style="border:0;background:#F4F4F4;border-radius:16px;padding:14px 16px;font-size:14px;line-height:1.55;outline:none;resize:vertical;font-family:'Geist Mono',monospace"></textarea>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:500">Criteria</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ criteria }}" as="c" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:6px;background:#F4F4F4;border-radius:12px;padding:6px 10px;font-size:13px;color:#555">
+              <span>{{ c.label }}</span>
+              <input type="number" value="{{ c.a }}" onChange="{{ c.onA }}" step="{{ c.step }}" style="width:52px;border:0;background:#FFFFFF;border-radius:8px;padding:5px 6px;font-size:13px;font-weight:600;text-align:center;outline:none">
+              <sc-if value="{{ c.range }}" hint-placeholder-val="{{ false }}"><span>–</span><input type="number" value="{{ c.b }}" onChange="{{ c.onB }}" step="{{ c.step }}" style="width:52px;border:0;background:#FFFFFF;border-radius:8px;padding:5px 6px;font-size:13px;font-weight:600;text-align:center;outline:none"></sc-if>
+              <span>{{ c.unit }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <button onClick="{{ toggleIg }}" style="border:0;cursor:pointer;background:transparent;padding:0;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:#151515;align-self:flex-start">
+        <span style="width:40px;height:24px;border-radius:12px;padding:3px;display:flex;justify-content:{{ igJustify }};background:{{ igBg }};transition:background .2s"><span style="width:18px;height:18px;border-radius:50%;background:#FFFFFF;display:block"></span></span>
+        Find Instagram via website
+      </button>
+    </div>
+
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px;border:1.5px solid {{ quotaBorder }}">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><span style="font-size:20px;font-weight:600;letter-spacing:-.02em">Google quota</span><span style="font-size:13px;color:#6B6B6B">free tier</span></div>
+      <div style="background:#F4F4F4;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:14px;color:#555">Cost this month</span><span style="font-size:28px;font-weight:600;letter-spacing:-.03em">{{ cost }}</span></div>
+      <sc-for list="{{ quota }}" as="q" hint-placeholder-count="2">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;gap:10px;font-size:14px"><span style="font-weight:600">{{ q.label }}</span><span style="color:#555">{{ q.month }} / {{ q.monthMax }} this month</span></div>
+          <div style="height:8px;background:#F4F4F4;border-radius:4px;overflow:hidden"><div style="height:100%;border-radius:4px;width:{{ q.monthPct }};background:{{ q.monthCol }}"></div></div>
+          <div style="display:flex;justify-content:space-between;gap:10px;font-size:13px"><span style="color:#6B6B6B">Today</span><span style="font-weight:600;color:{{ q.todayCol }}">{{ q.today }} / {{ q.todayMax }}</span></div>
+          <div style="height:8px;background:#F4F4F4;border-radius:4px;overflow:hidden"><div style="height:100%;border-radius:4px;width:{{ q.todayPct }};background:{{ q.todayCol }}"></div></div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ quotaWarn }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:500;background:#FEF3E2;color:#B45309;border-radius:12px;padding:10px 12px">Over 80 % of today's limit used</span></sc-if>
+      <sc-if value="{{ quotaFull }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:600;background:#FCE8E6;color:#D93025;border-radius:12px;padding:10px 12px">Limit reached – next run tomorrow</span></sc-if>
+    </div>
+  </div>
+
+  <sc-if value="{{ isRunning }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#151515;color:#fff;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:20px;font-weight:600;letter-spacing:-.02em">{{ runTitle }}</span><button onClick="{{ cancelRun }}" style="border:0;cursor:pointer;background:#2A2A2A;color:#fff;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500">Cancel</button></div>
+      <div style="height:8px;background:#2A2A2A;border-radius:4px;overflow:hidden"><div style="height:100%;border-radius:4px;background:#FFFFFF;width:{{ runPct }};transition:width .3s"></div></div>
+      <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#B5B5B5">{{ runQuery }}</span>
+      <div style="display:grid;grid-template-columns:{{ tileCols }};gap:8px">
+        <sc-for list="{{ liveTiles }}" as="k" hint-placeholder-count="6"><div style="background:#2A2A2A;border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;color:#B5B5B5">{{ k.label }}</span><span style="font-size:24px;font-weight:600;letter-spacing:-.03em">{{ k.v }}</span></div></sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showLastRun }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font-size:20px;font-weight:600;letter-spacing:-.02em">{{ lastRunTitle }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ lastRunWhen }}</span></div>
+      <sc-if value="{{ quotaStopped }}" hint-placeholder-val="{{ false }}"><div style="background:#FCE8E6;color:#151515;border-radius:16px;padding:12px 14px;font-size:14px;line-height:1.5"><strong style="font-weight:600;color:#D93025">{{ quotaStopText }}</strong>{{ quotaStopMore }}</div></sc-if>
+      <div style="display:grid;grid-template-columns:{{ tileCols }};gap:8px">
+        <sc-for list="{{ lastTiles }}" as="k" hint-placeholder-count="6"><div style="background:{{ k.bg }};color:{{ k.fg }};border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;color:{{ k.sub }}">{{ k.label }}</span><span style="font-size:24px;font-weight:600;letter-spacing:-.03em">{{ k.v }}</span></div></sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(40px,7vw,80px) 24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+      <span style="width:64px;height:64px;border-radius:20px;background:#EEEEEE;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="#8A8A8A" stroke-width="1.8"></circle><path d="M16 16l4 4" stroke="#8A8A8A" stroke-width="1.8" stroke-linecap="round"></path></svg></span>
+      <span style="font-size:22px;font-weight:600;letter-spacing:-.02em">No leads yet</span>
+      <span style="font-size:15px;color:#6B6B6B;max-width:380px">Add a few queries, then start with a dry run to see how many API calls it would use.</span>
+      <button onClick="{{ runSearch }}" style="margin-top:6px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:13px 18px;font-size:15px;font-weight:600">Run first search</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasLeads }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;overflow-x:auto;max-width:100%">
+      <sc-for list="{{ statusTabs }}" as="f" hint-placeholder-count="6"><button onClick="{{ f.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 13px;font-size:14px;font-weight:500;white-space:nowrap;display:flex;gap:6px;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}<span style="font-size:12px;opacity:.6">{{ f.count }}</span></button></sc-for>
+    </div>
+    <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Search business or city" style="flex:1;min-width:180px;border:0;background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:15px;outline:none">
+    <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px">
+      <sc-for list="{{ regionFilter }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 12px;font-size:14px;font-weight:500;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</button></sc-for>
+    </div>
+    <button onClick="{{ exportCsv }}" style="border:0;cursor:pointer;background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:14px;font-weight:500">Export CSV</button>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <div role="group" aria-label="Review age" style="display:flex;align-items:center;background:#FFFFFF;border-radius:16px;padding:4px 4px 4px 12px;gap:2px;overflow-x:auto;max-width:100%">
+      <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A;white-space:nowrap;padding-right:6px">REVIEW AGE</span>
+      <sc-for list="{{ ageTabs }}" as="t" hint-placeholder-count="6"><button onClick="{{ t.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 11px;font-size:14px;font-weight:500;white-space:nowrap;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</button></sc-for>
+    </div>
+    <sc-if value="{{ ageCustom }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:6px;background:#FFFFFF;border-radius:16px;padding:7px 12px;font-size:14px;color:#555">
+        <span>from</span>
+        <input type="number" min="0" aria-label="Review age from (days)" value="{{ ageFrom }}" onChange="{{ onAgeFrom }}" style="width:52px;border:0;background:#F4F4F4;border-radius:8px;padding:7px 6px;font-size:14px;font-weight:600;text-align:center;outline:none">
+        <span>to</span>
+        <input type="number" min="0" aria-label="Review age to (days)" value="{{ ageTo }}" onChange="{{ onAgeTo }}" style="width:52px;border:0;background:#F4F4F4;border-radius:8px;padding:7px 6px;font-size:14px;font-weight:600;text-align:center;outline:none">
+        <span>days ago</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:2px 4px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:14px;color:#6B6B6B">{{ countText }}</span>
+      <button onClick="{{ toggleSort }}" style="border:0;cursor:pointer;background:transparent;padding:4px 2px;font-size:13px;font-weight:500;color:#151515;display:flex;align-items:center;gap:4px">{{ sortLabel }}</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <sc-for list="{{ activeChips }}" as="c" hint-placeholder-count="2"><button onClick="{{ c.clear }}" aria-label="{{ c.aria }}" style="border:0;cursor:pointer;background:#151515;color:#FFFFFF;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:7px;white-space:nowrap">{{ c.label }}<span aria-hidden="true" style="opacity:.6;font-size:14px;line-height:1">×</span></button></sc-for>
+      <sc-if value="{{ hasActive }}" hint-placeholder-val="{{ true }}"><button onClick="{{ resetFilters }}" style="border:0;background:transparent;cursor:pointer;font-size:13px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px;padding:4px 2px">Reset filters</button></sc-if>
+    </div>
+  </div>
+
+  <div style="background:#FFFFFF;border-radius:28px;padding:8px;display:flex;flex-direction:column">
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 110px minmax(0,1.8fr) 150px 110px 118px;gap:14px;padding:12px 16px;font-size:12px;color:#8A8A8A;font-family:'Geist Mono',monospace"><span>BUSINESS</span><span>GOOGLE</span><button onClick="{{ toggleSort }}" title="Sort by review age" style="border:0;background:transparent;padding:0;cursor:pointer;text-align:left;font-family:'Geist Mono',monospace;font-size:12px;color:#151515;display:flex;gap:5px;align-items:center">BAD REVIEW <span>{{ sortArrow }}</span></button><span>INSTAGRAM</span><span>STATUS</span><span></span></div>
+    </sc-if>
+    <sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+      <div style="border-top:1px solid #F0F0F0;padding:14px 16px;display:grid;grid-template-columns:{{ rowCols }};gap:{{ rowGap }};align-items:center;font-size:14px">
+        <button onClick="{{ r.open }}" style="border:0;background:transparent;padding:0;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px;min-width:0;color:#151515"><span style="font-weight:600;font-size:15px">{{ r.name }}</span><span style="font-size:13px;color:#6B6B6B">{{ r.address }}</span></button>
+        <span style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:600">{{ r.rating }} ★</span><span style="font-size:12px;color:#6B6B6B">{{ r.count }} reviews</span></span>
+        <span style="display:flex;flex-direction:column;gap:4px;min-width:0">
+          <span style="display:flex;gap:6px;align-items:center;font-size:12px"><span style="font-weight:600;border-radius:7px;padding:3px 7px;background:{{ r.badBg }};color:{{ r.badFg }}">{{ r.bad }}</span><span style="color:#6B6B6B">{{ r.ago }}</span></span>
+          <span style="font-size:13px;line-height:1.4;color:{{ r.quoteCol }};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ r.quote }}</span>
+        </span>
+        <span style="font-size:13px;font-weight:{{ r.igW }};color:{{ r.igCol }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.ig }}</span>
+        <span><span style="display:inline-block;font-size:12px;font-weight:500;border-radius:9px;padding:5px 9px;background:{{ r.stBg }};color:{{ r.stFg }};border:1px solid {{ r.stBd }}">{{ r.status }}</span></span>
+        <span style="display:flex;gap:4px;justify-content:flex-end">
+          <a href="{{ r.maps }}" target="_blank" aria-label="Open in Maps" style="width:34px;height:34px;border-radius:10px;background:#F4F4F4;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0119 9.5C19 14.8 12 21 12 21z" stroke="#151515" stroke-width="1.8"></path><circle cx="12" cy="9.5" r="2.5" stroke="#151515" stroke-width="1.8"></circle></svg></a>
+          <a href="{{ r.igUrl }}" target="_blank" aria-label="Open Instagram" style="width:34px;height:34px;border-radius:10px;background:#F4F4F4;display:flex;align-items:center;justify-content:center;opacity:{{ r.igOpacity }};pointer-events:{{ r.igPe }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="5" stroke="#151515" stroke-width="1.8"></rect><circle cx="12" cy="12" r="3.5" stroke="#151515" stroke-width="1.8"></circle><circle cx="16.8" cy="7.2" r="1" fill="#151515"></circle></svg></a>
+          <button onClick="{{ r.open }}" aria-label="Open lead" style="width:34px;height:34px;border:0;cursor:pointer;border-radius:10px;background:#151515;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+        </span>
+      </div>
+    </sc-for>
+    <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}"><div style="padding:32px;text-align:center;font-size:14px;color:#8A8A8A">No leads match.</div></sc-if>
+  </div>
+  </sc-if>
+  </sc-if>
+
+  <sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ isDrawer }}" hint-placeholder-val="{{ true }}"><div onClick="{{ closeDetail }}" style="position:fixed;inset:0;z-index:240;background:rgba(21,21,21,.35);backdrop-filter:blur(3px)"></div></sc-if>
+    <div data-screen-label="Lead detail" style="position:{{ dPos }};top:0;right:0;bottom:0;z-index:250;width:{{ dW }};max-width:{{ dMax }};background:#EEEEEE;overflow:{{ dOv }};padding:{{ dPad }};display:flex;flex-direction:column;gap:14px;box-shadow:{{ dSh }}">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <button onClick="{{ closeDetail }}" style="border:0;background:transparent;cursor:pointer;font-size:14px;color:#6B6B6B;padding:4px 0">{{ backLabel }}</button>
+        <span style="font-size:12px;font-weight:500;border-radius:9px;padding:5px 9px;background:{{ d.stBg }};color:{{ d.stFg }};border:1px solid {{ d.stBd }}">{{ d.status }}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <h2 style="margin:0;font-size:clamp(26px,3vw,36px);font-weight:600;letter-spacing:-.04em;line-height:1.05">{{ d.name }}</h2>
+        <span style="font-size:14px;color:#555">{{ d.rating }} ★ · {{ d.count }} reviews · {{ d.address }}</span>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:14px;font-weight:500"><span style="color:#555;font-weight:400">{{ d.phone }}</span><a href="{{ d.maps }}" target="_blank">Google Maps ↗</a><a href="{{ d.web }}" target="_blank">Website ↗</a></div>
+      </div>
+
+      <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px">
+          <span style="height:14px;width:30%;background:#EEEEEE;border-radius:7px;display:block"></span>
+          <span style="height:12px;width:90%;background:#F4F4F4;border-radius:6px;display:block"></span>
+          <span style="height:12px;width:75%;background:#F4F4F4;border-radius:6px;display:block"></span>
+          <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A">loading review from Google…</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ loaded }}" hint-placeholder-val="{{ true }}">
+        <sc-for list="{{ d.reviews }}" as="rv" hint-placeholder-count="1">
+          <div style="background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:10px">
+            <sc-if value="{{ rv.gone }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:12px;align-items:center"><span style="width:40px;height:40px;border-radius:12px;background:#EEEEEE;display:flex;align-items:center;justify-content:center;font-size:18px">∅</span><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:600">Review no longer online</span><span style="font-size:13px;color:#6B6B6B">The {{ rv.stars }}★ review by {{ rv.author }} was deleted – maybe not worth contacting anymore.</span></div></div>
+            </sc-if>
+            <sc-if value="{{ rv.live }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+                <span style="display:flex;gap:8px;align-items:center"><span style="font-size:13px;font-weight:600;border-radius:8px;padding:4px 9px;background:{{ rv.badBg }};color:{{ rv.badFg }}">{{ rv.stars }}★</span><span style="font-size:15px;font-weight:600">{{ rv.author }}</span></span>
+                <span style="font-size:13px;color:#6B6B6B">{{ rv.date }} · {{ rv.ago }}</span>
+              </div>
+              <p style="margin:0;font-size:17px;line-height:1.55;letter-spacing:-.005em">“{{ rv.text }}”</p>
+              <a href="{{ rv.link }}" target="_blank" style="align-self:flex-start;background:#F4F4F4;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500">Open review on Google ↗</a>
+            </sc-if>
+          </div>
+        </sc-for>
+      </sc-if>
+
+      <div style="background:#FFFFFF;border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:16px;font-weight:600">Instagram</span>
+        <sc-if value="{{ d.hasIg }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:16px;font-weight:600">{{ d.ig }}</span>
+            <div style="display:flex;gap:6px"><a href="{{ d.igUrl }}" target="_blank" style="background:#F4F4F4;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:500">Open profile ↗</a><button onClick="{{ markFollowed }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:500">{{ followLabel }}</button></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ d.noIg }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#F4F4F4;border-radius:14px;padding:12px 14px;font-size:14px;color:#555;line-height:1.5">No Instagram found on the website. Try searching manually, or use phone / WhatsApp instead.</div>
+          <a href="{{ d.igSearch }}" target="_blank" style="align-self:flex-start;background:#F4F4F4;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:500">Search on Instagram ↗</a>
+        </sc-if>
+      </div>
+
+      <div style="background:#FFFFFF;border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:16px;font-weight:600">DM draft</span>
+        <textarea value="{{ dm }}" onChange="{{ onDm }}" rows="6" style="border:0;background:#F4F4F4;border-radius:14px;padding:13px 15px;font-size:14px;line-height:1.55;outline:none;resize:vertical"></textarea>
+        <button onClick="{{ copyDm }}" style="align-self:flex-start;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:500">Copy DM</button>
+        <span style="font-size:12px;color:#8A8A8A">Copying sets the status to Contacted.</span>
+      </div>
+
+      <div style="background:#FFFFFF;border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:16px;font-weight:600">Status</span>
+        <div style="display:flex;background:#F4F4F4;border-radius:14px;padding:3px;gap:2px;overflow-x:auto">
+          <sc-for list="{{ statusSeg }}" as="sg" hint-placeholder-count="5"><button onClick="{{ sg.go }}" style="flex:1;border:0;cursor:pointer;border-radius:11px;padding:9px 10px;font-size:13px;font-weight:500;white-space:nowrap;background:{{ sg.bg }};color:{{ sg.fg }};box-shadow:{{ sg.sh }}">{{ sg.label }}</button></sc-for>
+        </div>
+        <span style="font-size:16px;font-weight:600;padding-top:4px">Notes</span>
+        <textarea value="{{ notes }}" onChange="{{ onNotes }}" rows="3" placeholder="e.g. Owner replied, call Thursday" style="border:0;background:#F4F4F4;border-radius:14px;padding:13px 15px;font-size:14px;line-height:1.5;outline:none;resize:vertical"></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onClick="{{ createOffer }}" style="height:54px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:16px;font-size:15px;font-weight:600">Create offer</button>
+        <a href="{{ d.wa }}" target="_blank" style="height:54px;background:#FFFFFF;border-radius:16px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center">Message on WhatsApp</a>
+      </div>
+      <div style="border:1px dashed #C8C8C8;border-radius:16px;padding:12px 14px;font-size:12px;color:#6B6B6B;line-height:1.5">Google details are kept for 30 days (Google Maps terms), after that only <span style="font-family:'Geist Mono',monospace">place_id, status, notes</span> stay.</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:260;background:#151515;color:#fff;border-radius:16px;padding:14px 18px;font-size:14px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px)">{{ toast }}</div>
+  </sc-if>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  leadsSeed() {
+    const d = k => Date.now() - k * 86400000;
+    const L = (id, name, address, region, rating, count, ig, status, phone, reviews) => ({ id, name, address, region, rating, count, ig, status, phone, reviews, notes: '' });
+    return [
+      L('l1', 'Fresh Burger Co.', '12 Lever St, Manchester', 'England', 4.3, 18, '@freshburger_mcr', 'New', '+44 161 555 0142', [{ stars: 1, author: 'Dan P.', at: d(5), text: 'Waited 50 minutes, food was cold and nobody cared.' }, { stars: 2, author: 'Kerry W.', at: d(19), text: 'Burger was fine but the fries were soggy and staff seemed annoyed we asked for ketchup.' }]),
+      L('l2', 'Bloom Nail Studio', '44 North End, Croydon', 'England', 4.6, 29, '@bloomnails.croydon', 'Contacted', '+44 20 5550 1188', [{ stars: 1, author: 'Jas M.', at: d(4), text: 'Gel peeled off after two days and they refused to fix it. Never again.' }]),
+      L('l3', 'Casa Birria', '1820 W 18th St, Chicago IL', 'USA', 4.3, 22, '@casabirria.chi', 'New', '+1 312 555 0190', [{ stars: 1, author: 'Mike R.', at: d(8), text: 'Tacos were dry and the consommé tasted like water. Overpriced for what you get.' }]),
+      L('l4', 'Boba Loop', '3310 Dallas Pkwy, Plano TX', 'USA', 4.5, 19, '', 'New', '+1 972 555 0133', [{ stars: 2, author: 'Tina L.', at: d(21), text: 'Drinks way too sweet and the pearls were hard. Cute shop though.' }]),
+      L('l5', 'The Copper Kettle', '7 Briggate, Leeds', 'England', 4.4, 26, '@copperkettle.leeds', 'Followed', '+44 113 555 0170', [{ stars: 1, author: 'Anon', at: d(11), text: '', gone: true }]),
+      L('l6', 'Northside Tacos', '901 E 6th St, Austin TX', 'USA', 4.6, 24, '@northsidetacos.atx', 'Won', '+1 512 555 0166', [{ stars: 1, author: 'Brad K.', at: d(13), text: 'Found a hair in my food. Manager just shrugged.' }]),
+      L('l8', 'Crumbs & Co.', '21 Kirkgate, Leeds', 'England', 4.7, 12, '@crumbsandco.leeds', 'New', '+44 113 555 0188', [{ stars: 2, author: 'Holly S.', at: d(2), text: 'Sourdough was stale by lunchtime and nobody apologised when I mentioned it.' }]),
+      L('l7', 'Mr. Wok', '38-12 Main St, Queens NY', 'USA', 4.2, 15, '@mrwok.queens', 'Ignored', '+1 718 555 0101', [{ stars: 1, author: 'Grace H.', at: d(26), text: 'Rude on the phone and delivery took 90 minutes.' }])
+    ];
+  }
+  state = { demo: 'normal', mode: 'drawer', region: 'England', ig: true, queries: 'takeaway, Leyton, London\nnail salon, Croydon, London\nbarber, Hackney, London\ncafe, Northern Quarter, Manchester\nburger, Manchester\nbakery, Leeds',
+    crit: { revMin: 5, revMax: 30, ratingMax: 4.8, badMin: 1, badMax: 2, maxAge: 28, skip: 7 }, leads: [], filter: 'All', q: '', rf: 'All', age: 'any', ageFrom: 0, ageTo: 28, sort: 'new', openId: null, loading: false, run: null, toast: '', dms: {}, followed: {},
+    vw: (typeof window !== 'undefined' && window.innerWidth) || 1200 };
+  _designDidMount() { this.onResize = () => { const w = window.innerWidth || document.documentElement.clientWidth; if (w) this.setState({ vw: w }); }; window.addEventListener('resize', this.onResize); requestAnimationFrame(this.onResize); }
+  _designWillUnmount() { window.removeEventListener('resize', this.onResize); clearInterval(this.runT); clearTimeout(this.ldT); clearTimeout(this.tT); }
+  toast(t) { clearTimeout(this.tT); this.setState({ toast: t }); this.tT = setTimeout(() => this.setState({ toast: '' }), 2400); }
+  days(t) { return Math.round((Date.now() - t) / 86400000); }
+  newest(l) { return Math.max(...l.reviews.map(r => r.at)); }
+  ago(t) { const d = Math.round((Date.now() - t) / 86400000); return d < 7 ? d + ' days ago' : d < 14 ? '1 week ago' : Math.round(d / 7) + ' weeks ago'; }
+  stMeta(st) { return { New: ['#151515', '#FFFFFF', '#151515'], Followed: ['#FFFFFF', '#151515', '#151515'], Contacted: ['#EEEEEE', '#151515', '#EEEEEE'], Won: ['#E6F4EA', '#1E8E3E', '#E6F4EA'], Ignored: ['#FFFFFF', '#8A8A8A', '#D2D2D2'] }[st]; }
+  _designSetLead(id, patch) { this.setState(s => ({ leads: s.leads.map(l => l.id === id ? { ...l, ...patch } : l) })); }
+  _designStartRun() {
+    if (this.state.demo === 'error') return this.toast('Fix the API key first');
+    if (this.state.demo === 'quota') return this.toast('Limit reached – next run tomorrow');
+    clearInterval(this.runT);
+    const total = this.state.queries.split('\n').filter(x => x.trim()).length || 1;
+    this.setState({ run: { i: 0, total, places: 0, small: 0, rev: 0, leads: 0, skip: 0 } });
+    this.runT = setInterval(() => this.setState(s => { if (!s.run) return {}; const r = { ...s.run, i: s.run.i + 1, places: s.run.places + 15 + Math.round(Math.random() * 10), small: s.run.small + 1 + Math.round(Math.random() * 2), rev: s.run.rev + 1 + Math.round(Math.random() * 2), leads: s.run.leads + (Math.random() < .35 ? 1 : 0), skip: s.run.skip + (Math.random() < .4 ? 1 : 0) };
+      if (r.i >= r.total) { clearInterval(this.runT); this.toast('Run finished · ' + r.leads + ' new leads'); return { run: null, lastRun: r, demo: 'normal' }; } return { run: r }; }), 700);
+  }
+  _designOpen(id) { clearTimeout(this.ldT); this.setState({ openId: id, loading: true }); this.ldT = setTimeout(() => this.setState({ loading: false }), 900); if (this.state.mode === 'page') window.scrollTo({ top: 0 }); }
+  _designRenderVals() {
+    const s = this.state, mob = s.vw < 760, demo = s.demo;
+    const tab = (cur, k) => ({ bg: cur === k ? '#FFFFFF' : 'transparent', fg: cur === k ? '#151515' : '#B5B5B5' });
+    const leads = demo === 'empty' ? [] : s.leads;
+    const running = !!s.run || demo === 'running';
+    const run = s.run || { i: 7, total: 25, places: 132, small: 11, rev: 11, leads: 2, skip: 3 };
+    const last = s.lastRun || { total: 25, places: 486, small: 41, rev: 41, leads: 7, skip: 12 };
+    const tiles = r => [['Queries', r.total || r.i], ['Places scanned', r.places], ['Small profiles', r.small], ['Reviews checked', r.rev], ['New leads', r.leads], ['Skipped · checked recently', r.skip]];
+    const qFull = demo === 'quota';
+    const qs = [['Text Search', 312, qFull ? 30 : 18], ['Place Details', 204, qFull ? 30 : 12]];
+    const col = p => p >= 1 ? '#D93025' : p >= .8 ? '#E8A33D' : '#151515';
+    const warn = !qFull && qs.some(q => q[2] / 30 >= .8);
+    const qx = s.q.trim().toLowerCase();
+    const num = v => { const n = parseInt(v, 10); return isNaN(n) || n < 0 ? 0 : n; };
+    const ageLo = Math.min(num(s.ageFrom), num(s.ageTo)), ageHi = Math.max(num(s.ageFrom), num(s.ageTo));
+    const ageOk = d => s.age === 'any' ? true : s.age === 'custom' ? d >= ageLo && d <= ageHi : d <= s.age;
+    const counts = st => leads.filter(l => st === 'All' || l.status === st).length;
+    const list = leads.filter(l => s.filter === 'All' || l.status === s.filter).filter(l => s.rf === 'All' || l.region === s.rf).filter(l => !qx || (l.name + ' ' + l.address).toLowerCase().includes(qx)).filter(l => ageOk(this.days(this.newest(l)))).sort((a, b) => s.sort === 'new' ? this.newest(b) - this.newest(a) : this.newest(a) - this.newest(b));
+    const n7 = list.filter(l => this.days(this.newest(l)) <= 7).length;
+    const ageLabel = s.age === 'custom' ? ageLo + '–' + ageHi + ' days ago' : 'Last ' + s.age + ' days';
+    const chips = [];
+    if (s.filter !== 'All') chips.push({ label: 'Status: ' + s.filter, aria: 'Remove status filter', clear: () => this.setState({ filter: 'All' }) });
+    if (s.rf !== 'All') chips.push({ label: s.rf, aria: 'Remove region filter', clear: () => this.setState({ rf: 'All' }) });
+    if (s.age !== 'any') chips.push({ label: ageLabel, aria: 'Remove review age filter', clear: () => this.setState({ age: 'any' }) });
+    if (qx) chips.push({ label: '“' + s.q.trim() + '”', aria: 'Clear search', clear: () => this.setState({ q: '' }) });
+    const rowOf = l => { const r = l.reviews[0], m = this.stMeta(l.status);
+      return { name: l.name, address: l.address, rating: l.rating.toFixed(1), count: l.count, bad: r.stars + '★', badBg: r.stars === 1 ? '#FCE8E6' : '#FEF3E2', badFg: r.stars === 1 ? '#D93025' : '#B45309', ago: this.ago(r.at),
+        quote: r.gone ? 'Review no longer online' : '“' + r.text + '”', quoteCol: r.gone ? '#8A8A8A' : '#333',
+        ig: l.ig || 'not found', igW: l.ig ? 600 : 400, igCol: l.ig ? '#151515' : '#8A8A8A', igUrl: l.ig ? 'https://instagram.com/' + l.ig.slice(1) : '#', igOpacity: l.ig ? 1 : .35, igPe: l.ig ? 'auto' : 'none',
+        status: l.status, stBg: m[0], stFg: m[1], stBd: m[2], maps: 'https://www.google.com/maps/search/' + encodeURIComponent(l.name + ' ' + l.address), open: () => this.open(l.id) }; };
+    const lead = s.leads.find(l => l.id === s.openId);
+    const vals = {
+      desktop: !mob, mobile: mob,
+      demoTabs: [['normal', 'Normal'], ['empty', 'Empty'], ['running', 'Running'], ['quota', 'Quota reached'], ['error', 'API error']].map(([k, label]) => ({ label, ...tab(demo, k), go: () => { clearInterval(this.runT); this.setState({ demo: k, run: null, openId: null }); } })),
+      modeTabs: [['drawer', 'Drawer'], ['page', 'Page']].map(([k, label]) => ({ label, ...tab(s.mode, k), go: () => this.setState({ mode: k }) })),
+      showList: !(lead && s.mode === 'page'),
+      dryRun: () => { const n = s.queries.split('\n').filter(x => x.trim()).length; this.toast('Dry run: ' + n + ' Text Search + ~' + Math.round(n * 1.6) + ' Place Details calls · €0.00'); },
+      runSearch: () => this.startRun(), runOpacity: qFull || demo === 'error' ? .4 : 1,
+      isError: demo === 'error', fixError: () => this.toast('Opens Settings → API keys'),
+      setupCols: mob ? 'minmax(0,1fr)' : 'minmax(0,1.5fr) minmax(0,1fr)',
+      regionTabs: ['England', 'USA'].map(k => ({ label: k, bg: s.region === k ? '#FFFFFF' : 'transparent', fg: s.region === k ? '#151515' : '#8A8A8A', sh: s.region === k ? '0 1px 3px rgba(0,0,0,.08)' : 'none', go: () => this.setState({ region: k, queries: k === 'USA' ? 'taqueria, Pilsen, Chicago IL\nboba tea, Plano TX\nnail salon, Brooklyn NY\nbarbershop, Austin TX\ncoffee shop, Queens NY' : 'takeaway, Leyton, London\nnail salon, Croydon, London\nbarber, Hackney, London\ncafe, Northern Quarter, Manchester\nburger, Manchester\nbakery, Leeds' }) })),
+      queries: s.queries, onQueries: e => this.setState({ queries: e.target.value }), queryCount: s.queries.split('\n').filter(x => x.trim()).length,
+      criteria: [['Reviews', 'revMin', 'revMax', '', 1], ['Rating max', 'ratingMax', null, '★', .1], ['Bad review', 'badMin', 'badMax', '★', 1], ['Max age', 'maxAge', null, 'days', 1], ['Skip if checked within', 'skip', null, 'days', 1]].map(([label, a, b, unit, step]) => ({ label, unit, step, range: !!b, a: s.crit[a], b: b ? s.crit[b] : '',
+        onA: e => this.setState({ crit: { ...s.crit, [a]: e.target.value } }), onB: e => b && this.setState({ crit: { ...s.crit, [b]: e.target.value } }) })),
+      toggleIg: () => this.setState({ ig: !s.ig }), igBg: s.ig ? '#151515' : '#D2D2D2', igJustify: s.ig ? 'flex-end' : 'flex-start',
+      quota: qs.map(([label, m, t]) => ({ label, month: m, today: t, monthPct: (m / 930 * 100) + '%', monthCol: col(m / 930), todayPct: (t / 30 * 100) + '%', todayCol: col(t / 30) })),
+      quotaWarn: warn, quotaFull: qFull, quotaBorder: qFull ? '#D93025' : warn ? '#E8A33D' : 'transparent',
+      isRunning: running, runTitle: 'Searching… Query ' + Math.min(run.i + 1, run.total) + ' of ' + run.total, runPct: (run.i / run.total * 100) + '%',
+      runQuery: '→ ' + (s.queries.split('\n').filter(x => x.trim())[run.i] || 'takeaway, Leyton, London'), cancelRun: () => { clearInterval(this.runT); this.setState({ run: null, demo: demo === 'running' ? 'normal' : demo }); this.toast('Run cancelled'); },
+      liveTiles: tiles(run).slice(1).map(([label, v]) => ({ label, v })),
+      tileCols: mob ? 'repeat(2,minmax(0,1fr))' : 'repeat(6,minmax(0,1fr))',
+      showLastRun: !running && demo !== 'empty' && demo !== 'error', quotaStopped: qFull,
+      lastRunTitle: qFull ? 'Last run · stopped early' : 'Last run', lastRunWhen: s.lastRun ? 'just now' : 'today, 07:30',
+      lastTiles: tiles(qFull ? { total: 18, places: 351, small: 29, rev: 29, leads: 5, skip: 9 } : last).map(([label, v], i) => ({ label, v, bg: i === 4 ? '#151515' : '#F4F4F4', fg: i === 4 ? '#FFFFFF' : '#151515', sub: i === 4 ? '#B5B5B5' : '#6B6B6B' })),
+      isEmpty: leads.length === 0 && !running, hasLeads: leads.length > 0,
+      statusTabs: ['All', 'New', 'Followed', 'Contacted', 'Won', 'Ignored'].map(k => ({ label: k, count: counts(k), bg: s.filter === k ? '#151515' : 'transparent', fg: s.filter === k ? '#fff' : '#555', go: () => this.setState({ filter: k }) })),
+      q: s.q, onQ: e => this.setState({ q: e.target.value }),
+      regionFilter: ['All', 'England', 'USA'].map(k => ({ label: k, bg: s.rf === k ? '#151515' : 'transparent', fg: s.rf === k ? '#fff' : '#555', go: () => this.setState({ rf: k }) })),
+      exportCsv: () => { const csv = 'name,address,region,rating,reviews,bad_stars,bad_date,instagram,status\n' + list.map(l => [l.name, l.address, l.region, l.rating, l.count, l.reviews[0].stars, new Date(l.reviews[0].at).toISOString().slice(0, 10), l.ig, l.status].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+        try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'byereviews-leads.csv'; a.click(); } catch (e) {} this.toast('Exported ' + list.length + ' leads'); },
+      ageTabs: [['any', 'Any'], [3, '3 days'], [7, '7 days'], [14, '14 days'], [28, '28 days'], ['custom', 'Custom']].map(([k, label]) => ({ label, bg: s.age === k ? '#151515' : 'transparent', fg: s.age === k ? '#fff' : '#555', go: () => this.setState({ age: k }) })),
+      ageCustom: s.age === 'custom', ageFrom: s.ageFrom, ageTo: s.ageTo, onAgeFrom: e => this.setState({ ageFrom: e.target.value }), onAgeTo: e => this.setState({ ageTo: e.target.value }),
+      countText: list.length + (list.length === 1 ? ' lead' : ' leads') + ' · ' + n7 + ' from the last 7 days',
+      toggleSort: () => this.setState({ sort: s.sort === 'new' ? 'old' : 'new' }), sortArrow: s.sort === 'new' ? '↓' : '↑', sortLabel: s.sort === 'new' ? 'Newest review first ↓' : 'Oldest review first ↑',
+      activeChips: chips, hasActive: chips.length > 0, resetFilters: () => this.setState({ filter: 'All', rf: 'All', age: 'any', q: '' }),
+      rows: list.map(rowOf), noRows: list.length === 0,
+      rowCols: mob ? 'minmax(0,1fr) auto' : 'minmax(0,1.3fr) 110px minmax(0,1.8fr) 150px 110px 118px', rowGap: mob ? '10px 12px' : '14px',
+      hasToast: !!s.toast, toast: s.toast, hasDetail: !!lead
+    };
+    if (lead) {
+      const m = this.stMeta(lead.status), first = lead.name.split(' ')[0];
+      const dm = s.dms[lead.id] ?? `Hi ${lead.name} team! 👋 Saw a recent ${lead.reviews[0].stars}★ review on your Google profile – looks unfair next to your other reviews. We help small businesses get fake or policy-breaking reviews removed, and you only pay if it's actually gone. Happy to check it for free if you like?`;
+      const drawer = s.mode === 'drawer';
+      Object.assign(vals, {
+        isDrawer: drawer, dPos: drawer ? 'fixed' : 'relative', dW: drawer ? (mob ? '100%' : '560px') : '100%', dMax: drawer ? '100%' : '760px', dOv: drawer ? 'auto' : 'visible', dPad: drawer ? '20px' : '8px 4px 0', dSh: drawer ? '-20px 0 60px rgba(0,0,0,.15)' : 'none',
+        backLabel: drawer ? '× Close' : '← All leads', closeDetail: () => this.setState({ openId: null }), loading: s.loading, loaded: !s.loading,
+        d: { name: lead.name, rating: lead.rating.toFixed(1), count: lead.count, address: lead.address, phone: lead.phone, status: lead.status, stBg: m[0], stFg: m[1], stBd: m[2],
+          maps: 'https://www.google.com/maps/search/' + encodeURIComponent(lead.name + ' ' + lead.address), web: 'https://www.google.com/search?q=' + encodeURIComponent(lead.name + ' ' + lead.address),
+          hasIg: !!lead.ig, noIg: !lead.ig, ig: lead.ig, igUrl: lead.ig ? 'https://instagram.com/' + lead.ig.slice(1) : '#', igSearch: 'https://www.instagram.com/explore/search/keyword/?q=' + encodeURIComponent(lead.name),
+          wa: 'https://wa.me/' + lead.phone.replace(/[^\d]/g, ''),
+          reviews: lead.reviews.map(r => ({ ...r, gone: !!r.gone, live: !r.gone, date: new Date(r.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }), ago: this.ago(r.at), badBg: r.stars === 1 ? '#FCE8E6' : '#FEF3E2', badFg: r.stars === 1 ? '#D93025' : '#B45309' })) },
+        followLabel: lead.status === 'Followed' || s.followed[lead.id] ? '✓ Followed' : 'Mark as followed',
+        markFollowed: () => { this.setState({ followed: { ...s.followed, [lead.id]: true } }); if (lead.status === 'New') this.setLead(lead.id, { status: 'Followed' }); this.toast('Marked as followed'); },
+        dm, onDm: e => this.setState({ dms: { ...s.dms, [lead.id]: e.target.value } }),
+        copyDm: () => { try { navigator.clipboard.writeText(dm); } catch (e) {} this.setLead(lead.id, { status: 'Contacted' }); this.toast('DM copied · status set to Contacted'); },
+        statusSeg: ['New', 'Followed', 'Contacted', 'Won', 'Ignored'].map(k => ({ label: k, bg: lead.status === k ? '#FFFFFF' : 'transparent', fg: lead.status === k ? '#151515' : '#8A8A8A', sh: lead.status === k ? '0 1px 3px rgba(0,0,0,.08)' : 'none', go: () => this.setLead(lead.id, { status: k }) })),
+        notes: lead.notes, onNotes: e => this.setLead(lead.id, { notes: e.target.value }),
+        createOffer: () => this.toast('Offer draft created for ' + lead.name)
+      });
+    }
+    return vals;
+  }
+  // ===== byereviews production layer for the Lead Finder (injected by tools/build_admin.py) =====
+
+  api(action, opts = {}) {
+    const init = opts.body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(opts.body) } : { credentials: 'same-origin' };
+    return fetch('/order.php?a=' + action, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
+  }
+  state = Object.assign({}, this.state, { leads: [], ready: false, configured: true, usage: null, limits: null, srvRun: null, qByRegion: {}, busy: false });
+
+  componentDidMount() {
+    this._designDidMount();
+    this.api('admin-leads').then(r => {
+      if (!r.ok) return this.toast(r.error === 'not_authed' ? 'Session expired – please sign in again' : 'Could not load leads');
+      const st = r.settings, region = st.region === 'US' ? 'USA' : 'England';
+      this.setState({ ready: true, qByRegion: { England: st.queries.GB, USA: st.queries.US }, region, queries: region === 'USA' ? st.queries.US : st.queries.GB, crit: st.crit, ig: !!st.ig });
+      this.applyState(r);
+      if (r.run && r.run.status === 'running') this.loop(r.run.id); // e.g. page reloaded during a run
+    });
+  }
+  componentWillUnmount() { this._designWillUnmount(); this.stopLoop = true; }
+
+  lead(l) {
+    return { id: l.id, name: l.name, address: l.address, region: l.region === 'US' ? 'USA' : 'England', rating: Number(l.rating) || 0, count: l.count, ig: l.ig || '',
+      status: l.status, phone: l.phone || '', web: l.web || '', mapsUrl: l.maps || '', notes: l.notes || '',
+      reviews: (l.reviews || []).map(r => ({ stars: r.stars, author: r.author, at: r.at, text: r.text || '', link: r.link || '' })) };
+  }
+  applyState(r) {
+    this.setState(s => ({ configured: r.configured, usage: r.usage, limits: r.limits, srvRun: r.run,
+      // keep what is typed in open notes fields
+      leads: r.leads.map(l => { const n = this.lead(l), old = s.leads.find(x => x.id === n.id); return old && this._notesT && this._notesT[n.id] ? { ...n, notes: old.notes } : n; }) }));
+  }
+  payload(extra) {
+    const s = this.state;
+    return Object.assign({ region: s.region === 'USA' ? 'US' : 'GB', queries: s.queries, crit: s.crit, ig: s.ig }, extra);
+  }
+  failRun(r) {
+    const m = { not_configured: 'Google API key missing on the server', no_queries: 'Add at least one query', already_running: 'A search is already running', not_authed: 'Session expired – please sign in again' }[r.error];
+    this.toast(m || 'Something went wrong');
+    if (r.error === 'not_configured') this.setState({ configured: false });
+  }
+  startRun() {
+    if (this.state.busy || this.isRunning()) return;
+    if (!this.state.configured) return this.toast('Add the Google API key on the server first');
+    this.setState({ busy: true });
+    this.api('admin-leads-run', { body: this.payload() }).then(r => {
+      this.setState({ busy: false });
+      if (!r.ok) return this.failRun(r);
+      this.setState({ srvRun: r.run });
+      this.loop(r.run.id);
+    });
+  }
+  loop(id) {
+    this.stopLoop = false;
+    const step = () => this.api('admin-leads-step', { body: { run: id } }).then(r => {
+      if (this.stopLoop) return;
+      if (!r.ok) { if (r.error === 'not_authed') return this.failRun(r); return setTimeout(step, 3000); } // network hiccup: try again
+      this.applyState(r);
+      const run = r.run;
+      if (run && run.status === 'running') return step();
+      if (!run) return;
+      if (run.status === 'done') this.toast('Run finished · ' + run.leads + ' new lead' + (run.leads === 1 ? '' : 's'));
+      else if (run.status === 'quota') this.toast('Daily Google limit reached – continue tomorrow');
+      else if (run.status === 'error') { this.setState({ configured: false }); this.toast('Google rejected the API key'); }
+    });
+    step();
+  }
+  isRunning() { const r = this.state.srvRun; return !!(r && r.status === 'running'); }
+  open(id) { this.setState({ openId: id, loading: false }); if (this.state.mode === 'page') window.scrollTo({ top: 0 }); }
+  setLead(id, patch) {
+    this._designSetLead(id, patch);
+    if (patch.status) this.api('admin-lead', { body: { id, status: patch.status } }).then(r => { if (!r.ok) this.toast('Could not save'); });
+    if ('notes' in patch) { // save notes 800 ms after the last keystroke
+      this._notesT = this._notesT || {};
+      clearTimeout(this._notesT[id]);
+      this._notesT[id] = setTimeout(() => { delete this._notesT[id]; this.api('admin-lead', { body: { id, notes: patch.notes } }); }, 800);
+    }
+  }
+
+  renderVals() {
+    const s = this.state, run = s.srvRun, running = this.isRunning();
+    // the design reads demo/run/lastRun – feed it the server state
+    const stats = r => ({ i: r.i, total: r.total, places: r.places, small: r.small, rev: r.rev, leads: r.leads, skip: r.skip });
+    const saved = { demo: s.demo, run: s.run, lastRun: s.lastRun };
+    s.demo = !s.configured ? 'error' : 'normal';
+    s.run = running ? stats(run) : null;
+    s.lastRun = run && !running ? stats(run) : null;
+    const v = this._designRenderVals();
+    Object.assign(s, saved);
+
+    const u = s.usage || { text: { month: 0, day: 0 }, details: { month: 0, day: 0 } };
+    const lim = s.limits || { text: { day: 30, month: 930 }, details: { day: 30, month: 930 } };
+    const col = p => p >= 1 ? '#D93025' : p >= .8 ? '#E8A33D' : '#151515';
+    const full = ['text', 'details'].some(k => u[k].day >= lim[k].day || u[k].month >= lim[k].month);
+    const warn = !full && ['text', 'details'].some(k => u[k].day / lim[k].day >= .8);
+    // free tier: 1,000 calls per SKU and month, then $35 (Text Search) / $25 (Place Details) per 1,000
+    const cost = Math.max(0, u.text.month - 1000) * .035 + Math.max(0, u.details.month - 1000) * .025;
+    const when = t => { if (!t) return ''; const d = new Date(t), today = new Date().toDateString() === d.toDateString();
+      return (today ? 'today' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })) + ', ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); };
+    const stoppedQuota = !!(run && run.status === 'quota');
+    const quotaSku = run && run.stopReason === 'quota_details' ? 'Place Details' : 'Text Search';
+    Object.assign(v, {
+      isEmpty: s.ready && v.isEmpty,
+      quota: [['Text Search', u.text, lim.text], ['Place Details', u.details, lim.details]].map(([label, x, l]) => ({ label, month: x.month, today: x.day, monthMax: l.month, todayMax: l.day,
+        monthPct: Math.min(100, x.month / l.month * 100) + '%', monthCol: col(x.month / l.month), todayPct: Math.min(100, x.day / l.day * 100) + '%', todayCol: col(x.day / l.day) })),
+      cost: '€' + cost.toFixed(2), quotaWarn: warn, quotaFull: full, quotaBorder: full ? '#D93025' : warn ? '#E8A33D' : 'transparent',
+      runOpacity: full || !s.configured || running || s.busy ? .4 : 1,
+      runTitle: running ? 'Searching… Query ' + Math.min(run.i + 1, run.total) + ' of ' + run.total : '',
+      runPct: running ? (run.i / Math.max(1, run.total) * 100) + '%' : '0%',
+      runQuery: running ? '→ ' + (run.current || '…') : '',
+      cancelRun: () => { this.stopLoop = true; this.api('admin-leads-cancel', { body: {} }).then(r => { if (r.ok) this.applyState(r); }); this.toast('Run cancelled'); },
+      showLastRun: !!run && !running,
+      quotaStopped: stoppedQuota,
+      quotaStopText: stoppedQuota ? 'Stopped at query ' + run.i + ' of ' + run.total + '.' : '',
+      quotaStopMore: stoppedQuota ? ' The daily ' + quotaSku + ' limit was reached, so the run ended early to stay inside the free tier. Press Run search tomorrow to continue with the remaining ' + [run.remaining ? run.remaining + ' quer' + (run.remaining === 1 ? 'y' : 'ies') : '', run.pending ? run.pending + ' profile' + (run.pending === 1 ? '' : 's') + ' to check' : ''].filter(Boolean).join(' and ') + '.' : '',
+      lastRunTitle: !run ? 'Last run' : run.status === 'quota' ? 'Last run · stopped early' : run.status === 'cancelled' ? 'Last run · cancelled' : run.status === 'error' ? 'Last run · API error' : 'Last run',
+      lastRunWhen: run ? when(run.endedAt || run.startedAt) : '',
+      dryRun: () => this.api('admin-leads-run', { body: this.payload({ dry: true }) }).then(r => {
+        if (!r.ok) return this.failRun(r);
+        const d = r.dry, fits = d.text <= d.textLeft && d.details <= d.detailsLeft;
+        this.toast((d.resume ? 'Resumes: ' : 'Dry run: ') + d.text + ' Text Search + ~' + d.details + ' Place Details calls · left today ' + d.textLeft + ' / ' + d.detailsLeft + (fits ? ' · €0.00' : ' · stops early at the limit'));
+      }),
+      fixError: () => this.toast('Add google_places_key in /etc/byereviews/config.php (Places API (New) enabled)'),
+      regionTabs: ['England', 'USA'].map(k => ({ label: k, bg: s.region === k ? '#FFFFFF' : 'transparent', fg: s.region === k ? '#151515' : '#8A8A8A', sh: s.region === k ? '0 1px 3px rgba(0,0,0,.08)' : 'none',
+        go: () => { if (k === s.region) return; this.setState({ region: k, qByRegion: { ...s.qByRegion, [s.region]: s.queries }, queries: s.qByRegion[k] || '' }); } }))
+    });
+    const lead = s.leads.find(l => l.id === s.openId);
+    if (lead && v.d) {
+      Object.assign(v.d, { maps: lead.mapsUrl || v.d.maps, web: lead.web || v.d.web, hasWeb: !!lead.web, wa: lead.phone ? v.d.wa : '#' });
+      v.d.reviews = v.d.reviews.map((r, i) => ({ ...r, link: lead.reviews[i] && lead.reviews[i].link || v.d.maps }));
+      v.createOffer = () => {
+        const n = lead.reviews.length, price = lead.reviews.every(r => Date.now() - r.at <= 28 * 86400000) ? 90 : 125;
+        const msg = `Hi ${lead.name} team! We can get the ${n > 1 ? n + ' recent bad reviews' : 'recent ' + lead.reviews[0].stars + '★ review'} on your Google profile checked and removed if it breaks Google's rules. ` +
+          `No cure, no pay: $${price} per review, only charged once it's actually gone. Start here: https://byereviews.com/#order`;
+        try { navigator.clipboard.writeText(msg); } catch (e) {}
+        this.toast('Offer text copied');
+      };
+    }
+    return v;
+  }
+
+}
+</script>
+</body>
+</html>
