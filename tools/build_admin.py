@@ -88,7 +88,16 @@ s, n = re.subn(r'\n  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items
 assert n == 1
 rep('<span style="font-size:28px;font-weight:600;letter-spacing:-.03em">€0.00</span>', '<span style="font-size:28px;font-weight:600;letter-spacing:-.03em">{{ cost }}</span>')
 rep('{{ q.month }} / 930 this month', '{{ q.month }} / {{ q.monthMax }} this month')
-rep('{{ q.today }} / 30</span>', '{{ q.today }} / {{ q.todayMax }}</span>')
+rep('<span style="font-weight:600;color:{{ q.todayCol }}">{{ q.today }} / 30</span>', '<span style="font-weight:600;color:{{ q.todayCol }}">{{ q.todayText }}</span>')
+s, n = re.subn(r'\n\s*<div style="height:8px;background:#F4F4F4;border-radius:4px;overflow:hidden"><div style="height:100%;border-radius:4px;width:\{\{ q\.todayPct \}\};[^\n]*', '', s, count=1)
+assert n == 1
+rep("Over 80 % of today's limit used", 'Over 80 % of the monthly limit used')
+rep('Limit reached – next run tomorrow</span></sc-if>', '{{ quotaFullText }}</span></sc-if>')
+rep('<sc-if value="{{ quotaWarn }}"', '''<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#F4F4F4;border-radius:14px;padding:10px 12px;font-size:14px">
+        <span style="color:#555">Monthly limit</span>
+        <span style="display:flex;align-items:center;gap:8px"><input type="number" min="0" step="100" aria-label="Monthly search limit" value="{{ monthLimit }}" onChange="{{ onMonthLimit }}" style="width:84px;border:0;background:#FFFFFF;border-radius:8px;padding:7px 8px;font-size:14px;font-weight:600;text-align:center;outline:none"><span style="color:#6B6B6B;font-size:13px">{{ monthLimitCost }}</span></span>
+      </div>
+      <sc-if value="{{ quotaWarn }}"''')
 s, n = re.subn(r'<strong style="font-weight:600;color:#D93025">Stopped at query 18 of 25\.</strong>[^<]*</div>',
                '<strong style="font-weight:600;color:#D93025">{{ quotaStopText }}</strong>{{ quotaStopMore }}</div>', s, count=1)
 assert n == 1

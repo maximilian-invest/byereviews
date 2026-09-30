@@ -58,7 +58,7 @@
       if (run && run.status === 'running') return step();
       if (!run) return;
       if (run.status === 'done') this.toast('Run finished · ' + run.leads + ' new lead' + (run.leads === 1 ? '' : 's'));
-      else if (run.status === 'quota') this.toast('Daily Google limit reached – continue tomorrow');
+      else if (run.status === 'quota') this.toast('Monthly search limit reached – raise it to continue');
       else if (run.status === 'error') { this.setState({ configured: false }); this.toast('Google rejected the API key'); }
     });
     step();
@@ -90,8 +90,11 @@
     const lim = s.limits || { text: { day: 30, month: 930 }, details: { day: 30, month: 930 } };
     const col = p => p >= 1 ? '#D93025' : p >= .8 ? '#E8A33D' : '#151515';
     // only Text Search is used (it returns the reviews too)
-    const full = u.text.day >= lim.text.day || u.text.month >= lim.text.month;
-    const warn = !full && u.text.day / lim.text.day >= .8;
+    const noDay = !lim.text.day || lim.text.day > 1e9;
+    const full = u.text.month >= lim.text.month || (!noDay && u.text.day >= lim.text.day);
+    const warn = !full && lim.text.month > 0 && u.text.month / lim.text.month >= .8;
+    const ml = s.monthLimit != null ? s.monthLimit : lim.text.month;
+    const mlCost = Math.max(0, (parseInt(ml, 10) || 0) - 1000) * .04;
     // free tier: 1,000 calls per month, then $40 per 1,000 (Text Search Enterprise + Atmosphere); older runs may have used Place Details
     const cost = Math.max(0, u.text.month - 1000) * .04 + Math.max(0, u.details.month - 1000) * .025;
     const when = t => { if (!t) return ''; const d = new Date(t), today = new Date().toDateString() === d.toDateString();
@@ -103,8 +106,13 @@
       liveTiles: v.liveTiles.map(relabel), lastTiles: v.lastTiles.map(relabel),
       isEmpty: s.ready && v.isEmpty,
       exclude: s.exclude || '', onExclude: e => this.setState({ exclude: e.target.value }),
-      quota: [['Google searches (incl. reviews)', u.text, lim.text]].map(([label, x, l]) => ({ label, month: x.month, today: x.day, monthMax: l.month, todayMax: l.day,
-        monthPct: Math.min(100, x.month / l.month * 100) + '%', monthCol: col(x.month / l.month), todayPct: Math.min(100, x.day / l.day * 100) + '%', todayCol: col(x.day / l.day) })),
+      quota: [['Google searches (incl. reviews)', u.text, lim.text]].map(([label, x, l]) => ({ label, month: x.month, today: x.day, monthMax: l.month,
+        todayText: noDay ? x.day + ' searches · no daily limit' : x.day + ' / ' + l.day, todayCol: noDay ? '#151515' : col(x.day / l.day),
+        monthPct: Math.min(100, x.month / Math.max(1, l.month) * 100) + '%', monthCol: col(x.month / Math.max(1, l.month)) })),
+      monthLimit: ml, monthLimitCost: mlCost ? 'max. ≈ $' + Math.round(mlCost) + ' / month' : 'free tier · $0',
+      onMonthLimit: e => { const val = e.target.value; this.setState({ monthLimit: val }); clearTimeout(this._mlT);
+        this._mlT = setTimeout(() => this.api('admin-leads-limit', { body: { monthly: parseInt(val, 10) || 0 } }).then(r => { if (r.ok) { this.setState({ limits: r.limits, monthLimit: null }); this.toast('Monthly limit saved'); } else this.toast('Could not save'); }), 900); },
+      quotaFullText: 'Monthly limit reached – raise it below to keep searching',
       cost: '€' + cost.toFixed(2), quotaWarn: warn, quotaFull: full, quotaBorder: full ? '#D93025' : warn ? '#E8A33D' : 'transparent',
       runOpacity: full || !s.configured || running || s.busy ? .4 : 1,
       runTitle: running ? 'Searching… Query ' + Math.min(run.i + 1, run.total) + ' of ' + run.total : '',
@@ -114,13 +122,13 @@
       showLastRun: !!run && !running,
       quotaStopped: stoppedQuota,
       quotaStopText: stoppedQuota ? 'Stopped at query ' + run.i + ' of ' + run.total + '.' : '',
-      quotaStopMore: stoppedQuota ? ' The daily Google limit was reached, so the run ended early to stay inside the free tier. Press Run search tomorrow to continue with the remaining ' + run.remaining + ' search' + (run.remaining === 1 ? '' : 'es') + '.' : '',
+      quotaStopMore: stoppedQuota ? ' Your monthly search limit was reached. Raise it in the Google quota card and press Run search to continue with the remaining ' + run.remaining + ' search' + (run.remaining === 1 ? '' : 'es') + '.' : '',
       lastRunTitle: !run ? 'Last run' : run.status === 'quota' ? 'Last run · stopped early' : run.status === 'cancelled' ? 'Last run · cancelled' : run.status === 'error' ? 'Last run · API error' : 'Last run',
       lastRunWhen: run ? when(run.endedAt || run.startedAt) : '',
       dryRun: () => this.api('admin-leads-run', { body: this.payload({ dry: true }) }).then(r => {
         if (!r.ok) return this.failRun(r);
         const d = r.dry, fits = d.text <= d.textLeft;
-        this.toast((d.resume ? 'Resumes: ' : 'Dry run: ') + 'up to ' + d.text + ' Google searches (' + d.queries + ' queries × 3 pages, 20 places each) · ' + d.textLeft + ' left today' + (fits ? ' · €0.00' : ' · stops at the limit, continue tomorrow'));
+        this.toast((d.resume ? 'Resumes: ' : 'Dry run: ') + 'up to ' + d.text + ' Google searches (' + d.queries + ' queries × 3 pages, 20 places each) · ' + d.textLeft + ' left this month' + (fits ? '' : ' · stops at your monthly limit'));
       }),
       fixError: () => this.toast('Add google_places_key in /etc/byereviews/config.php (Places API (New) enabled)'),
       regionTabs: ['England', 'USA'].map(k => ({ label: k, bg: s.region === k ? '#FFFFFF' : 'transparent', fg: s.region === k ? '#151515' : '#8A8A8A', sh: s.region === k ? '0 1px 3px rgba(0,0,0,.08)' : 'none',

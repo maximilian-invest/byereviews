@@ -42,6 +42,7 @@ $routes = [
     'admin-leads-step' => 'action_admin_leads_step',
     'admin-leads-cancel' => 'action_admin_leads_cancel',
     'admin-lead' => 'action_admin_lead',
+    'admin-leads-limit' => 'action_admin_leads_limit',
 ];
 if (!isset($routes[$action])) fail(404, 'unknown_action');
 flush_notifications();

@@ -28,9 +28,11 @@ const LEADS_CHAINS = ['five guys', "mcdonald's", 'mcdonalds', 'kfc', 'subway', "
     'kwik fit', 'halfords', 'enterprise rent', 'hertz', 'avis', 'banfield', 'petsmart', 'petco', 'pets at home'];
 
 
+/** No daily limit (unless set in the server config); the monthly limit is set in the admin (default = free tier). */
 function leads_limits(): array {
+    $monthly = (int)((store_get('leadsys', 'settings') ?? [])['monthlyLimit'] ?? config('leads_monthly_text', 930));
     return [
-        'text' => ['day' => (int)config('leads_daily_text', 30), 'month' => (int)config('leads_monthly_text', 930)],
+        'text' => ['day' => (int)config('leads_daily_text', PHP_INT_MAX), 'month' => $monthly],
         'details' => ['day' => (int)config('leads_daily_details', 30), 'month' => (int)config('leads_monthly_details', 930)],
     ];
 }
@@ -298,6 +300,8 @@ function action_admin_leads_run(): void {
     $st = leads_settings();
     $exclude = clean($d['exclude'] ?? '', 1000);
     $st['region'] = $region; $st['queries'][$region] = implode("\n", $queries); $st['crit'] = $crit; $st['ig'] = $ig; $st['exclude'] = $exclude;
+    $st['monthlyLimit'] = (store_get('leadsys', 'settings') ?? [])['monthlyLimit'] ?? null;
+    if ($st['monthlyLimit'] === null) unset($st['monthlyLimit']);
     store_put('leadsys', 'settings', $st);
     if (!$queries) fail(400, 'no_queries');
     if (!(string)config('google_places_key', '') && !config('mock_google')) fail(503, 'not_configured');
@@ -346,6 +350,15 @@ function action_admin_leads_cancel(): void {
         return $r;
     });
     json_out(leads_state_payload());
+}
+
+/** Monthly search limit (Lead Finder quota card). */
+function action_admin_leads_limit(): void {
+    leads_admin();
+    $d = json_body();
+    $n = (int)max(0, min(1000000, (int)($d['monthly'] ?? 930)));
+    store_update('leadsys', 'settings', function (?array $s) use ($n) { $s = $s ?? []; $s['monthlyLimit'] = $n; return $s; });
+    json_out(['ok' => true, 'limits' => leads_limits()]);
 }
 
 /** Status / notes of one lead. */
