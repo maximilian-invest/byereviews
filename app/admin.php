@@ -19,15 +19,18 @@ function ms(?string $iso): ?int {
 /** Order in the shape the admin design works with. */
 function admin_order_view(array $o): array {
     $c = $o['customer']; $b = $o['business']; $p = $o['payment'] ?? [];
+    // every review needs a link for the WhatsApp hand-off: review link → Google profile → Maps search
+    $profile = $b['mapsUrl'] ?: ($b['placeId'] ? 'https://www.google.com/maps/place/?q=place_id:' . $b['placeId']
+        : ($b['name'] ? 'https://www.google.com/maps/search/' . rawurlencode(trim($b['name'] . ' ' . $b['address'])) : ''));
     $status = ($p['status'] ?? 'unpaid') === 'paid' ? 'paid' : ((($p['status'] ?? '') === 'link_sent') ? 'link_sent' : 'unpaid');
     return [
         'id' => $o['id'], 'date' => ms($o['createdAt']), 'currency' => $o['currency'],
         'cust' => ['name' => $c['name'], 'company' => $c['company'] ?: $b['name'], 'email' => $c['email'], 'phone' => $c['phone'],
             'address' => trim(implode(', ', array_filter([$c['street'], $c['city']]))), 'country' => $c['country']],
-        'biz' => ['name' => $b['name'] ?: ($c['company'] ?: '—'), 'address' => $b['address'], 'profile' => $b['mapsUrl'] ?: ($b['placeId'] ? 'https://www.google.com/maps/place/?q=place_id:' . $b['placeId'] : ''),
+        'biz' => ['name' => $b['name'] ?: ($c['company'] ?: '—'), 'address' => $b['address'], 'profile' => $profile,
             'rating' => $b['rating'], 'count' => $b['reviewCount']],
         'reviews' => array_map(fn($r) => ['id' => $r['id'], 'author' => $r['author'] ?: 'Review', 'stars' => (int)$r['stars'], 'age' => $r['tier'] === 'older' ? 'older' : 'recent',
-            'text' => (string)$r['text'], 'status' => $r['status'], 'link' => $r['link'] ?: ($b['mapsUrl'] ?? ''), 'sentAt' => ms($r['sentAt'] ?? null), 'updatedAt' => ms($r['updatedAt'] ?? null)], $o['reviews']),
+            'text' => (string)$r['text'], 'status' => $r['status'], 'link' => $r['link'] ?: $profile, 'sentAt' => ms($r['sentAt'] ?? null), 'updatedAt' => ms($r['updatedAt'] ?? null)], $o['reviews']),
         'payment' => ['status' => $status, 'link' => $p['link'] ?? '', 'linkSentAt' => ms($p['linkSentAt'] ?? null), 'paidAt' => ms($p['paidAt'] ?? null), 'via' => $p['via'] ?? '', 'amount' => $p['amount'] ?? null],
         'msgs' => array_map(fn($m) => ['from' => $m['from'] === 'team' ? 'team' : 'cust', 'text' => $m['text'], 'at' => ms($m['at'])], $o['messages']),
     ];

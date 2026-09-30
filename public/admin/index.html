@@ -679,8 +679,16 @@ class Component extends DCLogic {
   }
   sendWa(o, list) {
     if (!list.length) return;
-    if (!(this.state.partnerNo || '').replace(/[^\d]/g, '')) return this.toast('Add the removal partner\'s WhatsApp number in Settings first');
-    this._designSendWa(o, list); // opens wa.me with the template, marks in progress locally
+    if (!(this.state.partnerNo || '').replace(/[^\d]/g, '')) this.toast('No partner number in Settings – pick the chat in WhatsApp');
+    // open WhatsApp (wa.me) with the template: one line per review with author, stars, a text excerpt and the link
+    const lines = list.map((r, i) => `${i + 1}. ${r.author} – ${r.stars ? r.stars + '★' : 'no stars'}${r.text ? ' – "' + (r.text.length > 80 ? r.text.slice(0, 80) + '…' : r.text) + '"' : ''}\n   ${r.link}`).join('\n');
+    const msg = (this.state.template || '').replace(/\{company\}/g, o.biz.name).replace(/\{profile_link\}/g, o.biz.profile).replace(/\{order_id\}/g, o.id).replace(/\{reviews\}/g, lines);
+    const no = (this.state.partnerNo || '').replace(/[^\d]/g, '');
+    try { window.open('https://wa.me/' + no + '?text=' + encodeURIComponent(msg), '_blank'); } catch (e) {}
+    const ids = new Set(list.map(r => r.id));
+    this.updOrder(o.id, x => ({ ...x, reviews: x.reviews.map(r => ids.has(r.id) ? { ...r, status: 'in_progress', sentAt: Date.now(), updatedAt: Date.now() } : r) }));
+    this.setState({ sel: {} });
+    this.toast(list.length + ' review' + (list.length > 1 ? 's' : '') + ' sent via WhatsApp · set to In progress');
     this.api('admin-wa', { body: { order: o.id, reviews: list.map(r => r.id) } }).then(r => r.ok ? this.replaceOrder(r.order) : this.fail(r, 'Could not save'));
   }
 
@@ -759,7 +767,11 @@ class Component extends DCLogic {
         markPaid: () => { if (!confirm('Mark ' + od.id + ' as paid?')) return; this.api('admin-markpaid', { body: { order: od.id } }).then(r => r.ok ? (this.replaceOrder(r.order), this.toast('Marked as paid')) : this.fail(r)); },
         sendPw: () => { if (!confirm('Send a new password to ' + od.cust.email + '?')) return; this.api('admin-resetpw', { body: { order: od.id } }).then(r => r.ok ? this.toast('New password emailed to ' + r.email) : this.fail(r)); }
       });
+      // "Send all" = every review that is still active (submitted or already in progress), with its link
+      const active = od.reviews.filter(r => r.status === 'submitted' || r.status === 'in_progress');
+      v.sendAllWa = () => this.sendWa(od, active);
       if (v.o) {
+        v.o.hasOpen = active.length > 0;
         const c = this.calc(od);
         Object.assign(v.o, { subtotal: money(c.sub), discAmt: '– ' + money(c.disc), total: money(c.total),
           mailto: 'mailto:' + od.cust.email + '?subject=' + encodeURIComponent('Your order ' + od.id), waCustomer: 'https://wa.me/' + (od.cust.phone || '').replace(/[^\d]/g, ''), hasPhone: !!(od.cust.phone || '').replace(/[^\d]/g, ''),
