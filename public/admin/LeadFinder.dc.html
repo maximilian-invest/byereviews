@@ -38,9 +38,18 @@
           <sc-for list="{{ regionTabs }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.go }}" style="border:0;cursor:pointer;border-radius:11px;padding:8px 14px;font-size:14px;font-weight:500;background:{{ t.bg }};color:{{ t.fg }};box-shadow:{{ t.sh }}">{{ t.label }}</button></sc-for>
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="font-weight:500">Queries · one per line</span><span style="color:#6B6B6B">{{ queryCount }} queries</span></div>
-        <textarea value="{{ queries }}" onChange="{{ onQueries }}" rows="6" style="border:0;background:#F4F4F4;border-radius:16px;padding:14px 16px;font-size:14px;line-height:1.55;outline:none;resize:vertical;font-family:'Geist Mono',monospace"></textarea>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="font-weight:500">Categories <span style="color:#6B6B6B;font-weight:400">{{ catCount }}</span></span><button onClick="{{ allCats }}" style="border:0;background:transparent;cursor:pointer;font-size:13px;color:#555;text-decoration:underline;text-underline-offset:3px;padding:2px">{{ allCatsLabel }}</button></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ catChips }}" as="c" hint-placeholder-count="12"><button onClick="{{ c.go }}" aria-pressed="{{ c.on }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 12px;font-size:14px;font-weight:500;background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }}</button></sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="font-weight:500">Cities <span style="color:#6B6B6B;font-weight:400">{{ cityCount }} · every area of a city is searched</span></span><button onClick="{{ allCities }}" style="border:0;background:transparent;cursor:pointer;font-size:13px;color:#555;text-decoration:underline;text-underline-offset:3px;padding:2px">{{ allCitiesLabel }}</button></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ cityChips }}" as="c" hint-placeholder-count="10"><button onClick="{{ c.go }}" aria-pressed="{{ c.on }}" style="border:0;cursor:pointer;border-radius:12px;padding:8px 12px;font-size:14px;font-weight:500;background:{{ c.bg }};color:{{ c.fg }};display:flex;gap:6px;align-items:baseline">{{ c.label }}<span style="font-size:11px;opacity:.6">{{ c.sub }}</span></button></sc-for>
+        </div>
+        <span style="font-size:13px;line-height:1.45;color:{{ planWarn }}">{{ planText }}</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <span style="font-size:13px;font-weight:500">Criteria</span>
@@ -395,14 +404,14 @@ class Component extends DCLogic {
     const init = opts.body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(opts.body) } : { credentials: 'same-origin' };
     return fetch('/order.php?a=' + action, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
   }
-  state = Object.assign({}, this.state, { leads: [], ready: false, configured: true, usage: null, limits: null, srvRun: null, qByRegion: {}, busy: false });
+  state = Object.assign({}, this.state, { leads: [], ready: false, configured: true, usage: null, limits: null, srvRun: null, sel: { GB: { cats: [], cities: [] }, US: { cats: [], cities: [] } }, catalog: { cats: [], cities: { GB: [], US: [] } }, busy: false });
 
   componentDidMount() {
     this._designDidMount();
     this.api('admin-leads').then(r => {
       if (!r.ok) return this.toast(r.error === 'not_authed' ? 'Session expired – please sign in again' : 'Could not load leads');
       const st = r.settings, region = st.region === 'US' ? 'USA' : 'England';
-      this.setState({ ready: true, qByRegion: { England: st.queries.GB, USA: st.queries.US }, region, queries: region === 'USA' ? st.queries.US : st.queries.GB, crit: st.crit, ig: !!st.ig, exclude: st.exclude || '' });
+      this.setState({ ready: true, sel: st.sel, catalog: r.catalog, region, crit: st.crit, ig: !!st.ig, exclude: st.exclude || '' });
       this.applyState(r);
       if (r.run && r.run.status === 'running') this.loop(r.run.id); // e.g. page reloaded during a run
     });
@@ -421,10 +430,11 @@ class Component extends DCLogic {
   }
   payload(extra) {
     const s = this.state;
-    return Object.assign({ region: s.region === 'USA' ? 'US' : 'GB', queries: s.queries, crit: s.crit, ig: s.ig, exclude: s.exclude || '' }, extra);
+    const rk = s.region === 'USA' ? 'US' : 'GB';
+    return Object.assign({ region: rk, sel: s.sel[rk], crit: s.crit, ig: s.ig, exclude: s.exclude || '' }, extra);
   }
   failRun(r) {
-    const m = { not_configured: 'Google API key missing on the server', no_queries: 'Add at least one query', already_running: 'A search is already running', not_authed: 'Session expired – please sign in again' }[r.error];
+    const m = { not_configured: 'Google API key missing on the server', no_categories: 'Pick at least one category', no_cities: 'Pick at least one city', already_running: 'A search is already running', not_authed: 'Session expired – please sign in again' }[r.error];
     this.toast(m || 'Something went wrong');
     if (r.error === 'not_configured') this.setState({ configured: false });
   }
@@ -464,6 +474,28 @@ class Component extends DCLogic {
       clearTimeout(this._notesT[id]);
       this._notesT[id] = setTimeout(() => { delete this._notesT[id]; this.api('admin-lead', { body: { id, notes: patch.notes } }); }, 800);
     }
+  }
+
+  // category + city checkboxes → searches (category × every area of the city), built on the server
+  pickers() {
+    const s = this.state, rk = s.region === 'USA' ? 'US' : 'GB', sel = s.sel[rk] || { cats: [], cities: [] }, cat = s.catalog;
+    const setSel = patch => this.setState(st => ({ sel: { ...st.sel, [rk]: { ...st.sel[rk], ...patch } } }));
+    const toggle = (key, id) => setSel({ [key]: sel[key].includes(id) ? sel[key].filter(x => x !== id) : [...sel[key], id] });
+    const chip = on => ({ bg: on ? '#151515' : '#F4F4F4', fg: on ? '#FFFFFF' : '#555555', on: on ? 'true' : 'false' });
+    const cities = cat.cities[rk] || [];
+    const areas = cities.filter(c => sel.cities.includes(c.id)).reduce((n, c) => n + c.areas, 0);
+    const searches = areas * sel.cats.length;
+    const left = s.limits && s.usage ? Math.max(0, s.limits.text.month - s.usage.text.month) : null;
+    return {
+      catChips: cat.cats.map(c => ({ label: c.label, ...chip(sel.cats.includes(c.id)), go: () => toggle('cats', c.id) })),
+      cityChips: cities.map(c => ({ label: c.id, sub: c.areas + ' areas', ...chip(sel.cities.includes(c.id)), go: () => toggle('cities', c.id) })),
+      catCount: sel.cats.length + ' of ' + cat.cats.length, cityCount: sel.cities.length + ' of ' + cities.length,
+      allCats: () => setSel({ cats: sel.cats.length === cat.cats.length ? [] : cat.cats.map(c => c.id) }), allCatsLabel: sel.cats.length === cat.cats.length ? 'None' : 'All',
+      allCities: () => setSel({ cities: sel.cities.length === cities.length ? [] : cities.map(c => c.id) }), allCitiesLabel: sel.cities.length === cities.length ? 'None' : 'All',
+      planText: searches ? sel.cats.length + ' categor' + (sel.cats.length === 1 ? 'y' : 'ies') + ' × ' + areas + ' areas = ' + searches.toLocaleString('en-US') + ' searches · up to ' + (searches * 3).toLocaleString('en-US') + ' Google calls (20 places each)' +
+        (left != null && searches * 3 > left ? ' · stops at your monthly limit (' + left.toLocaleString('en-US') + ' left), continue next time' : '') : 'Pick at least one category and one city',
+      planWarn: left != null && searches * 3 > left ? '#B45309' : '#6B6B6B'
+    };
   }
 
   renderVals() {
@@ -519,11 +551,12 @@ class Component extends DCLogic {
       dryRun: () => this.api('admin-leads-run', { body: this.payload({ dry: true }) }).then(r => {
         if (!r.ok) return this.failRun(r);
         const d = r.dry, fits = d.text <= d.textLeft;
-        this.toast((d.resume ? 'Resumes: ' : 'Dry run: ') + 'up to ' + d.text + ' Google searches (' + d.queries + ' queries × 3 pages, 20 places each) · ' + d.textLeft + ' left this month' + (fits ? '' : ' · stops at your monthly limit'));
+        this.toast((d.resume ? 'Resumes: ' : 'Dry run: ') + d.queries + ' searches · up to ' + d.text + ' Google calls · ' + d.textLeft + ' left this month' + (fits ? '' : ' · stops at your monthly limit'));
       }),
       fixError: () => this.toast('Add google_places_key in /etc/byereviews/config.php (Places API (New) enabled)'),
       regionTabs: ['England', 'USA'].map(k => ({ label: k, bg: s.region === k ? '#FFFFFF' : 'transparent', fg: s.region === k ? '#151515' : '#8A8A8A', sh: s.region === k ? '0 1px 3px rgba(0,0,0,.08)' : 'none',
-        go: () => { if (k === s.region) return; this.setState({ region: k, qByRegion: { ...s.qByRegion, [s.region]: s.queries }, queries: s.qByRegion[k] || '' }); } }))
+        go: () => this.setState({ region: k }) })),
+      ...this.pickers()
     });
     const lead = s.leads.find(l => l.id === s.openId);
     if (lead && v.d) {
