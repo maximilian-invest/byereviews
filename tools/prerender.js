@@ -14,7 +14,8 @@ const file = path.join(__dirname, '..', 'public', 'index.html');
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1360, height: 900 } });
   await page.route('**/analytics.ahrefs.com/**', r => r.abort());
-  await page.goto(base + '/', { waitUntil: 'networkidle' });
+  await page.route('**/*.mp4', r => r.abort()); // media isn't needed for the snapshot (and stalls single-threaded dev servers)
+  await page.goto(base + '/', { waitUntil: 'load' });
   await page.waitForSelector('#dc-root h1');
   const html = await page.evaluate(async () => {
     // collect every FAQ answer (the accordion shows one at a time)
