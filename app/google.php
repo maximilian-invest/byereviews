@@ -97,7 +97,7 @@ function places_autocomplete(string $q, string $session): array {
     }
     $key = (string)config('google_places_key', '');
     if ($key === '') return ['ok' => false, 'error' => 'not_configured'];
-    $cacheKey = 'ac|' . mb_strtolower($q);
+    $cacheKey = 'ac2|' . mb_strtolower($q);
     if ($c = cache_get($cacheKey, 86400)) return $c;
     $body = ['input' => $q, 'languageCode' => 'en', 'includeQueryPredictions' => false];
     if (preg_match('/^[A-Za-z0-9_-]{8,}$/', $session)) $body['sessionToken'] = $session;
@@ -107,6 +107,9 @@ function places_autocomplete(string $q, string $session): array {
     foreach ($r['data']['suggestions'] ?? [] as $sug) {
         $pp = $sug['placePrediction'] ?? null;
         if (!$pp || empty($pp['placeId'])) continue;
+        // businesses only – no cities, regions, streets or squares
+        $types = $pp['types'] ?? [];
+        if ($types && !in_array('establishment', $types, true)) continue;
         $places[] = ['id' => $pp['placeId'], 'name' => $pp['structuredFormat']['mainText']['text'] ?? ($pp['text']['text'] ?? ''),
             'meta' => $pp['structuredFormat']['secondaryText']['text'] ?? '', 'partial' => true];
     }
