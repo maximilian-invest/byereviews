@@ -5,14 +5,12 @@
 // so no request runs longer than ~20 s and the page can show progress and cancel.
 declare(strict_types=1);
 
+require_once __DIR__ . '/leads_catalog.php';
+
 const LEADS_TEXT_MASK = 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.businessStatus,places.websiteUri,places.googleMapsUri,places.nationalPhoneNumber,places.internationalPhoneNumber,places.reviews,nextPageToken';
 const LEADS_PAGES = 3;          // Text Search pages per query (20 places each, max. 60)
 const LEADS_KEEP_DAYS = 30;     // Google Maps terms: Places content is not kept longer; only place ID + own status/notes stay
 const LEADS_STEP_SECONDS = 20;  // work per request
-const LEADS_QUERIES = [
-    'GB' => "takeaway, Leyton, London\nnail salon, Croydon, London\nbarber, Hackney, London\ncafe, Northern Quarter, Manchester\nburger, Manchester\nbakery, Leeds",
-    'US' => "taqueria, Pilsen, Chicago IL\nboba tea, Plano TX\nnail salon, Brooklyn NY\nbarbershop, Austin TX\ncoffee shop, Queens NY",
-];
 const LEADS_CRIT = ['revMin' => 5, 'revMax' => 30, 'ratingMax' => 4.8, 'badMin' => 1, 'badMax' => 2, 'maxAge' => 28, 'skip' => 7];
 const LEAD_STATUSES = ['New', 'Followed', 'Contacted', 'Won', 'Ignored'];
 // chains / franchises – a single branch can't decide anything, so they are never leads (matched as whole words in the name)
@@ -125,7 +123,9 @@ function leads_find_instagram(string $website): string {
 
 function leads_settings(): array {
     $s = store_get('leadsys', 'settings') ?? [];
-    return ['region' => $s['region'] ?? 'GB', 'queries' => ($s['queries'] ?? []) + LEADS_QUERIES, 'crit' => ($s['crit'] ?? []) + LEADS_CRIT, 'ig' => $s['ig'] ?? true,
+    $sel = [];
+    foreach (['GB', 'US'] as $r) $sel[$r] = isset($s['sel'][$r]) ? leads_clean_sel($r, $s['sel'][$r]) : LEADS_DEFAULT_SEL[$r];
+    return ['region' => $s['region'] ?? 'GB', 'sel' => $sel, 'crit' => ($s['crit'] ?? []) + LEADS_CRIT, 'ig' => $s['ig'] ?? true,
         'exclude' => $s['exclude'] ?? ''];
 }
 
@@ -154,13 +154,6 @@ function leads_clean_crit($c): array {
     if ($out['badMin'] > $out['badMax']) [$out['badMin'], $out['badMax']] = [$out['badMax'], $out['badMin']];
     $out['badMin'] = max(1, min(5, $out['badMin'])); $out['badMax'] = max(1, min(5, $out['badMax']));
     return $out;
-}
-
-function leads_clean_queries($q): array {
-    $lines = is_array($q) ? $q : preg_split('/\R/', (string)$q);
-    $out = [];
-    foreach ($lines as $l) { $l = clean((string)$l, 120); if ($l !== '' && !in_array($l, $out, true)) $out[] = $l; }
-    return array_slice($out, 0, 100);
 }
 
 /** Lead record → what the admin page renders. Records whose Google content is older than LEADS_KEEP_DAYS are stripped. */
@@ -280,7 +273,7 @@ function leads_state_payload(): array {
     usort($leads, fn($a, $b) => ($b['reviews'][0]['at'] ?? 0) <=> ($a['reviews'][0]['at'] ?? 0));
     $run = store_get('leadsys', 'run');
     return ['ok' => true, 'configured' => (string)config('google_places_key', '') !== '' || (bool)config('mock_google'),
-        'leads' => $leads, 'settings' => leads_settings(), 'usage' => leads_usage(), 'limits' => leads_limits(), 'run' => leads_run_view($run)];
+        'leads' => $leads, 'settings' => leads_settings(), 'catalog' => leads_catalog(), 'usage' => leads_usage(), 'limits' => leads_limits(), 'run' => leads_run_view($run)];
 }
 
 function action_admin_leads(): void {
@@ -294,20 +287,21 @@ function action_admin_leads_run(): void {
     leads_admin();
     $d = json_body();
     $region = ($d['region'] ?? 'GB') === 'US' ? 'US' : 'GB';
-    $queries = leads_clean_queries($d['queries'] ?? '');
+    $sel = leads_clean_sel($region, $d['sel'] ?? []);
+    $queries = leads_build_queries($region, $sel);
     $crit = leads_clean_crit($d['crit'] ?? []);
     $ig = !empty($d['ig']);
     $st = leads_settings();
     $exclude = clean($d['exclude'] ?? '', 1000);
-    $st['region'] = $region; $st['queries'][$region] = implode("\n", $queries); $st['crit'] = $crit; $st['ig'] = $ig; $st['exclude'] = $exclude;
+    $st['region'] = $region; $st['sel'][$region] = $sel; $st['crit'] = $crit; $st['ig'] = $ig; $st['exclude'] = $exclude;
     $st['monthlyLimit'] = (store_get('leadsys', 'settings') ?? [])['monthlyLimit'] ?? null;
     if ($st['monthlyLimit'] === null) unset($st['monthlyLimit']);
     store_put('leadsys', 'settings', $st);
-    if (!$queries) fail(400, 'no_queries');
+    if (!$queries) fail(400, $sel['cats'] ? 'no_cities' : 'no_categories');
     if (!(string)config('google_places_key', '') && !config('mock_google')) fail(503, 'not_configured');
 
     $prev = store_get('leadsys', 'run');
-    $resume = $prev && $prev['status'] === 'quota' && $prev['region'] === $region && $prev['queries'] === $queries && $prev['crit'] === $crit;
+    $resume = $prev && in_array($prev['status'], ['quota', 'cancelled'], true) && !empty($prev['tasks']) && $prev['region'] === $region && $prev['queries'] === $queries && $prev['crit'] === $crit;
     if (!empty($d['dry'])) {
         $pending = $resume ? count(array_filter($prev['tasks'], fn($t) => $t['t'] === 'search')) : count($queries);
         json_out(['ok' => true, 'dry' => ['queries' => $pending, 'text' => $pending * LEADS_PAGES, 'details' => 0,

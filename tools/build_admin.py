@@ -110,6 +110,23 @@ for old, new in [('  componentDidMount() {', '  _designDidMount() {'), ('  compo
                  ('  startRun() {', '  _designStartRun() {'), ('  open(id) {', '  _designOpen(id) {')]:
     rep(old, new)
 rep('leads: this.leadsSeed(),', 'leads: [],')
+# free-text queries → category and city checkboxes
+s, n = re.subn(r'      <div style="display:flex;flex-direction:column;gap:6px">\n        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="font-weight:500">Queries · one per line</span>.*?</textarea>\n      </div>\n',
+    '''      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="font-weight:500">Categories <span style="color:#6B6B6B;font-weight:400">{{ catCount }}</span></span><button onClick="{{ allCats }}" style="border:0;background:transparent;cursor:pointer;font-size:13px;color:#555;text-decoration:underline;text-underline-offset:3px;padding:2px">{{ allCatsLabel }}</button></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ catChips }}" as="c" hint-placeholder-count="12"><button onClick="{{ c.go }}" aria-pressed="{{ c.on }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 12px;font-size:14px;font-weight:500;background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }}</button></sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="font-weight:500">Cities <span style="color:#6B6B6B;font-weight:400">{{ cityCount }} · every area of a city is searched</span></span><button onClick="{{ allCities }}" style="border:0;background:transparent;cursor:pointer;font-size:13px;color:#555;text-decoration:underline;text-underline-offset:3px;padding:2px">{{ allCitiesLabel }}</button></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ cityChips }}" as="c" hint-placeholder-count="10"><button onClick="{{ c.go }}" aria-pressed="{{ c.on }}" style="border:0;cursor:pointer;border-radius:12px;padding:8px 12px;font-size:14px;font-weight:500;background:{{ c.bg }};color:{{ c.fg }};display:flex;gap:6px;align-items:baseline">{{ c.label }}<span style="font-size:11px;opacity:.6">{{ c.sub }}</span></button></sc-for>
+        </div>
+        <span style="font-size:13px;line-height:1.45;color:{{ planWarn }}">{{ planText }}</span>
+      </div>
+''', s, count=1, flags=re.S)
+assert n == 1
 rep('        Find Instagram via website\n      </button>\n    </div>',
     '''        Find Instagram via website
       </button>
