@@ -2154,6 +2154,7 @@ class Component extends DCLogic {
 
   // ---------- step 1: real Google business search ----------
   findBiz() {
+    clearTimeout(this.sugT);
     const q = (this.state.bizQuery || '').trim(); if (!q) return this.setState({ tried: true });
     this.setState({ bizStatus: 'loading', places: [], biz: null });
     this.api('places', { query: { q } }).then(r => {
@@ -2161,7 +2162,31 @@ class Component extends DCLogic {
       this.setState({ bizStatus: 'choose', places: r.places, biz: null, searchError: false });
     });
   }
+  // live suggestions while typing (Places Autocomplete; one session token per search → cheap billing)
+  onBizType(q) {
+    this.setState({ bizQuery: q, tried: false });
+    clearTimeout(this.sugT);
+    const t = q.trim();
+    if (t.length < 3) { if (this.state.bizStatus === 'choose' || this.state.bizStatus === 'loading') this.setState({ bizStatus: 'idle', places: [] }); return; }
+    if (!this.acSession) this.acSession = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()).replace(/-/g, '');
+    this.sugT = setTimeout(() => {
+      this.api('suggest', { query: { q: t, session: this.acSession } }).then(r => {
+        if ((this.state.bizQuery || '').trim() !== t || this.state.bizStatus === 'found') return;
+        if (!r.ok) return this.setState({ bizStatus: 'idle', places: [] });
+        this.setState((r.places || []).length ? { bizStatus: 'choose', places: r.places, biz: null } : { bizStatus: 'idle', places: [] });
+      });
+    }, 350);
+  }
   pickPlace(p, list) {
+    if (p.partial) {
+      // suggestion → load the full profile (rating, address, phone) before showing it as found
+      this.setState({ bizStatus: 'loading' });
+      const session = this.acSession; this.acSession = null;
+      return this.api('place', { query: { id: p.id, session: session || '' } }).then(r => {
+        if (!r.ok) return this.setState({ bizStatus: 'notfound', searchError: true });
+        this.pickPlace(r.place, (list || this.state.places || []).map(x => x.id === p.id ? r.place : x));
+      });
+    }
     this.setState({ bizStatus: 'found', biz: { ...p }, places: list || this.state.places, selected: {}, placeReviews: [], reviewsStatus: 'loading', company: '', street: '', city: '', phone: '' }, () => this.autofill());
     this.api('reviews', { query: { place: p.id } }).then(r => {
       if (!this.state.biz || this.state.biz.id !== p.id) return;
@@ -2287,6 +2312,7 @@ class Component extends DCLogic {
       successText: s.newAccount ? "We've created your personal dashboard and emailed your login details to " + s.email + '.' : 'This order was added to your existing account (' + s.email + '). Log in with your existing password.',
       reviewsLoading: s.reviewsStatus === 'loading', reviewsPartial: s.reviewsStatus === 'done' && !s.reviewsComplete, reviewsFailed: s.reviewsStatus === 'error',
       noResults: v.noResults && s.reviewsStatus !== 'loading',
+      onBizQuery: e => this.onBizType(e.target.value),
       bizChoose: s.bizStatus === 'choose',
       chooseTitle: (s.places || []).length === 1 ? 'We found this profile – is it yours?' : 'We found ' + (s.places || []).length + ' profiles – select yours:',
       choosePlaces: (s.places || []).map(p => ({ initial: (p.name || '?')[0], name: p.name, meta: p.meta || p.address, go: () => this.pickPlace(p) })),

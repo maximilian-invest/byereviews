@@ -8,6 +8,8 @@ require __DIR__ . '/../app/api.php';
 $action = preg_replace('/[^a-z_-]/', '', (string)($_GET['a'] ?? 'order'));
 $routes = [
     'places' => 'action_places',
+    'suggest' => 'action_suggest',
+    'place' => 'action_place',
     'reviews' => 'action_reviews',
     'check-email' => 'action_check_email',
     'order' => 'action_order',

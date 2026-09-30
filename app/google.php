@@ -88,12 +88,40 @@ function places_search(string $q): array {
     return $out;
 }
 
-function place_details(string $id): ?array {
+/** As-you-type suggestions (Places Autocomplete, billed per session together with the details call). */
+function places_autocomplete(string $q, string $session): array {
+    if (config('mock_google')) {
+        $all = mock_places('')['places'];
+        $hits = array_values(array_filter($all, fn($p) => stripos($p['name'], $q) !== false));
+        return ['ok' => true, 'places' => array_map(fn($p) => ['id' => $p['id'], 'name' => $p['name'], 'meta' => $p['address'], 'partial' => true], $hits)];
+    }
+    $key = (string)config('google_places_key', '');
+    if ($key === '') return ['ok' => false, 'error' => 'not_configured'];
+    $cacheKey = 'ac|' . mb_strtolower($q);
+    if ($c = cache_get($cacheKey, 86400)) return $c;
+    $body = ['input' => $q, 'languageCode' => 'en', 'includeQueryPredictions' => false];
+    if (preg_match('/^[A-Za-z0-9_-]{8,}$/', $session)) $body['sessionToken'] = $session;
+    $r = http_json('POST', 'https://places.googleapis.com/v1/places:autocomplete', ['Content-Type: application/json', 'X-Goog-Api-Key: ' . $key], json_encode($body));
+    if ($r['code'] !== 200) { log_event('places autocomplete failed ' . $r['code'] . ' ' . substr((string)$r['raw'], 0, 300)); return ['ok' => false, 'error' => 'lookup_failed']; }
+    $places = [];
+    foreach ($r['data']['suggestions'] ?? [] as $sug) {
+        $pp = $sug['placePrediction'] ?? null;
+        if (!$pp || empty($pp['placeId'])) continue;
+        $places[] = ['id' => $pp['placeId'], 'name' => $pp['structuredFormat']['mainText']['text'] ?? ($pp['text']['text'] ?? ''),
+            'meta' => $pp['structuredFormat']['secondaryText']['text'] ?? '', 'partial' => true];
+    }
+    $out = ['ok' => true, 'places' => $places];
+    cache_put($cacheKey, $out);
+    return $out;
+}
+
+function place_details(string $id, string $session = ''): ?array {
     if (config('mock_google')) { foreach (mock_places('')['places'] as $p) if ($p['id'] === $id) return $p; return null; }
     $key = (string)config('google_places_key', '');
     if ($key === '' || !preg_match('/^[A-Za-z0-9_-]{10,}$/', $id)) return null;
     if ($c = cache_get('details|' . $id, 86400)) return $c;
-    $r = http_json('GET', 'https://places.googleapis.com/v1/places/' . $id . '?languageCode=en',
+    $qs = 'languageCode=en' . (preg_match('/^[A-Za-z0-9_-]{8,}$/', $session) ? '&sessionToken=' . $session : '');
+    $r = http_json('GET', 'https://places.googleapis.com/v1/places/' . $id . '?' . $qs,
         ['X-Goog-Api-Key: ' . $key, 'X-Goog-FieldMask: ' . PLACES_FIELDS]);
     if ($r['code'] !== 200 || !$r['data']) return null;
     $p = place_summary($r['data']);

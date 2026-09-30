@@ -78,6 +78,20 @@ function action_places(): void {
     json_out($r, $r['ok'] ? 200 : 503);
 }
 
+function action_suggest(): void {
+    $q = clean($_GET['q'] ?? '', 200);
+    if (mb_strlen($q) < 3) json_out(['ok' => true, 'places' => []]);
+    if (!rate_ok('suggest', 400)) fail(429, 'too_many_requests');
+    $r = places_autocomplete($q, clean($_GET['session'] ?? '', 64));
+    json_out($r, $r['ok'] ? 200 : 503);
+}
+
+function action_place(): void {
+    if (!rate_ok('place', 120)) fail(429, 'too_many_requests');
+    $p = place_details(clean($_GET['id'] ?? '', 200), clean($_GET['session'] ?? '', 64));
+    $p ? json_out(['ok' => true, 'place' => $p]) : fail(404, 'not_found');
+}
+
 function action_reviews(): void {
     $id = clean($_GET['place'] ?? '', 200);
     if (!rate_ok('reviews', 40)) fail(429, 'too_many_requests');
