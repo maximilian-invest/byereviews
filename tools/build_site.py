@@ -123,16 +123,6 @@ rep('font-size:16px;font-weight:500">Log in</button>', 'font-size:16px;font-weig
 rep('<button onClick="{{ fillDemo }}" style="border:0;background:transparent;cursor:pointer;font-size:14px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">Use demo account</button>',
     '<button onClick="{{ doReset }}" style="border:0;background:transparent;cursor:pointer;font-size:14px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">{{ resetLabel }}</button>')
 
-# dashboard: switch between several orders of the same customer
-rep('''  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;align-self:{{ acc.tabsAlign }}">
-    <sc-for list="{{ pTabs }}"''', '''  <sc-if value="{{ hasOrderSwitch }}" hint-placeholder-val="{{ false }}">
-  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:0 4px"><span style="font-size:13px;color:#6B6B6B">Your orders</span>
-    <sc-for list="{{ orderChips }}" as="oc" hint-placeholder-count="2"><button onClick="{{ oc.go }}" style="border:0;cursor:pointer;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:500;font-family:'Geist Mono',monospace;background:{{ oc.bg }};color:{{ oc.fg }}">{{ oc.label }}</button></sc-for>
-  </div>
-  </sc-if>
-  <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;align-self:{{ acc.tabsAlign }}">
-    <sc-for list="{{ pTabs }}"''')
-
 # step 1: the customer must pick one of the real Google results (no auto-select)
 m = re.search(r'(<sc-if value="\{\{ bizFound \}\}" hint-placeholder-val="\{\{ false \}\}">.*?</sc-if>)', s, flags=re.S)
 rep(m.group(1), '''<sc-if value="{{ bizChoose }}" hint-placeholder-val="{{ false }}">

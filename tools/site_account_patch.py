@@ -36,5 +36,30 @@ cancel_card = sc_if('pCanCancel',
     + '</div>')
 rep('  <sc-if value="{{ pHasInvoice }}" hint-placeholder-val="{{ false }}">', cancel_card + '\n  <sc-if value="{{ pHasInvoice }}" hint-placeholder-val="{{ false }}">')
 rep(greet, greet
-    + sc_if('hasAccNotice', '<span style="font-size:14px;font-weight:500;background:#FFFFFF;border-radius:12px;padding:8px 12px;align-self:flex-start">{{ accNotice }}</span>')
-    + sc_if('pCancelled', '<span style="font-size:14px;font-weight:500;background:#FFFFFF;color:#D93025;border:1px solid #D93025;border-radius:12px;padding:8px 12px;align-self:flex-start">Order cancelled {{ pCancelledAt }}</span>'))
+    + sc_if('hasAccNotice', '<span style="font-size:14px;font-weight:500;background:#FFFFFF;border-radius:12px;padding:8px 12px;align-self:flex-start">{{ accNotice }}</span>'))
+
+# ---------- all orders of the customer: list + the selected order's header ----------
+ROWSTYLE = 'width:100%;text-align:left;cursor:pointer;background:#FFFFFF;border-radius:20px;padding:14px 16px;display:grid;grid-template-columns:{{ ordCols }};gap:{{ ordGap }};align-items:center;font-size:14px;color:#151515;border:2px solid {{ ol.bd }}'
+orders_list = (
+    '<div style="display:flex;flex-direction:column;gap:8px">'
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:0 4px"><span style="font-size:18px;font-weight:500">Your orders</span><span style="font-size:13px;color:#6B6B6B">{{ ordCount }}</span></div>'
+    '<sc-for list="{{ ordList }}" as="ol" hint-placeholder-count="2">'
+    f'<button onClick="{{{{ ol.go }}}}" style="{ROWSTYLE}">'
+    '<span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ol.biz }}</span>'
+    '<span style="font-family:\'Geist Mono\',monospace;font-size:12px;color:#6B6B6B">{{ ol.id }} · {{ ol.date }}</span></span>'
+    '<sc-if value="{{ ordWide }}" hint-placeholder-val="{{ true }}"><span style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:#555">{{ ol.progress }}</span>'
+    '<span style="height:5px;border-radius:3px;background:#EFEFEF;display:block;overflow:hidden"><span style="display:block;height:100%;width:{{ ol.pct }};background:#151515"></span></span></span></sc-if>'
+    '<sc-if value="{{ ordWide }}" hint-placeholder-val="{{ true }}"><span style="font-weight:500;text-align:right">{{ ol.amount }}</span></sc-if>'
+    '<span style="justify-self:end;font-size:12px;font-weight:600;border-radius:9px;padding:5px 9px;white-space:nowrap;background:{{ ol.chipBg }};color:{{ ol.chipFg }};border:1px solid {{ ol.chipBd }}">{{ ol.status }}</span>'
+    '</button></sc-for></div>'
+)
+selected_head = (
+    '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:10px 4px 0">'
+    '<div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:\'Geist Mono\',monospace;font-size:12px;color:#6B6B6B">{{ pOrderId }} · ordered {{ pOrderDate }}</span>'
+    '<span style="font-size:clamp(22px,2.4vw,30px);font-weight:500;letter-spacing:-.03em;line-height:1.1">{{ pBiz }}</span></div>'
+    '<span style="font-size:13px;font-weight:600;border-radius:10px;padding:7px 12px;white-space:nowrap;background:{{ pChipBg }};color:{{ pChipFg }};border:1px solid {{ pChipBd }}">{{ pStatus }}</span></div>'
+    + sc_if('pCancelled', '<div style="background:#FFFFFF;border:1px solid #D93025;border-radius:18px;padding:12px 16px;font-size:14px;color:#D93025;line-height:1.5">This order was cancelled on {{ pCancelledAt }}. Open reviews were stopped{{ pCancelNote }}</div>')
+)
+rep('''  <sc-if value="{{ pTabOverview }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column;gap:16px">''', '''  <sc-if value="{{ pTabOverview }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column;gap:16px">''' + orders_list + selected_head)

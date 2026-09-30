@@ -275,6 +275,14 @@
     });
   }
 
+  orderStatus(x) {
+    const active = x.reviews.some(r => r.status === 'submitted' || r.status === 'in_progress');
+    if (x.cancelled) return ['Cancelled', '#FFFFFF', '#D93025', '#D93025'];
+    if (x.payment.status === 'paid') return ['Paid', '#151515', '#FFFFFF', '#151515'];
+    if (x.invoice.total > 0) return ['Payment due', '#FFFFFF', '#151515', '#151515'];
+    if (active) return ['In progress', '#EFEFEF', '#151515', '#EFEFEF'];
+    return ['Completed', '#EFEFEF', '#555', '#EFEFEF'];
+  }
   realPortal() {
     const s = this.state, o = (s.orders || [])[s.orderIdx || 0];
     if (!s.customer || !o) return null;
@@ -333,8 +341,21 @@
         this.api('order-cancel', { body: { order: o.id, reason: s.cancelReason || '' } }).then(r => { if (!r.ok) return alert(r.error === 'already_cancelled' ? 'This order is already cancelled.' : 'Could not cancel – please try again.');
           this.setState({ orders: r.orders, cancelOpen: false, cancelReason: '', accNotice: 'Order ' + o.id + ' was cancelled – we sent you a confirmation.' }); window.scrollTo({ top: 0 }); }); },
       pTabs: [['overview', 'Overview'], ['support', 'Support'], ['settings', 'Settings']].map(([k, label]) => ({ label, go: () => goTab(k), bg: tab === k ? '#151515' : 'transparent', fg: tab === k ? '#FFFFFF' : '#555', hasDot: k === 'support' && unread, dot: '1', dotBg: '#151515', dotFg: '#FFFFFF' })),
-      hasOrderSwitch: s.orders.length > 1,
-      orderChips: s.orders.map((x, i) => ({ label: x.id, go: () => this.setState({ orderIdx: i }), bg: i === (s.orderIdx || 0) ? '#151515' : '#FFFFFF', fg: i === (s.orderIdx || 0) ? '#FFFFFF' : '#555' })),
+      ...(() => { const mob = (s.vw || 1200) < 760, sel = s.orderIdx || 0;
+        const fmtFor = x => n => x.currency === 'EUR' ? `${Number(n).toLocaleString('en-US')} €` : `$${Number(n).toLocaleString('en-US')}`;
+        const st = this.orderStatus(o);
+        return {
+          ordCount: s.orders.length === 1 ? '1 order' : s.orders.length + ' orders', ordWide: !mob,
+          ordCols: mob ? 'minmax(0,1fr) auto' : 'minmax(0,1.6fr) minmax(0,1.2fr) 100px 120px', ordGap: mob ? '8px 12px' : '16px',
+          ordList: s.orders.map((x, i) => { const c = this.orderStatus(x), billable = x.reviews.filter(r => r.status !== 'not_eligible' && r.status !== 'cancelled'), rem = x.reviews.filter(r => r.status === 'removed').length;
+            return { id: x.id, biz: x.business.name || 'Your business', date: new Date(x.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+              progress: rem + ' of ' + billable.length + ' removed', pct: (billable.length ? rem / billable.length * 100 : 0) + '%',
+              amount: x.invoice.total > 0 ? fmtFor(x)(x.invoice.total) : '—', status: c[0], chipBg: c[1], chipFg: c[2], chipBd: c[3], bd: i === sel ? '#151515' : 'transparent',
+              go: () => { this.setState({ orderIdx: i, cancelOpen: false, rvTab: 'all' }); } }; }),
+          pOrderDate: new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+          pStatus: st[0], pChipBg: st[1] === '#EFEFEF' ? '#FFFFFF' : st[1], pChipFg: st[2], pChipBd: st[3] === '#EFEFEF' ? '#FFFFFF' : st[3],
+          pCancelNote: o.cancelled ? (o.invoice.total > 0 && o.payment.status !== 'paid' ? ' – reviews removed before that are still billed.' : ' – nothing is charged for this order.') : ''
+        }; })(),
       logout: () => { this.api('logout', { body: {} }); this.setState({ portalIn: false, customer: null, orders: [], view: 'login', loginPass: '' }); window.scrollTo({ top: 0 }); }
     };
   }
@@ -372,8 +393,8 @@
     if (real) {
       Object.assign(v, real);
       // the design builds the eyebrow from its demo order; use the real one
-      if (v.acc && (s.portalTab || 'overview') !== 'settings') v.acc.eyebrow = '// order ' + real.pOrderId + ' · ' + real.pBiz;
+      if (v.acc && (s.portalTab || 'overview') !== 'settings') v.acc.eyebrow = '// dashboard · ' + (s.account ? s.account.email : '');
     }
-    else Object.assign(v, { pCanCancel: false, pCancelled: false, hasOrderSwitch: false, orderChips: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
+    else Object.assign(v, { pCanCancel: false, pCancelled: false, ordList: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
     return v;
   }
