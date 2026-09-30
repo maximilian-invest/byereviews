@@ -7,7 +7,8 @@
     return fetch('/order.php?a=' + action + q, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
   }
   state = Object.assign({}, this.state, { places: [], placeReviews: [], reviewsStatus: 'idle', reviewsComplete: true, emailKnown: false,
-    customer: null, orders: [], orderIdx: 0, submitting: false, submitError: '', loginBusy: false, resetSent: false });
+    customer: null, orders: [], orderIdx: 0, submitting: false, submitError: '', loginBusy: false, resetSent: false,
+    account: null, af: {}, accMsg: '', resetToken: '', resetState: '', resetEmail: '', resetPw: '', resetPw2: '', resetErr: '' });
 
   // ---------- funnel tracking (first-party, no cookies, no IP stored; see app/analytics.php) ----------
   track(ev, extra) {
@@ -52,8 +53,14 @@
     window.addEventListener('hashchange', this.onHashNav);
     this.onPop = () => { const pv = this.viewFromPath(); const nv = pv === 'portal' && !this.state.portalIn ? 'login' : pv; this._lastView = nv; this.setState({ view: nv, menuOpen: false }); };
     window.addEventListener('popstate', this.onPop);
+    const qs = new URLSearchParams(location.search);
+    const rt = qs.get('reset');
+    if (rt) { this.setState({ resetToken: rt, resetState: 'checking', view: 'login' }); this.api('reset-check', { query: { t: rt } }).then(r => this.setState({ resetState: r.ok ? 'valid' : 'expired', resetEmail: r.email || '' })); }
+    const em = qs.get('email');
+    if (em) this.setState({ accNotice: em === 'changed' ? '✓ Your new email address is confirmed.' : 'That confirmation link is invalid or has expired.' });
     this.api('me').then(r => {
       if (!r.ok) return;
+      this.setAccount(r.account);
       this.setState({ customer: r.customer, orders: r.orders || [], portalIn: true, loginEmail: r.customer.email,
         view: (want === 'portal' || want === 'login') ? 'portal' : this.state.view });
     });
@@ -177,6 +184,7 @@
     this.setState({ loginBusy: true, loginError: false });
     this.api('login', { body: { email: (s.loginEmail || '').trim(), password: s.loginPass || '' } }).then(r => {
       if (!r.ok) return this.setState({ loginBusy: false, loginError: true, loginErrorText: r.error === 'too_many_requests' ? 'Too many attempts – please wait a few minutes.' : "Email or password doesn't match." });
+      this.setAccount(r.account);
       this.setState({ loginBusy: false, customer: r.customer, orders: r.orders || [], orderIdx: 0, portalIn: true, portalTab: 'overview', view: 'portal', loginPass: '' });
       window.scrollTo({ top: 0 });
     });
@@ -186,6 +194,63 @@
     if (!/\S+@\S+\.\S+/.test(email)) return this.setState({ loginError: true, loginErrorText: 'Enter your email above first.' });
     this.api('reset', { body: { email } }).then(() => this.setState({ resetSent: true, loginError: false }));
   }
+  // ---------- account settings ----------
+  setAccount(a) {
+    if (!a) return;
+    this.setState({ account: a, af: { name: a.name || '', company: a.company || '', phone: a.phone || '', street: a.street || '', city: a.city || '', country: a.country || this.state.country,
+      newEmail: '', emailPw: '', emailOpen: false, pwCur: '', pwNew: '', pwRep: '', delPw: '' } });
+  }
+  accToast(m) { clearTimeout(this.accT); this.setState({ accMsg: m }); this.accT = setTimeout(() => this.setState({ accMsg: '' }), 3200); }
+  accErr(r) {
+    return { wrong_password: 'Wrong password.', password_too_short: 'The new password needs at least 10 characters.', email_taken: 'This email already has an account.',
+      invalid_email: 'Please enter a valid email address.', same_email: "That's already your email.", too_many_requests: 'Too many attempts – please wait a few minutes.',
+      name_missing: 'Please enter your name.', not_logged_in: 'Your session has expired – please log in again.' }[r.error] || 'Something went wrong – please try again.';
+  }
+  accVals() {
+    const s = this.state, a = s.account || {}, f = s.af || {};
+    const set = k => e => this.setState({ af: { ...this.state.af, [k]: e.target.value } });
+    const call = (action, body, okMsg, after) => this.api(action, { body }).then(r => {
+      if (!r.ok) { this.accToast(this.accErr(r)); if (r.error === 'not_logged_in') this.setState({ portalIn: false, view: 'login' }); return; }
+      if (r.account) this.setAccount(r.account);
+      if (after) after(r);
+      if (okMsg) this.accToast(okMsg);
+    });
+    return {
+      email: a.email || '', pending: a.pendingEmail || '', hasPending: !!a.pendingEmail,
+      showEmailForm: !a.pendingEmail && !!f.emailOpen, showEmailBtn: !a.pendingEmail && !f.emailOpen,
+      name: f.name, company: f.company, phone: f.phone, street: f.street, city: f.city, country: f.country,
+      onName: set('name'), onCompany: set('company'), onPhone: set('phone'), onStreet: set('street'), onCity: set('city'), onCountry: set('country'),
+      newEmail: f.newEmail, emailPw: f.emailPw, onNewEmail: set('newEmail'), onEmailPw: set('emailPw'),
+      pwCur: f.pwCur, pwNew: f.pwNew, pwRep: f.pwRep, onPwCur: set('pwCur'), onPwNew: set('pwNew'), onPwRep: set('pwRep'),
+      delPw: f.delPw, onDelPw: set('delPw'),
+      deletionRequested: !!a.deletionRequestedAt, showDelete: !a.deletionRequestedAt,
+      deletionDate: a.deletionRequestedAt ? new Date(a.deletionRequestedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+      hasMsg: !!s.accMsg, msg: s.accMsg,
+      saveProfile: () => call('account-profile', { name: f.name, company: f.company, phone: f.phone, street: f.street, city: f.city, country: f.country }, 'Profile saved',
+        r => this.setState(st => ({ customer: { ...st.customer, name: r.account.name } }))),
+      openEmail: () => this.setState({ af: { ...f, emailOpen: true } }),
+      saveEmail: () => call('account-email', { email: (f.newEmail || '').trim(), password: f.emailPw || '' }, 'Confirmation link sent to ' + (f.newEmail || '').trim()),
+      resendEmail: () => call('account-email', { email: a.pendingEmail, password: f.emailPw || '' }, 'Link sent again'),
+      cancelEmail: () => call('account-email-cancel', {}, 'Email change cancelled'),
+      savePw: () => {
+        if ((f.pwNew || '') !== (f.pwRep || '')) return this.accToast("The new passwords don't match.");
+        call('account-password', { current: f.pwCur || '', password: f.pwNew || '' }, 'Password changed – other devices were logged out', () => this.setState({ af: { ...this.state.af, pwCur: '', pwNew: '', pwRep: '' } }));
+      },
+      logoutAll: () => call('account-logout-all', {}, 'Logged out on all other devices'),
+      requestDelete: () => { if (!confirm('Request deletion of your byereviews account?')) return; call('account-delete', { password: f.delPw || '' }, 'Deletion request received'); }
+    };
+  }
+  doResetConfirm() {
+    const s = this.state;
+    if (s.resetPw !== s.resetPw2) return this.setState({ resetErr: "The passwords don't match." });
+    this.api('reset-confirm', { body: { token: s.resetToken, password: s.resetPw } }).then(r => {
+      if (!r.ok) return r.error === 'link_expired' ? this.setState({ resetState: 'expired' }) : this.setState({ resetErr: this.accErr(r) });
+      history.replaceState(null, '', '/login/');
+      this.setAccount(r.account);
+      this.setState({ resetToken: '', resetState: '', resetPw: '', resetPw2: '', resetErr: '', customer: r.customer, orders: r.orders || [], orderIdx: 0, portalIn: true, portalTab: 'overview', view: 'portal', accNotice: '✓ Password updated.' });
+    });
+  }
+
   realPortal() {
     const s = this.state, o = (s.orders || [])[s.orderIdx || 0];
     if (!s.customer || !o) return null;
@@ -228,8 +293,9 @@
       pLines: removed.map(i => ({ label: i.name + ' · ' + (i.price === 90 ? '≤ 4 weeks' : '> 4 weeks'), amount: fmt(i.price) })),
       pHasDisc: inv.rate > 0, pDiscPct: Math.round(inv.rate * 100) + '%', pDiscAmt: '– ' + fmt(inv.discount), pInvTotal: fmt(inv.total),
       pMsgs: msgs, sendSupport: send, onSupportKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } },
-      pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pShowChatFab: tab !== 'support', pUnread: unread, openSupport: () => goTab('support'),
-      pTabs: [['overview', 'Overview'], ['support', 'Support']].map(([k, label]) => ({ label, go: () => goTab(k), bg: tab === k ? '#151515' : 'transparent', fg: tab === k ? '#FFFFFF' : '#555', hasDot: k === 'support' && unread, dot: '1', dotBg: '#151515', dotFg: '#FFFFFF' })),
+      pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pShowChatFab: tab === 'overview', pUnread: unread, openSupport: () => goTab('support'),
+      pTabSettings: tab === 'settings', acc: this.accVals(),
+      pTabs: [['overview', 'Overview'], ['support', 'Support'], ['settings', 'Settings']].map(([k, label]) => ({ label, go: () => goTab(k), bg: tab === k ? '#151515' : 'transparent', fg: tab === k ? '#FFFFFF' : '#555', hasDot: k === 'support' && unread, dot: '1', dotBg: '#151515', dotFg: '#FFFFFF' })),
       hasOrderSwitch: s.orders.length > 1,
       orderChips: s.orders.map((x, i) => ({ label: x.id, go: () => this.setState({ orderIdx: i }), bg: i === (s.orderIdx || 0) ? '#151515' : '#FFFFFF', fg: i === (s.orderIdx || 0) ? '#FFFFFF' : '#555' })),
       logout: () => { this.api('logout', { body: {} }); this.setState({ portalIn: false, customer: null, orders: [], view: 'login', loginPass: '' }); window.scrollTo({ top: 0 }); }
@@ -248,9 +314,15 @@
       error: s.submitError || v.error, hasError: !!s.submitError || v.hasError, navInfo: s.submitError || v.navInfo,
       emailKnown: !!s.emailKnown,
       onEmail: e => { const email = e.target.value; this.setState({ email }); this.checkEmail(email.trim()); },
+      siteNavDesk: v.desktop && s.view !== 'portal', siteNavMob: v.mobile && s.view !== 'portal',
+      hasAccNotice: !!s.accNotice && s.view === 'portal', accNotice: s.accNotice || '',
+      loginMode: !s.resetToken, resetMode: !!s.resetToken, resetValid: s.resetState === 'valid', resetExpired: s.resetState === 'expired',
+      resetEmail: s.resetEmail, resetPw: s.resetPw, resetPw2: s.resetPw2, onResetPw: e => this.setState({ resetPw: e.target.value, resetErr: '' }), onResetPw2: e => this.setState({ resetPw2: e.target.value, resetErr: '' }),
+      resetError: !!s.resetErr, resetErrorText: s.resetErr, doResetConfirm: () => this.doResetConfirm(),
+      leaveReset: () => { history.replaceState(null, '', '/login/'); this.setState({ resetToken: '', resetState: '' }); },
       loginErrorText: s.loginErrorText || "Email or password doesn't match.",
       loginBtn: s.loginBusy ? 'Logging in…' : 'Log in',
-      doReset: () => this.doReset(), resetLabel: s.resetSent ? '✓ If the email has an account, a new password is on its way' : 'Forgot your password?',
+      doReset: () => this.doReset(), resetLabel: s.resetSent ? '✓ If an account exists for this address, a reset link is on its way (valid 1 h)' : 'Forgot your password?',
       openPortalAuto: () => { this.setState({ view: s.portalIn ? 'portal' : 'login', loginEmail: s.email, loginPass: '', loginError: false }); window.scrollTo({ top: 0 }); },
       successText: s.newAccount ? "We've created your personal dashboard and emailed your login details to " + s.email + '.' : 'This order was added to your existing account (' + s.email + '). Log in with your existing password.',
       reviewsLoading: s.reviewsStatus === 'loading', reviewsPartial: s.reviewsStatus === 'done' && !s.reviewsComplete, reviewsFailed: s.reviewsStatus === 'error',
@@ -266,6 +338,6 @@
     });
     const real = this.realPortal();
     if (real) Object.assign(v, real);
-    else Object.assign(v, { hasOrderSwitch: false, orderChips: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
+    else Object.assign(v, { pTabSettings: false, acc: {}, hasOrderSwitch: false, orderChips: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
     return v;
   }

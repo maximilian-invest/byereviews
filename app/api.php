@@ -6,6 +6,7 @@ require_once __DIR__ . '/lib.php';
 require_once __DIR__ . '/google.php';
 require_once __DIR__ . '/stripe.php';
 require_once __DIR__ . '/emails.php';
+require_once __DIR__ . '/account.php';
 
 function json_out(array $data, int $code = 200): void {
     http_response_code($code);
@@ -38,7 +39,10 @@ function start_session(): void {
 function current_customer(): ?array {
     start_session();
     $email = $_SESSION['email'] ?? null;
-    return $email ? get_customer($email) : null;
+    $cust = $email ? get_customer($email) : null;
+    // password changes / "log out everywhere" bump the version and invalidate older sessions
+    if ($cust && (int)($_SESSION['sv'] ?? 0) !== (int)($cust['sessionVersion'] ?? 0)) { $_SESSION = []; return null; }
+    return $cust;
 }
 
 /** What the customer dashboard gets to see of an order. */
@@ -186,10 +190,8 @@ function action_login(): void {
     $email = strtolower(clean($d['email'] ?? '', 200));
     $cust = is_email($email) ? get_customer($email) : null;
     if (!$cust || !password_verify((string)($d['password'] ?? ''), $cust['passwordHash'])) fail(401, 'invalid_login');
-    start_session();
-    session_regenerate_id(true);
-    $_SESSION['email'] = $email;
-    json_out(['ok' => true, 'customer' => ['email' => $cust['email'], 'name' => $cust['name']], 'orders' => customer_orders($cust)]);
+    login_customer($cust);
+    json_out(['ok' => true, 'customer' => ['email' => $cust['email'], 'name' => $cust['name']], 'account' => customer_profile($cust), 'orders' => customer_orders($cust)]);
 }
 
 function action_logout(): void {
@@ -203,7 +205,7 @@ function action_logout(): void {
 function action_me(): void {
     $cust = current_customer();
     if (!$cust) json_out(['ok' => false, 'error' => 'not_logged_in']);
-    json_out(['ok' => true, 'customer' => ['email' => $cust['email'], 'name' => $cust['name']], 'orders' => customer_orders($cust)]);
+    json_out(['ok' => true, 'customer' => ['email' => $cust['email'], 'name' => $cust['name']], 'account' => customer_profile($cust), 'orders' => customer_orders($cust)]);
 }
 
 function action_message(): void {
@@ -221,18 +223,6 @@ function action_message(): void {
     });
     if ($o) mail_customer_message($o, $text);
     json_out(['ok' => true, 'orders' => customer_orders($cust)]);
-}
-
-function action_reset(): void {
-    $d = json_body();
-    if (!rate_ok('reset', 5)) fail(429, 'too_many_requests');
-    $email = strtolower(clean($d['email'] ?? '', 200));
-    if (is_email($email) && get_customer($email)) {
-        $pw = new_password();
-        $cust = store_update('customers', customer_key($email), function (?array $c) use ($pw) { if (!$c) return null; $c['passwordHash'] = password_hash($pw, PASSWORD_DEFAULT); return $c; });
-        if ($cust) mail_password_reset($cust, $pw);
-    }
-    json_out(['ok' => true]); // same answer either way
 }
 
 /** Redirects to Stripe Checkout (or the manual payment link) for the unpaid removed reviews. */

@@ -132,9 +132,46 @@ function mail_customer_message(array $order, string $text): void {
     send_mail(TEAM_EMAIL, "Support message {$order['id']} – {$order['customer']['name']}", $body, $order['customer']['email']);
 }
 
-function mail_password_reset(array $customer, string $password): void {
-    $body = 'Hi ' . first_name($customer['name']) . ",\n\nhere is your new password for the byereviews dashboard:\n\nLogin: {$customer['email']}\nPassword: $password\n\n" . SITE_URL . "/login/\n\nIf you didn't ask for this, you can ignore this email – only you receive the new password.\n\nThe byereviews team\n";
-    send_mail($customer['email'], 'Your new byereviews password', $body);
+/** Short designed notice: headline, paragraph(s), optional button. */
+function mail_notice(string $to, string $subject, string $title, array $paras, ?array $button = null, string $foot = ''): void {
+    $html = '<h1 style="margin:0 0 14px;font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1.15">' . eh($title) . '</h1>';
+    foreach ($paras as $p) $html .= '<p style="margin:0 0 14px;font-size:15px;line-height:1.55;color:#444">' . $p . '</p>';
+    if ($button) $html .= '<p style="margin:18px 0 0">' . email_button($button[1], $button[0]) . '</p>';
+    if ($foot !== '') $html .= '<p style="margin:18px 0 0;font-size:13px;color:#8A8A8A">' . $foot . '</p>';
+    $text = $title . "\n\n" . implode("\n\n", array_map(fn($p) => html_entity_decode(strip_tags($p), ENT_QUOTES, 'UTF-8'), $paras))
+        . ($button ? "\n\n{$button[0]}: {$button[1]}" : '') . ($foot !== '' ? "\n\n" . html_entity_decode(strip_tags($foot), ENT_QUOTES, 'UTF-8') : '') . "\n";
+    send_mail($to, $subject, $text, '', email_layout($html));
+}
+
+function mail_reset_link(array $cust, string $link): void {
+    mail_notice($cust['email'], 'Reset your byereviews password', 'Reset your password',
+        ['Hi ' . eh(first_name($cust['name'])) . ', click the button to choose a new password for your byereviews dashboard. The link is valid for 1 hour.'],
+        ['Set a new password', $link], "Didn't ask for this? Ignore this email – your password stays the same.");
+}
+
+function mail_confirm_email(array $cust, string $newEmail, string $link): void {
+    mail_notice($newEmail, 'Confirm your new email address', 'Confirm your new email address',
+        ['Hi ' . eh(first_name($cust['name'])) . ', please confirm that <strong>' . eh($newEmail) . '</strong> should be the new login for your byereviews account. The link is valid for 24 hours.'],
+        ['Confirm email address', $link], "Didn't ask for this? Ignore this email – nothing changes.");
+}
+
+function mail_email_changed(array $cust, string $oldEmail): void {
+    mail_notice($oldEmail, 'Your byereviews email address was changed', 'Your email address was changed',
+        ['Hi ' . eh(first_name($cust['name'])) . ', the login email of your byereviews account was changed to <strong>' . eh($cust['email']) . '</strong>. All further emails go to the new address.'],
+        null, 'Wasn\'t you? Contact us right away at <a href="mailto:' . TEAM_EMAIL . '" style="color:#151515">' . TEAM_EMAIL . '</a>.');
+}
+
+function mail_password_changed(array $cust): void {
+    mail_notice($cust['email'], 'Your byereviews password was changed', 'Your password was changed',
+        ['Hi ' . eh(first_name($cust['name'])) . ', the password of your byereviews account was just changed. Other devices were logged out.'],
+        ['Go to dashboard', SITE_URL . '/dashboard/'], 'Wasn\'t you? Reset your password on the login page and contact us at <a href="mailto:' . TEAM_EMAIL . '" style="color:#151515">' . TEAM_EMAIL . '</a>.');
+}
+
+function mail_deletion_requested(array $cust): void {
+    mail_notice($cust['email'], 'Deletion request received', 'Deletion request received',
+        ['Hi ' . eh(first_name($cust['name'])) . ', we\'ve received your request to delete your byereviews account.',
+         'Open orders and invoices must be kept for legal reasons; your personal data is deleted as soon as that\'s no longer required. We\'ll confirm by email once it\'s done.']);
+    send_mail(TEAM_EMAIL, 'Account deletion requested – ' . $cust['email'], "Customer {$cust['name']} <{$cust['email']}> requested account deletion.\nOrders: " . implode(', ', $cust['orders'] ?? []) . "\n", $cust['email']);
 }
 
 function mail_paid(array $order): void {

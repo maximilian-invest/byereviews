@@ -79,7 +79,7 @@ input,textarea,select,button{font-family:inherit}
     <a href="/" onClick="{{ goHome }}" style="display:flex;align-items:center;padding:8px 14px 8px 8px">
       <img src="/assets/byereviews-logo.png" alt="byereviews" style="height:22px;width:auto;display:block">
     </a>
-    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ siteNavDesk }}" hint-placeholder-val="{{ true }}">
     <a href="/#how" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">How it works</a>
     <a href="/#pricing" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">Pricing</a>
     <a href="/#cases" onClick="{{ goHome }}" style="padding:8px 12px;font-size:15px;color:#555">Cases</a>
@@ -89,12 +89,12 @@ input,textarea,select,button{font-family:inherit}
     </sc-if>
   </nav>
   <div style="display:flex;align-items:center;gap:8px">
-    <sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ siteNavMob }}" hint-placeholder-val="{{ false }}">
       <button onClick="{{ toggleMenu }}" aria-label="Menu" style="width:52px;height:52px;border:0;cursor:pointer;background:#FFFFFF;border-radius:18px;display:flex;align-items:center;justify-content:center;flex:none">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="{{ burgerPath }}" stroke="#151515" stroke-width="1.8" stroke-linecap="round"></path></svg>
       </button>
     </sc-if>
-    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ siteNavDesk }}" hint-placeholder-val="{{ true }}">
     <a href="/order/" onClick="{{ goOrder }}" style="display:flex;align-items:center;gap:14px;background:#FFFFFF;border:0;border-radius:18px;padding:6px 16px 6px 6px;cursor:pointer;font-size:15px;font-weight:500;color:#151515;white-space:nowrap">
       <span style="width:40px;height:40px;flex:none;background:#151515;border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
       {{ headerCta }}
@@ -349,6 +349,7 @@ input,textarea,select,button{font-family:inherit}
 
 <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
 <section data-screen-label="Login" style="padding:clamp(40px,8vw,96px) 0;display:flex;justify-content:center">
+<sc-if value="{{ loginMode }}" hint-placeholder-val="{{ true }}">
   <div style="width:100%;max-width:440px;background:#FFFFFF;border-radius:28px;padding:clamp(24px,4vw,40px);display:flex;flex-direction:column;gap:16px">
     <h1 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Your</span> dashboard.</h1>
     <p style="margin:0;font-size:15px;color:#6B6B6B;line-height:1.5">Use the login details from your order confirmation email.</p>
@@ -358,6 +359,10 @@ input,textarea,select,button{font-family:inherit}
     <button onClick="{{ doLogin }}" style="height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:18px;font-size:16px;font-weight:500">{{ loginBtn }}</button>
     <button onClick="{{ doReset }}" style="border:0;background:transparent;cursor:pointer;font-size:14px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px">{{ resetLabel }}</button>
   </div>
+</sc-if>
+<sc-if value="{{ resetMode }}" hint-placeholder-val="{{ false }}">
+  <div style="width:100%;max-width:440px;background:#FFFFFF;border-radius:28px;padding:clamp(24px,4vw,40px);display:flex;flex-direction:column;gap:16px"><h1 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Set a</span> new password.</h1><sc-if value="{{ resetValid }}" hint-placeholder-val="{{ true }}"><p style="margin:0;font-size:15px;color:#6B6B6B;line-height:1.5">For {{ resetEmail }}. At least 10 characters.</p><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">New password</label><input type="password" value="{{ resetPw }}" onChange="{{ onResetPw }}" autocomplete="new-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Repeat new password</label><input type="password" value="{{ resetPw2 }}" onChange="{{ onResetPw2 }}" autocomplete="new-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><sc-if value="{{ resetError }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#6B6B6B">{{ resetErrorText }}</span></sc-if><button onClick="{{ doResetConfirm }}" style="height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:18px;font-size:16px;font-weight:500">Save password</button></sc-if><sc-if value="{{ resetExpired }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:15px;color:#6B6B6B;line-height:1.5">This link has expired or was already used. Enter your email on the login page and we'll send you a new one.</p><button onClick="{{ leaveReset }}" style="height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:18px;font-size:16px;font-weight:500">Send a new link</button></sc-if></div>
+</sc-if>
 </section>
 </sc-if>
 
@@ -366,7 +371,7 @@ input,textarea,select,button{font-family:inherit}
   <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:0 4px">
     <div style="display:flex;flex-direction:column;gap:8px">
       <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">// order {{ pOrderId }} · {{ pBiz }}</span>
-      <h1 style="margin:0;font-size:clamp(34px,4.4vw,56px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Hi {{ pFirst }},</span> here's your status.</h1>
+      <h1 style="margin:0;font-size:clamp(34px,4.4vw,56px);font-weight:500;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Hi {{ pFirst }},</span> here's your status.</h1><sc-if value="{{ hasAccNotice }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:500;background:#FFFFFF;border-radius:12px;padding:8px 12px;align-self:flex-start">{{ accNotice }}</span></sc-if>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button onClick="{{ newOrder }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:500">+ New order</button>
@@ -468,6 +473,7 @@ input,textarea,select,button{font-family:inherit}
   </div>
   </sc-if>
 
+<sc-if value="{{ pTabSettings }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:12px;max-width:760px"><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px"><span style="font-size:18px;font-weight:500">Profile</span><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px"><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Full name</label><input type="text" value="{{ acc.name }}" onChange="{{ acc.onName }}" autocomplete="name" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Company</label><input type="text" value="{{ acc.company }}" onChange="{{ acc.onCompany }}" autocomplete="organization" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Phone</label><input type="tel" value="{{ acc.phone }}" onChange="{{ acc.onPhone }}" autocomplete="tel" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Street</label><input type="text" value="{{ acc.street }}" onChange="{{ acc.onStreet }}" autocomplete="street-address" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">ZIP &amp; city</label><input type="text" value="{{ acc.city }}" onChange="{{ acc.onCity }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Country</label><select value="{{ acc.country }}" onChange="{{ acc.onCountry }}" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"><sc-for list="{{ countries }}" as="c" hint-placeholder-count="3"><option value="{{ c }}">{{ c }}</option></sc-for></select></div></div><button onClick="{{ acc.saveProfile }}" style="align-self:flex-start;height:48px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 20px;font-size:15px;font-weight:500">Save changes</button></div><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px"><span style="font-size:18px;font-weight:500">Email address</span><span style="font-size:15px">{{ acc.email }}</span><sc-if value="{{ acc.hasPending }}" hint-placeholder-val="{{ false }}"><div style="background:#F4F4F4;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.5;color:#333"><span>Confirm your new address – we sent a link to <strong style="font-weight:500">{{ acc.pending }}</strong> (valid 24 h). Until then you log in with {{ acc.email }}.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ acc.resendEmail }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Resend link</button><button onClick="{{ acc.cancelEmail }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Cancel change</button></div></div></sc-if><sc-if value="{{ acc.showEmailForm }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px"><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">New email</label><input type="email" value="{{ acc.newEmail }}" onChange="{{ acc.onNewEmail }}" autocomplete="email" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Current password</label><input type="password" value="{{ acc.emailPw }}" onChange="{{ acc.onEmailPw }}" autocomplete="current-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div></div><button onClick="{{ acc.saveEmail }}" style="align-self:flex-start;height:48px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 20px;font-size:15px;font-weight:500">Send confirmation link</button></sc-if><sc-if value="{{ acc.showEmailBtn }}" hint-placeholder-val="{{ true }}"><button onClick="{{ acc.openEmail }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Change email</button></sc-if></div><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px"><span style="font-size:18px;font-weight:500">Password</span><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:12px"><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Current password</label><input type="password" value="{{ acc.pwCur }}" onChange="{{ acc.onPwCur }}" autocomplete="current-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">New password</label><input type="password" value="{{ acc.pwNew }}" onChange="{{ acc.onPwNew }}" autocomplete="new-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Repeat new password</label><input type="password" value="{{ acc.pwRep }}" onChange="{{ acc.onPwRep }}" autocomplete="new-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div></div><span style="font-size:13px;color:#6B6B6B">At least 10 characters. Other devices are logged out after the change.</span><button onClick="{{ acc.savePw }}" style="align-self:flex-start;height:48px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 20px;font-size:15px;font-weight:500">Change password</button></div><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px"><span style="font-size:18px;font-weight:500">Sessions</span><span style="font-size:14px;color:#6B6B6B;line-height:1.5">Logged in on a shared or lost device? Log out everywhere except here.</span><button onClick="{{ acc.logoutAll }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Log out on all devices</button></div><div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px;border:1px solid #D2D2D2"><span style="font-size:18px;font-weight:500">Delete account</span><span style="font-size:14px;color:#6B6B6B;line-height:1.5">Open orders and invoices must be kept for legal reasons; your personal data is deleted as soon as that's no longer required.</span><sc-if value="{{ acc.deletionRequested }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:500">Deletion requested on {{ acc.deletionDate }}</span></sc-if><sc-if value="{{ acc.showDelete }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end"><div style="flex:1 1 220px"><div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:14px;font-weight:500">Password</label><input type="password" value="{{ acc.delPw }}" onChange="{{ acc.onDelPw }}" autocomplete="current-password" style="border:1px solid #D2D2D2;background:#F7F7F7;border-radius:16px;padding:14px 16px;font-size:16px;outline:none;width:100%"></div></div><button onClick="{{ acc.requestDelete }}" style="align-self:flex-start;height:44px;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:14px;padding:0 16px;font-size:14px;font-weight:500">Request deletion</button></div></sc-if></div><sc-if value="{{ acc.hasMsg }}" hint-placeholder-val="{{ false }}"><div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:200;background:#151515;color:#fff;border-radius:16px;padding:14px 18px;font-size:14px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px)">{{ acc.msg }}</div></sc-if></div></sc-if>
   <sc-if value="{{ pTabSupport }}" hint-placeholder-val="{{ false }}">
   <div style="background:#FFFFFF;border-radius:24px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span style="font-size:18px;font-weight:500">Support</span><span style="font-size:13px;color:#6B6B6B;display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#151515;display:block"></span>Usually replies within 2 hours</span></div>
@@ -1248,7 +1254,8 @@ class Component extends DCLogic {
     return fetch('/order.php?a=' + action + q, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
   }
   state = Object.assign({}, this.state, { places: [], placeReviews: [], reviewsStatus: 'idle', reviewsComplete: true, emailKnown: false,
-    customer: null, orders: [], orderIdx: 0, submitting: false, submitError: '', loginBusy: false, resetSent: false });
+    customer: null, orders: [], orderIdx: 0, submitting: false, submitError: '', loginBusy: false, resetSent: false,
+    account: null, af: {}, accMsg: '', resetToken: '', resetState: '', resetEmail: '', resetPw: '', resetPw2: '', resetErr: '' });
 
   // ---------- funnel tracking (first-party, no cookies, no IP stored; see app/analytics.php) ----------
   track(ev, extra) {
@@ -1293,8 +1300,14 @@ class Component extends DCLogic {
     window.addEventListener('hashchange', this.onHashNav);
     this.onPop = () => { const pv = this.viewFromPath(); const nv = pv === 'portal' && !this.state.portalIn ? 'login' : pv; this._lastView = nv; this.setState({ view: nv, menuOpen: false }); };
     window.addEventListener('popstate', this.onPop);
+    const qs = new URLSearchParams(location.search);
+    const rt = qs.get('reset');
+    if (rt) { this.setState({ resetToken: rt, resetState: 'checking', view: 'login' }); this.api('reset-check', { query: { t: rt } }).then(r => this.setState({ resetState: r.ok ? 'valid' : 'expired', resetEmail: r.email || '' })); }
+    const em = qs.get('email');
+    if (em) this.setState({ accNotice: em === 'changed' ? '✓ Your new email address is confirmed.' : 'That confirmation link is invalid or has expired.' });
     this.api('me').then(r => {
       if (!r.ok) return;
+      this.setAccount(r.account);
       this.setState({ customer: r.customer, orders: r.orders || [], portalIn: true, loginEmail: r.customer.email,
         view: (want === 'portal' || want === 'login') ? 'portal' : this.state.view });
     });
@@ -1418,6 +1431,7 @@ class Component extends DCLogic {
     this.setState({ loginBusy: true, loginError: false });
     this.api('login', { body: { email: (s.loginEmail || '').trim(), password: s.loginPass || '' } }).then(r => {
       if (!r.ok) return this.setState({ loginBusy: false, loginError: true, loginErrorText: r.error === 'too_many_requests' ? 'Too many attempts – please wait a few minutes.' : "Email or password doesn't match." });
+      this.setAccount(r.account);
       this.setState({ loginBusy: false, customer: r.customer, orders: r.orders || [], orderIdx: 0, portalIn: true, portalTab: 'overview', view: 'portal', loginPass: '' });
       window.scrollTo({ top: 0 });
     });
@@ -1427,6 +1441,63 @@ class Component extends DCLogic {
     if (!/\S+@\S+\.\S+/.test(email)) return this.setState({ loginError: true, loginErrorText: 'Enter your email above first.' });
     this.api('reset', { body: { email } }).then(() => this.setState({ resetSent: true, loginError: false }));
   }
+  // ---------- account settings ----------
+  setAccount(a) {
+    if (!a) return;
+    this.setState({ account: a, af: { name: a.name || '', company: a.company || '', phone: a.phone || '', street: a.street || '', city: a.city || '', country: a.country || this.state.country,
+      newEmail: '', emailPw: '', emailOpen: false, pwCur: '', pwNew: '', pwRep: '', delPw: '' } });
+  }
+  accToast(m) { clearTimeout(this.accT); this.setState({ accMsg: m }); this.accT = setTimeout(() => this.setState({ accMsg: '' }), 3200); }
+  accErr(r) {
+    return { wrong_password: 'Wrong password.', password_too_short: 'The new password needs at least 10 characters.', email_taken: 'This email already has an account.',
+      invalid_email: 'Please enter a valid email address.', same_email: "That's already your email.", too_many_requests: 'Too many attempts – please wait a few minutes.',
+      name_missing: 'Please enter your name.', not_logged_in: 'Your session has expired – please log in again.' }[r.error] || 'Something went wrong – please try again.';
+  }
+  accVals() {
+    const s = this.state, a = s.account || {}, f = s.af || {};
+    const set = k => e => this.setState({ af: { ...this.state.af, [k]: e.target.value } });
+    const call = (action, body, okMsg, after) => this.api(action, { body }).then(r => {
+      if (!r.ok) { this.accToast(this.accErr(r)); if (r.error === 'not_logged_in') this.setState({ portalIn: false, view: 'login' }); return; }
+      if (r.account) this.setAccount(r.account);
+      if (after) after(r);
+      if (okMsg) this.accToast(okMsg);
+    });
+    return {
+      email: a.email || '', pending: a.pendingEmail || '', hasPending: !!a.pendingEmail,
+      showEmailForm: !a.pendingEmail && !!f.emailOpen, showEmailBtn: !a.pendingEmail && !f.emailOpen,
+      name: f.name, company: f.company, phone: f.phone, street: f.street, city: f.city, country: f.country,
+      onName: set('name'), onCompany: set('company'), onPhone: set('phone'), onStreet: set('street'), onCity: set('city'), onCountry: set('country'),
+      newEmail: f.newEmail, emailPw: f.emailPw, onNewEmail: set('newEmail'), onEmailPw: set('emailPw'),
+      pwCur: f.pwCur, pwNew: f.pwNew, pwRep: f.pwRep, onPwCur: set('pwCur'), onPwNew: set('pwNew'), onPwRep: set('pwRep'),
+      delPw: f.delPw, onDelPw: set('delPw'),
+      deletionRequested: !!a.deletionRequestedAt, showDelete: !a.deletionRequestedAt,
+      deletionDate: a.deletionRequestedAt ? new Date(a.deletionRequestedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+      hasMsg: !!s.accMsg, msg: s.accMsg,
+      saveProfile: () => call('account-profile', { name: f.name, company: f.company, phone: f.phone, street: f.street, city: f.city, country: f.country }, 'Profile saved',
+        r => this.setState(st => ({ customer: { ...st.customer, name: r.account.name } }))),
+      openEmail: () => this.setState({ af: { ...f, emailOpen: true } }),
+      saveEmail: () => call('account-email', { email: (f.newEmail || '').trim(), password: f.emailPw || '' }, 'Confirmation link sent to ' + (f.newEmail || '').trim()),
+      resendEmail: () => call('account-email', { email: a.pendingEmail, password: f.emailPw || '' }, 'Link sent again'),
+      cancelEmail: () => call('account-email-cancel', {}, 'Email change cancelled'),
+      savePw: () => {
+        if ((f.pwNew || '') !== (f.pwRep || '')) return this.accToast("The new passwords don't match.");
+        call('account-password', { current: f.pwCur || '', password: f.pwNew || '' }, 'Password changed – other devices were logged out', () => this.setState({ af: { ...this.state.af, pwCur: '', pwNew: '', pwRep: '' } }));
+      },
+      logoutAll: () => call('account-logout-all', {}, 'Logged out on all other devices'),
+      requestDelete: () => { if (!confirm('Request deletion of your byereviews account?')) return; call('account-delete', { password: f.delPw || '' }, 'Deletion request received'); }
+    };
+  }
+  doResetConfirm() {
+    const s = this.state;
+    if (s.resetPw !== s.resetPw2) return this.setState({ resetErr: "The passwords don't match." });
+    this.api('reset-confirm', { body: { token: s.resetToken, password: s.resetPw } }).then(r => {
+      if (!r.ok) return r.error === 'link_expired' ? this.setState({ resetState: 'expired' }) : this.setState({ resetErr: this.accErr(r) });
+      history.replaceState(null, '', '/login/');
+      this.setAccount(r.account);
+      this.setState({ resetToken: '', resetState: '', resetPw: '', resetPw2: '', resetErr: '', customer: r.customer, orders: r.orders || [], orderIdx: 0, portalIn: true, portalTab: 'overview', view: 'portal', accNotice: '✓ Password updated.' });
+    });
+  }
+
   realPortal() {
     const s = this.state, o = (s.orders || [])[s.orderIdx || 0];
     if (!s.customer || !o) return null;
@@ -1469,8 +1540,9 @@ class Component extends DCLogic {
       pLines: removed.map(i => ({ label: i.name + ' · ' + (i.price === 90 ? '≤ 4 weeks' : '> 4 weeks'), amount: fmt(i.price) })),
       pHasDisc: inv.rate > 0, pDiscPct: Math.round(inv.rate * 100) + '%', pDiscAmt: '– ' + fmt(inv.discount), pInvTotal: fmt(inv.total),
       pMsgs: msgs, sendSupport: send, onSupportKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } },
-      pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pShowChatFab: tab !== 'support', pUnread: unread, openSupport: () => goTab('support'),
-      pTabs: [['overview', 'Overview'], ['support', 'Support']].map(([k, label]) => ({ label, go: () => goTab(k), bg: tab === k ? '#151515' : 'transparent', fg: tab === k ? '#FFFFFF' : '#555', hasDot: k === 'support' && unread, dot: '1', dotBg: '#151515', dotFg: '#FFFFFF' })),
+      pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pShowChatFab: tab === 'overview', pUnread: unread, openSupport: () => goTab('support'),
+      pTabSettings: tab === 'settings', acc: this.accVals(),
+      pTabs: [['overview', 'Overview'], ['support', 'Support'], ['settings', 'Settings']].map(([k, label]) => ({ label, go: () => goTab(k), bg: tab === k ? '#151515' : 'transparent', fg: tab === k ? '#FFFFFF' : '#555', hasDot: k === 'support' && unread, dot: '1', dotBg: '#151515', dotFg: '#FFFFFF' })),
       hasOrderSwitch: s.orders.length > 1,
       orderChips: s.orders.map((x, i) => ({ label: x.id, go: () => this.setState({ orderIdx: i }), bg: i === (s.orderIdx || 0) ? '#151515' : '#FFFFFF', fg: i === (s.orderIdx || 0) ? '#FFFFFF' : '#555' })),
       logout: () => { this.api('logout', { body: {} }); this.setState({ portalIn: false, customer: null, orders: [], view: 'login', loginPass: '' }); window.scrollTo({ top: 0 }); }
@@ -1489,9 +1561,15 @@ class Component extends DCLogic {
       error: s.submitError || v.error, hasError: !!s.submitError || v.hasError, navInfo: s.submitError || v.navInfo,
       emailKnown: !!s.emailKnown,
       onEmail: e => { const email = e.target.value; this.setState({ email }); this.checkEmail(email.trim()); },
+      siteNavDesk: v.desktop && s.view !== 'portal', siteNavMob: v.mobile && s.view !== 'portal',
+      hasAccNotice: !!s.accNotice && s.view === 'portal', accNotice: s.accNotice || '',
+      loginMode: !s.resetToken, resetMode: !!s.resetToken, resetValid: s.resetState === 'valid', resetExpired: s.resetState === 'expired',
+      resetEmail: s.resetEmail, resetPw: s.resetPw, resetPw2: s.resetPw2, onResetPw: e => this.setState({ resetPw: e.target.value, resetErr: '' }), onResetPw2: e => this.setState({ resetPw2: e.target.value, resetErr: '' }),
+      resetError: !!s.resetErr, resetErrorText: s.resetErr, doResetConfirm: () => this.doResetConfirm(),
+      leaveReset: () => { history.replaceState(null, '', '/login/'); this.setState({ resetToken: '', resetState: '' }); },
       loginErrorText: s.loginErrorText || "Email or password doesn't match.",
       loginBtn: s.loginBusy ? 'Logging in…' : 'Log in',
-      doReset: () => this.doReset(), resetLabel: s.resetSent ? '✓ If the email has an account, a new password is on its way' : 'Forgot your password?',
+      doReset: () => this.doReset(), resetLabel: s.resetSent ? '✓ If an account exists for this address, a reset link is on its way (valid 1 h)' : 'Forgot your password?',
       openPortalAuto: () => { this.setState({ view: s.portalIn ? 'portal' : 'login', loginEmail: s.email, loginPass: '', loginError: false }); window.scrollTo({ top: 0 }); },
       successText: s.newAccount ? "We've created your personal dashboard and emailed your login details to " + s.email + '.' : 'This order was added to your existing account (' + s.email + '). Log in with your existing password.',
       reviewsLoading: s.reviewsStatus === 'loading', reviewsPartial: s.reviewsStatus === 'done' && !s.reviewsComplete, reviewsFailed: s.reviewsStatus === 'error',
@@ -1507,7 +1585,7 @@ class Component extends DCLogic {
     });
     const real = this.realPortal();
     if (real) Object.assign(v, real);
-    else Object.assign(v, { hasOrderSwitch: false, orderChips: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
+    else Object.assign(v, { pTabSettings: false, acc: {}, hasOrderSwitch: false, orderChips: [], pOrderId: '', pBiz: '', pFirst: 'there', pEmail: '' });
     return v;
   }
 

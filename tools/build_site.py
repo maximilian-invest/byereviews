@@ -154,6 +154,9 @@ rep('        <sc-for list="{{ profileReviews }}" as="p" hint-placeholder-count="
 rep('<div style="background:#FFFFFF;border-radius:20px;padding:24px;font-size:15px;color:#6B6B6B;text-align:center">No reviews match.</div></sc-if>',
     '<div style="background:#FFFFFF;border-radius:20px;padding:24px;font-size:15px;color:#6B6B6B;text-align:center">No reviews match.</div></sc-if>\n        <sc-if value="{{ reviewsPartial }}" hint-placeholder-val="{{ false }}"><div style="padding:4px 6px;font-size:13px;color:#6B6B6B">Showing the reviews Google shares publicly. Missing one? Add it by link below.</div></sc-if>')
 
+# logged-in customer area: app header, Settings tab, reset-password card
+exec((ROOT / 'tools' / 'site_account_patch.py').read_text(encoding='utf-8'))
+
 # logic: keep the design's methods under new names, inject the production layer
 for old, new in [('  componentDidMount() {', '  _designDidMount() {'), ('  renderVals() {', '  _designRenderVals() {'),
                  ('  doLogin() {', '  _designDoLogin() {'), ('  findBiz() {', '  _designFindBiz() {'), ('  lookup(id, value) {', '  _designLookup(id, value) {')]:

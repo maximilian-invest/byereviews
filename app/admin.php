@@ -215,10 +215,9 @@ function action_admin_resetpw(): void {
     admin_required();
     $d = json_body();
     $o = store_get('order', clean($d['order'] ?? '', 20)) ?? fail(404, 'order_not_found');
-    $pw = new_password();
-    $cust = store_update('customers', customer_key($o['customer']['email']), function (?array $c) use ($pw) { if (!$c) return null; $c['passwordHash'] = password_hash($pw, PASSWORD_DEFAULT); return $c; });
+    $cust = get_customer($o['customer']['email']);
     if (!$cust) fail(404, 'customer_not_found');
-    mail_password_reset($cust, $pw);
+    send_reset_link($cust); // the customer sets a new password via the link
     json_out(['ok' => true, 'email' => $cust['email']]);
 }
 
