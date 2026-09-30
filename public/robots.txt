@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /orders/
+Disallow: /admin/
+Disallow: /dashboard/
 Sitemap: https://byereviews.com/sitemap.xml

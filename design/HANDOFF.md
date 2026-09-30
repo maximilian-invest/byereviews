@@ -140,9 +140,55 @@ Order: id (`BR-#####`), customer (email, name, company, phone, street, city, cou
 - Confetti: canvas particles, gravity, ~4.5s.
 - Mobile ≥ 44px hit targets; fixed bottom bars on mobile landing / order flow / blog.
 
+
+---
+
+## Admin panel (`byereviews Admin.dc.html`) – internal, English UI
+
+A dark prototype bar at the very top switches between **Admin**, **Customer dashboard**, **Email · Status update**, **Email · Payment**, plus "Show empty state". This bar is NOT part of the product.
+
+Same visual system as the site (canvas `#EEEEEE`, white cards radius 22–28, black pill buttons, Geist 600 headlines). Desktop first, fully usable on mobile (< 760px: single column, table rows condensed).
+
+### A1. Login
+Card: logo, "Admin sign in.", Email, Password, "Sign in".
+
+### A2. Orders (home)
+- 4 KPI tiles: Open orders · Reviews in progress · Payment open (€) · Paid this month (€, black tile).
+- Filter tabs with counts: All / New / In progress / Awaiting payment / Paid / Closed + search (customer, company, order ID).
+- Rows: Order ID (mono) · Company · Customer · "x of y removed" + 5px progress bar · Amount · payment chip (Unpaid grey / Link sent outlined / Paid black) · Date. Row click → detail.
+- Empty states: "No orders yet – New orders from byereviews.com will show up here automatically." / "Nothing matches".
+- Filter definitions: New = all reviews submitted; In progress = ≥1 in progress; Awaiting payment = removed total > 0 and not paid; Paid; Closed = nothing active and (paid or nothing billable).
+
+### A3. Order detail
+Header: "← All orders", `BR-xxxxx · date`, company H1, payment chip. Layout: main column + 360px sticky sidebar (desktop).
+- **Reviews card:** per review → checkbox (only submitted / in progress selectable), author + stars (nowrap), price + recent/older, text truncated at 90 chars with "more/less", "Open on Google ↗", "Sent via WhatsApp · date, time" when sent. Status segment control **Submitted / In progress / Removed / Not eligible** – saves instantly, row flashes, toast **"Saved · Customer notified by email"** (triggers status-update email). Quick action "✓ Mark as removed".
+- **WhatsApp to removal partner:** selection bar "N selected · Clear · Send via WhatsApp" + one-click "Send all open via WhatsApp" (all *submitted*). Opens `https://wa.me/{partnerNumber}?text={encoded}` built from the Settings template; placeholders `{order_id} {company} {profile_link} {reviews}` where `{reviews}` = numbered lines `1. Author – 1★ – reviewLink`. Sent reviews auto-switch to **In progress** and store `sentAt`. Toast "N reviews sent via WhatsApp · set to In progress".
+- **Payment card:** "x removed / subtotal", "Volume discount x%", Total. States: nothing billable → hint; unpaid → big "Send payment link" (creates Stripe Payment Link for total, emails customer, shows in customer dashboard); link sent → copyable link + "Resend" + "Mark as paid manually" (+ prototype-only "Simulate Stripe payment"); paid → black success card "Paid €x · date · via Stripe". Stripe webhook sets Paid automatically. Changing a removed review back while link is sent resets payment to unpaid (regenerate link).
+- **Customer card:** name, company, email, phone, address, country; buttons "Email" (mailto) and "WhatsApp customer" (wa.me/customerPhone); side action "Send new password"; business block (name, address, rating + review count at order, "Google profile ↗").
+- **Messages card:** thread (team = black bubbles right) + reply field → goes to customer dashboard + email. Toast "Sent to customer dashboard & email".
+
+### A4. Settings
+Removal partner WhatsApp number · WhatsApp message template (textarea, placeholder chips) · Sender email · Stripe status (Connected / account id) · "Save settings".
+
+### A5. Analytics
+Range switch 7 / 30 / 90 days / All, "compared to previous period".
+- 5 KPI tiles in one row (2 cols mobile) with sparkline + delta chip (green `#1E8E3E` on `#E6F4EA` / red `#D93025` on `#FCE8E6`): Profiles checked · Orders · Conversion (orders ÷ profiles checked) · Revenue paid · Removal rate (removed ÷ finished reviews).
+- **Funnel "Where people drop off"** (full width): Visited order page → Started search → Selected profile → Selected ≥ 1 review → Entered contact → Submitted order → Paid. Bar + absolute + % of start + "↓ x% drop" between steps; largest drop red, named in header.
+- 2-column grid: Profile checks vs. orders (line chart per day, bucketed to ≤30 points) · Revenue per week (stacked bars paid black / open `#D2D2D2`) · Where visitors come from (country bars + traffic sources: Google search, Blog articles, Direct, Instagram) · Reviews donut (Submitted / In progress / Removed / Not eligible) + "Ø days until removed".
+- **Recently checked** table: Company · Country · Rating · Reviews · 1–3★ shown · Reached step · When · action. Rows without order = **hot lead** (red dot, tinted row `#FFF7F6`, button "Open Google profile ↗").
+- Footer bar: **SerpApi this month** used / quota progress (red above 80%).
+- Empty: "No data yet – Stats appear after the first visitors."
+- Tracking needed: events per funnel step (with session id, country, UTM/referrer), SerpApi usage from its account API.
+
+### Customer-side screens triggered by admin actions
+- **C1. Customer dashboard – order:** timeline Submitted → In progress → Removed → Paid; black card "X reviews removed – pay €Y · Due today · secure checkout via Stripe" + "Pay now" (→ Stripe Checkout) when a payment is open; review list with status chips, reviews changed today outlined black + "● Updated today"; paid state "Paid – thank you. Your profile is clean."
+- **C2. Email "Status update":** subject "Status update on your order BR-xxxxx"; "Update on your reviews", list of changed reviews with new status chip, button "View in dashboard".
+- **C3. Email "Review removed – payment":** subject "N reviews removed – €X due"; "Good news – N reviews are gone.", list of removed reviews (struck-through excerpt + price), discount, "Total due today", primary "Pay now" (Stripe Checkout), secondary "View in dashboard"; footer "You only pay for reviews that were actually removed. Questions? Just reply to this email."
+
 ## Files
 - `byereviews Site.dc.html` – landing, order flow, success, login, dashboard (all views in one file; see the `renderVals` / `renderBase` / `portalVals` logic for state and rules).
 - `byereviews Blog.dc.html` – blog index + article template.
+- `byereviews Admin.dc.html` – internal admin panel (orders, order detail, WhatsApp partner flow, payments, settings, analytics) + customer dashboard & the two emails triggered by admin actions.
 - `blog-posts.json` – all 10 posts (title, slug, keyword, cluster, lead, sections, FAQ, cover image) + linking map + author + CTA copy.
 - `assets/byereviews-logo.png` – logo.
 - `assets.html`, `download-assets.sh`, `download-assets.ps1`, `assets/manifest.json` – image & video download.

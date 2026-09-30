@@ -55,3 +55,38 @@ function stripe_verify_webhook(string $payload, string $sigHeader): ?array {
     foreach ($parts['v1'] ?? [] as $sig) if (hash_equals($expected, $sig)) return json_decode($payload, true) ?: null;
     return null;
 }
+
+/**
+ * Stripe Payment Link for the current invoice (removed reviews, volume discount applied).
+ * Returns ['url' => …, 'id' => …] or null when Stripe isn't configured / the call failed.
+ */
+function stripe_payment_link(array $order): ?array {
+    if (config('mock_stripe')) return ['url' => 'https://buy.stripe.com/test_' . strtolower($order['id']), 'id' => 'plink_test_' . $order['id']];
+    if ((string)config('stripe_secret_key', '') === '') return null;
+    $inv = invoice($order);
+    if ($inv['total'] <= 0) return null;
+    $name = 'Google review removal – order ' . $order['id'] . ' (' . $inv['n'] . ' removed' . ($inv['rate'] > 0 ? ', ' . round($inv['rate'] * 100) . '% volume discount' : '') . ')';
+    $price = stripe_request('POST', 'prices', ['currency' => strtolower($order['currency']), 'unit_amount' => (int)round($inv['total'] * 100), 'product_data[name]' => $name]);
+    if ($price['code'] !== 200 || empty($price['data']['id'])) { log_event('stripe price failed ' . $price['code'] . ' ' . substr((string)$price['raw'], 0, 300)); return null; }
+    $link = stripe_request('POST', 'payment_links', [
+        'line_items[0][price]' => $price['data']['id'], 'line_items[0][quantity]' => 1,
+        'metadata[order_id]' => $order['id'], 'payment_intent_data[metadata][order_id]' => $order['id'],
+        'after_completion[type]' => 'redirect', 'after_completion[redirect][url]' => SITE_URL . '/dashboard/?paid=1',
+    ]);
+    if ($link['code'] !== 200 || empty($link['data']['url'])) { log_event('stripe payment link failed ' . $link['code'] . ' ' . substr((string)$link['raw'], 0, 300)); return null; }
+    return ['url' => $link['data']['url'], 'id' => $link['data']['id']];
+}
+
+function stripe_deactivate_link(string $id): void {
+    if ($id !== '' && (string)config('stripe_secret_key', '') !== '') stripe_request('POST', 'payment_links/' . rawurlencode($id), ['active' => 'false']);
+}
+
+/** "Connected · acct_…" for the settings page. */
+function stripe_status(): array {
+    if ((string)config('stripe_secret_key', '') === '') return ['connected' => false, 'account' => ''];
+    if ($c = cache_get('stripe_account', 3600)) return $c;
+    $r = stripe_request('GET', 'account');
+    $out = ['connected' => $r['code'] === 200, 'account' => (string)($r['data']['id'] ?? '')];
+    cache_put('stripe_account', $out);
+    return $out;
+}

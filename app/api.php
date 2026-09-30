@@ -245,7 +245,7 @@ function action_pay(): void {
     $tokenOk = $o && !empty($o['payToken']) && hash_equals($o['payToken'], (string)($_GET['t'] ?? ''));
     if (!$o || (!$owner && !$tokenOk)) { header('Location: /login/'); exit; }
     if (($o['payment']['status'] ?? '') === 'paid' || invoice($o)['total'] <= 0) { header('Location: /dashboard/'); exit; }
-    $url = stripe_checkout_url($o) ?? ($o['payment']['manualLink'] ?? null);
+    $url = (($o['payment']['status'] ?? '') === 'link_sent' && !empty($o['payment']['link'])) ? $o['payment']['link'] : (stripe_checkout_url($o) ?? ($o['payment']['manualLink'] ?? null));
     if (!$url) {
         header('Content-Type: text/plain; charset=utf-8');
         echo "Online payment isn't available right now. We'll email you a payment link – or write to " . TEAM_EMAIL . '.';
@@ -260,11 +260,14 @@ function action_stripe_webhook(): void {
     $event = stripe_verify_webhook($payload, $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '');
     if (!$event) fail(400, 'bad_signature');
     if (($event['type'] ?? '') === 'checkout.session.completed' && ($event['data']['object']['payment_status'] ?? '') === 'paid') {
-        $id = (string)($event['data']['object']['metadata']['order_id'] ?? '');
+        $obj = $event['data']['object'];
+        $id = (string)($obj['metadata']['order_id'] ?? '');
+        if ($id === '' && !empty($obj['payment_link'])) foreach (store_list('order') as $x) if (($x['payment']['linkId'] ?? '') === $obj['payment_link']) { $id = $x['id']; break; }
         $o = store_update('order', $id, function (?array $o) use ($event) {
             if (!$o) return null;
             $o['payment'] = array_merge($o['payment'], ['status' => 'paid', 'paidAt' => date('c'), 'amount' => ($event['data']['object']['amount_total'] ?? 0) / 100, 'stripeSession' => $event['data']['object']['id'] ?? '']);
             $o['timeline']['paid'] = date('c');
+            $o['payment']['via'] = 'Stripe';
             return $o;
         });
         if ($o) { log_event("order $id paid via stripe"); mail_paid($o); }

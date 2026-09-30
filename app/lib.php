@@ -189,6 +189,13 @@ function log_event(string $msg): void {
 // ---------- mail ----------
 // SMTP credentials: /etc/byereviews/smtp.php returning ['host','port','user','pass']. Without it PHP mail() is used.
 
+/** Admin settings (removal partner, WhatsApp template, sender) stored next to the data. */
+function app_settings(): array {
+    $d = store_get('settings', 'app') ?? [];
+    return $d + ['partnerNo' => '', 'sender' => TEAM_EMAIL,
+        'template' => "Hi! New removal request – {order_id}\n\nCompany: {company}\nGoogle profile: {profile_link}\n\n{reviews}\n\nThanks!"];
+}
+
 function smtp_config(): ?array {
     foreach (['/etc/byereviews/smtp.php', dirname(__DIR__) . '/smtp-config.php'] as $f) {
         if (is_readable($f)) { $c = require $f; if (is_array($c) && !empty($c['host'])) return $c; }
@@ -219,16 +226,31 @@ function smtp_send(array $c, string $to, string $subject, string $body, string $
     return $ok;
 }
 
-function send_mail(string $to, string $subject, string $body, string $replyTo = TEAM_EMAIL): bool {
+/** Plain-text mail, or multipart/alternative when $html is given. */
+function send_mail(string $to, string $subject, string $body, string $replyTo = '', ?string $html = null): bool {
     $enc = fn(string $s) => '=?UTF-8?B?' . base64_encode($s) . '?=';
-    $headers = implode("\r\n", [
+    if ($replyTo === '') $replyTo = (string)(app_settings()['sender'] ?? TEAM_EMAIL) ?: TEAM_EMAIL;
+    $head = [
         'From: ' . $enc(FROM_NAME) . ' <' . FROM_EMAIL . '>',
         'Reply-To: ' . str_replace(["\r", "\n"], ' ', $replyTo),
         'MIME-Version: 1.0',
-        'Content-Type: text/plain; charset=UTF-8',
-        'Content-Transfer-Encoding: 8bit',
-    ]);
-    if (config('mail_log_only')) { log_event("MAIL to=$to subject=$subject\n$body"); return true; }
+    ];
+    if ($html !== null) {
+        $b = 'br_' . bin2hex(random_bytes(8));
+        $head[] = 'Content-Type: multipart/alternative; boundary="' . $b . '"';
+        $body = "--$b\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($body))
+            . "--$b\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($html)) . "--$b--\r\n";
+    } else {
+        $head[] = 'Content-Type: text/plain; charset=UTF-8';
+        $head[] = 'Content-Transfer-Encoding: 8bit';
+    }
+    $headers = implode("\r\n", $head);
+    if (config('mail_log_only')) { // local testing: log instead of sending, keep HTML for previewing
+        log_event("MAIL to=$to subject=$subject");
+        $base = data_dir('mails') . '/' . date('His') . '-' . preg_replace('/[^a-z0-9]+/i', '-', $subject);
+        $html !== null ? @file_put_contents("$base.html", $html) : @file_put_contents("$base.txt", "To: $to\n\n$body");
+        return true;
+    }
     $c = smtp_config();
     $ok = $c ? smtp_send($c, $to, $enc($subject), $body, $headers) : @mail($to, $enc($subject), $body, $headers, '-f' . FROM_EMAIL);
     if (!$ok) log_event("MAIL FAILED to=$to subject=$subject");

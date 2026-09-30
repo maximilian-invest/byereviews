@@ -17,7 +17,8 @@ return [
     // event "checkout.session.completed" → signing secret (whsec_…)
     'stripe_webhook_secret' => '',
 
-    // Admin login at https://byereviews.com/order.php?a=admin
+    // Admin panel at https://byereviews.com/admin/ (sign in with this email + password)
+    'admin_email' => 'info@byereviews.com',
     // Generate with:  php -r "echo password_hash('YOUR-PASSWORD', PASSWORD_DEFAULT), PHP_EOL;"
     'admin_password_hash' => '',
 ];

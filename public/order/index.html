@@ -1249,6 +1249,24 @@ class Component extends DCLogic {
   state = Object.assign({}, this.state, { places: [], placeReviews: [], reviewsStatus: 'idle', reviewsComplete: true, emailKnown: false,
     customer: null, orders: [], orderIdx: 0, submitting: false, submitError: '', loginBusy: false, resetSent: false });
 
+  // ---------- funnel tracking (first-party, no cookies, no IP stored; see app/analytics.php) ----------
+  track(ev, extra) {
+    try {
+      const ss = window.sessionStorage;
+      let sid = ss.getItem('br_sid'); if (!sid) { sid = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()).replace(/-/g, ''); ss.setItem('br_sid', sid); }
+      const once = ev !== 'profile';
+      if (once) { const done = JSON.parse(ss.getItem('br_ev') || '[]'); if (done.includes(ev)) return; done.push(ev); ss.setItem('br_ev', JSON.stringify(done)); }
+      let src = ss.getItem('br_src');
+      if (!src) {
+        const u = new URLSearchParams(location.search), utm = (u.get('utm_source') || '').toLowerCase(), ref = document.referrer || '';
+        src = /instagram/.test(utm + ref) ? 'instagram' : /google\./.test(ref) || utm === 'google' ? 'google' : /byereviews\.com\/blog\//.test(ref) || (ref && new URL(ref).host === location.host && ref.includes('/blog/')) ? 'blog' : !ref || new URL(ref).host === location.host ? 'direct' : 'other';
+        ss.setItem('br_src', src);
+      }
+      const region = ((navigator.language || '').split('-')[1] || '').toUpperCase();
+      fetch('/order.php?a=track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid, ev, src, region, ...(extra || {}) }), keepalive: true }).catch(() => {});
+    } catch (e) {}
+  }
+
   // ---------- routing: / · /order/ · /login/ · /dashboard/ ----------
   paths = { home: '/', order: '/order/', success: '/order/', login: '/login/', portal: '/dashboard/' };
   viewFromPath() {
@@ -1261,6 +1279,7 @@ class Component extends DCLogic {
   componentDidMount() {
     this._designDidMount();
     const pre = document.getElementById('prerender'); if (pre) pre.remove();
+    try { if (!sessionStorage.getItem('br_src')) { this.track('__init'); } } catch (e) {}
     const hash = (location.hash || '').slice(1);
     let v = this.viewFromPath();
     if (v === 'home' && hash === 'order') v = 'order';
@@ -1281,6 +1300,9 @@ class Component extends DCLogic {
   }
   scrollToId(id) { const el = document.getElementById(id); if (el) el.scrollIntoView(); }
   componentDidUpdate() {
+    const st = this.state;
+    if (st.view === 'order') this.track('visit');
+    if (st.view === 'order' && st.step !== this._lastStep) { this._lastStep = st.step; if (st.step >= 3) this.track('review'); if (st.step >= 4) this.track('contact'); }
     const v = this.state.view;
     if (v === this._lastView) return;
     this._lastView = v;
@@ -1313,6 +1335,7 @@ class Component extends DCLogic {
   findBiz() {
     clearTimeout(this.sugT);
     const q = (this.state.bizQuery || '').trim(); if (!q) return this.setState({ tried: true });
+    this.track('search');
     this.setState({ bizStatus: 'loading', places: [], biz: null });
     this.api('places', { query: { q } }).then(r => {
       if (!r.ok || !(r.places || []).length) return this.setState({ bizStatus: 'notfound', biz: null, searchError: !r.ok });
@@ -1323,6 +1346,7 @@ class Component extends DCLogic {
   onBizType(q) {
     this.setState({ bizQuery: q, tried: false });
     clearTimeout(this.sugT);
+    if (q.trim().length >= 3) this.track('search');
     const t = q.trim();
     if (t.length < 3) { if (this.state.bizStatus === 'choose' || this.state.bizStatus === 'loading') this.setState({ bizStatus: 'idle', places: [] }); return; }
     if (!this.acSession) this.acSession = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()).replace(/-/g, '');
@@ -1348,6 +1372,7 @@ class Component extends DCLogic {
     this.api('reviews', { query: { place: p.id } }).then(r => {
       if (!this.state.biz || this.state.biz.id !== p.id) return;
       this.setState(r.ok ? { placeReviews: r.reviews || [], reviewsStatus: 'done', reviewsComplete: !!r.complete } : { placeReviews: [], reviewsStatus: 'error', reviewsComplete: false, showManual: true });
+      this.track('profile', { place: { id: p.id, name: p.name, country: p.country, rating: p.rating, count: p.reviewCount, mapsUrl: p.mapsUrl, low: (r.reviews || []).filter(x => x.stars <= 3 && x.text).length } });
     });
   }
   poolReviews() { return (this.state.placeReviews || []).map(r => ({ id: r.id, name: r.name, stars: r.stars, days: r.days, text: r.text, link: r.link })); }
@@ -1379,6 +1404,7 @@ class Component extends DCLogic {
         const msg = { too_many_requests: 'Too many orders from your connection – please try again later.', no_reviews: 'Please add at least one review with text.', invalid_email: 'Please enter a valid email address.' }[r.error] || 'Something went wrong – please try again or email info@byereviews.com.';
         return this.setState({ submitting: false, submitError: msg, tried: true });
       }
+      this.track('submit');
       this.setState({ submitting: false, submitted: true, view: 'success', confettiKey: Date.now(), orderId: r.orderId, newAccount: !!r.newAccount, orderedAt: Date.now(), loginEmail: s.email });
       window.scrollTo({ top: 0 });
     });
@@ -1413,7 +1439,7 @@ class Component extends DCLogic {
         text: r.text || r.link || 'Review link', st, price,
         textCol: st === 'removed' ? '#9E9E9E' : st === 'cancelled' ? '#8A8A8A' : '#333', deco: st === 'removed' ? 'line-through' : 'none',
         status: m[0], badgeBg: m[1], badgeFg: m[2], badgeBd: m[3],
-        priceNote: st === 'removed' ? (paid ? 'Paid ' + fmt(price) : fmt(price) + ' due') : st === 'cancelled' ? 'Cancelled · free' : fmt(price) + ' if removed' };
+        priceNote: (r.updatedAt && new Date(r.updatedAt).toDateString() === new Date().toDateString() ? '● Updated today · ' : '') + (st === 'removed' ? (paid ? 'Paid ' + fmt(price) : fmt(price) + ' due') : st === 'cancelled' ? 'Cancelled · free' : fmt(price) + ' if removed') };
     });
     const inv = o.invoice, removed = items.filter(i => i.st === 'removed'), inProg = items.filter(i => i.st === 'progress').length;
     const tl = o.timeline || {}, fd = iso => iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';

@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin – byereviews</title>
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<script>
+window.__resources = {
+  "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "/assets/vendor/react.production.min.js",
+  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "/assets/vendor/react-dom.production.min.js"
+};
+</script>
+<script src="/support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="/assets/fonts/fonts.css" rel="stylesheet">
+<style>
+body{margin:0;background:#E4E4E4;font-family:'Geist',system-ui,sans-serif;color:#151515;-webkit-font-smoothing:antialiased}
+a{color:#151515;text-decoration:none}a:hover{color:#6B6B6B}
+button,input,textarea{font-family:inherit}
+*{box-sizing:border-box}
+</style>
+</helmet>
+
+
+<div style="max-width:1480px;margin:0 auto;padding:clamp(0px,1.4vw,16px)">
+<div style="background:#EEEEEE;border-radius:clamp(0px,2.6vw,36px);padding:clamp(10px,1.6vw,20px);display:flex;flex-direction:column;gap:clamp(14px,1.8vw,22px);min-height:calc(100vh - 60px)">
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="01 Admin login" style="min-height:calc(100vh - 120px);display:flex;align-items:center;justify-content:center;padding:24px 0">
+  <div style="width:100%;max-width:420px;background:#FFFFFF;border-radius:32px;padding:clamp(24px,4vw,40px);display:flex;flex-direction:column;gap:16px">
+    <img src="/assets/byereviews-logo.png" alt="byereviews" style="height:24px;width:auto;align-self:flex-start">
+    <h1 style="margin:8px 0 0;font-size:36px;font-weight:600;letter-spacing:-.04em;line-height:1"><span style="color:#9E9E9E">Admin</span> sign in.</h1>
+    <input type="email" autocomplete="username" value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" placeholder="Email" style="border:0;background:#F4F4F4;border-radius:16px;padding:16px 18px;font-size:16px;outline:none">
+    <input type="password" autocomplete="current-password" value="{{ loginPass }}" onChange="{{ onLoginPass }}" onKeyDown="{{ onLoginKey }}" placeholder="Password" style="border:0;background:#F4F4F4;border-radius:16px;padding:16px 18px;font-size:16px;outline:none">
+    <sc-if value="{{ loginHint }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#6B6B6B">{{ loginHint }}</span></sc-if>
+    <button onClick="{{ doLogin }}" style="height:56px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:18px;font-size:16px;font-weight:500">Sign in</button>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+<header style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+  <nav style="display:flex;align-items:center;gap:4px;background:#FFFFFF;border-radius:20px;padding:6px;min-width:0">
+    <a href="/admin/" onClick="{{ goOrders }}" style="display:flex;align-items:center;padding:8px 12px 8px 10px"><img src="/assets/byereviews-logo.png" alt="byereviews" style="height:20px;width:auto;display:block"></a>
+    <button onClick="{{ goOrders }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;background:{{ navOrdersBg }};color:{{ navOrdersFg }}">Orders</button>
+    <button onClick="{{ goAnalytics }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;background:{{ navAnBg }};color:{{ navAnFg }}">Analytics</button>
+    <button onClick="{{ goSettings }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;background:{{ navSetBg }};color:{{ navSetFg }}">Settings</button>
+  </nav>
+  <button onClick="{{ logout }}" style="border:0;cursor:pointer;background:#FFFFFF;border-radius:16px;padding:6px 14px 6px 6px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px">
+    <span style="width:36px;height:36px;border-radius:12px;background:#151515;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px">{{ adminInitial }}</span>{{ logoutLabel }}
+  </button>
+</header>
+
+<sc-if value="{{ isOrders }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="02 Orders" style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:12px 4px 0">
+    <h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:600;letter-spacing:-.045em;line-height:1">Orders</h1>
+    <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">// {{ today }}</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,46%),1fr));gap:10px">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+      <div style="background:{{ k.bg }};color:{{ k.fg }};border-radius:24px;padding:18px 20px;display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;color:{{ k.sub }}">{{ k.label }}</span>
+        <span style="font-size:clamp(26px,3vw,38px);font-weight:600;letter-spacing:-.04em;line-height:1">{{ k.value }}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px;overflow-x:auto;max-width:100%">
+      <sc-for list="{{ filterTabs }}" as="f" hint-placeholder-count="6">
+        <button onClick="{{ f.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 13px;font-size:14px;font-weight:500;white-space:nowrap;display:flex;gap:6px;align-items:center;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }}<span style="font-size:12px;opacity:.6">{{ f.count }}</span></button>
+      </sc-for>
+    </div>
+    <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Search customer, company, order ID" style="flex:1;min-width:220px;border:0;background:#FFFFFF;border-radius:16px;padding:14px 16px;font-size:15px;outline:none">
+  </div>
+
+  <sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+  <div style="background:#FFFFFF;border-radius:28px;padding:8px;display:flex;flex-direction:column">
+    <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:110px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.2fr) 110px 110px 90px;gap:14px;padding:12px 16px;font-size:12px;color:#8A8A8A;font-family:'Geist Mono',monospace">
+        <span>ORDER</span><span>COMPANY</span><span>CUSTOMER</span><span>REVIEWS</span><span>AMOUNT</span><span>PAYMENT</span><span>DATE</span>
+      </div>
+    </sc-if>
+    <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+      <button onClick="{{ r.open }}" style="border:0;background:transparent;cursor:pointer;text-align:left;border-top:1px solid #F0F0F0;padding:14px 16px;border-radius:18px;display:grid;grid-template-columns:{{ rowCols }};gap:{{ rowGap }};align-items:center;font-size:14px;color:#151515">
+        <span style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6B6B">{{ r.id }}</span>
+        <span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.company }}</span><sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#6B6B6B">{{ r.customer }} · {{ r.date }}</span></sc-if></span>
+        <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#555">{{ r.customer }}</span></sc-if>
+        <span style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px">{{ r.progressText }}</span><span style="height:5px;border-radius:3px;background:#EEEEEE;display:block;overflow:hidden"><span style="display:block;height:100%;border-radius:3px;background:#151515;width:{{ r.pct }}"></span></span></span>
+        <span style="font-weight:600">{{ r.amount }}</span>
+        <span><span style="display:inline-block;font-size:12px;font-weight:500;border-radius:9px;padding:5px 9px;background:{{ r.chipBg }};color:{{ r.chipFg }};border:1px solid {{ r.chipBd }}">{{ r.pay }}</span></span>
+        <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><span style="color:#6B6B6B;font-size:13px">{{ r.date }}</span></sc-if>
+      </button>
+    </sc-for>
+  </div>
+  </sc-if>
+  <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(40px,7vw,80px) 24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+      <span style="width:64px;height:64px;border-radius:20px;background:#EEEEEE;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="4" stroke="#8A8A8A" stroke-width="1.8"></rect><path d="M8 12h8" stroke="#8A8A8A" stroke-width="1.8" stroke-linecap="round"></path></svg></span>
+      <span style="font-size:22px;font-weight:600;letter-spacing:-.02em">{{ emptyTitle }}</span>
+      <span style="font-size:15px;color:#6B6B6B;max-width:360px">{{ emptyText }}</span>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="03 Order detail" style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;flex-direction:column;gap:10px;padding:8px 4px 0">
+    <button onClick="{{ goOrders }}" style="align-self:flex-start;border:0;background:transparent;cursor:pointer;font-size:14px;color:#6B6B6B;padding:4px 0">← All orders</button>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ o.id }} · {{ o.date }}</span>
+        <h1 style="margin:0;font-size:clamp(30px,3.6vw,48px);font-weight:600;letter-spacing:-.045em;line-height:1">{{ o.company }}</h1>
+      </div>
+      <span style="font-size:13px;font-weight:500;border-radius:10px;padding:7px 12px;background:{{ o.headBg }};color:{{ o.chipFg }};border:1px solid {{ o.headBd }}">{{ o.pay }}</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:{{ detailCols }};gap:14px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+
+      <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:2px;line-height:1.2"><span style="font-size:20px;font-weight:600;letter-spacing:-.02em">Reviews</span><span style="font-size:14px;color:#6B6B6B">{{ o.removedCount }} of {{ o.reviewCount }} removed</span></div>
+          <sc-if value="{{ o.hasOpen }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ sendAllWa }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:11px 14px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20l1.3-3.9A8 8 0 1112 20a8 8 0 01-3.8-1z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"></path></svg>Send all open via WhatsApp</button>
+          </sc-if>
+        </div>
+        <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#151515;color:#fff;border-radius:18px;padding:10px 10px 10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:14px">{{ selCount }} selected</span>
+            <div style="display:flex;gap:6px"><button onClick="{{ clearSel }}" style="border:0;cursor:pointer;background:#2A2A2A;color:#fff;border-radius:12px;padding:10px 12px;font-size:13px">Clear</button><button onClick="{{ sendSelWa }}" style="border:0;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500">Send via WhatsApp</button></div>
+          </div>
+        </sc-if>
+        <sc-for list="{{ o.reviews }}" as="rv" hint-placeholder-count="3">
+          <div style="border-top:1px solid #F0F0F0;padding-top:14px;display:flex;flex-direction:column;gap:12px;background:{{ rv.flash }};border-radius:14px;transition:background .6s">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <button onClick="{{ rv.toggleSel }}" aria-label="Select" style="flex:none;width:26px;height:26px;margin-top:2px;border-radius:8px;cursor:{{ rv.selCursor }};display:flex;align-items:center;justify-content:center;background:{{ rv.boxBg }};border:1.5px solid {{ rv.boxBd }};opacity:{{ rv.selOpacity }}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">
+                  <span style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;line-height:1.3"><span style="font-size:15px;font-weight:600">{{ rv.author }}</span><span style="white-space:nowrap;font-size:14px;letter-spacing:1px">{{ rv.starsOn }}<span style="color:#D2D2D2">{{ rv.starsOff }}</span></span></span>
+                  <span style="font-size:14px;font-weight:600;white-space:nowrap">{{ rv.price }} <span style="font-weight:400;font-size:12px;color:#6B6B6B">· {{ rv.age }}</span></span>
+                </div>
+                <button onClick="{{ rv.toggleText }}" style="border:0;background:transparent;padding:0;cursor:pointer;text-align:left;font-size:14px;line-height:1.5;color:#444">{{ rv.textShown }} <span style="color:#8A8A8A;text-decoration:underline;text-underline-offset:2px">{{ rv.moreLabel }}</span></button>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:13px">
+                  <a href="{{ rv.link }}" target="_blank" style="font-weight:500">Open on Google ↗</a>
+                  <sc-if value="{{ rv.wasSent }}" hint-placeholder-val="{{ false }}"><span style="color:#8A8A8A;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 20l1.3-3.9A8 8 0 1112 20a8 8 0 01-3.8-1z" stroke="#8A8A8A" stroke-width="2" stroke-linejoin="round"></path></svg>Sent via WhatsApp · {{ rv.sentAt }}</span></sc-if>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-left:38px">
+              <div style="display:flex;background:#F4F4F4;border-radius:14px;padding:3px;gap:2px;overflow-x:auto;max-width:100%">
+                <sc-for list="{{ rv.seg }}" as="sg" hint-placeholder-count="4">
+                  <button onClick="{{ sg.go }}" style="border:0;cursor:pointer;border-radius:11px;padding:8px 11px;font-size:13px;font-weight:500;white-space:nowrap;background:{{ sg.bg }};color:{{ sg.fg }};box-shadow:{{ sg.sh }}">{{ sg.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ rv.canQuick }}" hint-placeholder-val="{{ true }}"><button onClick="{{ rv.markRemoved }}" style="border:1px solid #151515;cursor:pointer;background:#FFFFFF;color:#151515;border-radius:12px;padding:8px 12px;font-size:13px;font-weight:500">✓ Mark as removed</button></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:20px;font-weight:600;letter-spacing:-.02em">Messages</span>
+        <div style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto">
+          <sc-for list="{{ o.msgs }}" as="m" hint-placeholder-count="2">
+            <div style="display:flex;justify-content:{{ m.justify }}">
+              <div style="max-width:82%;border-radius:18px;padding:11px 14px;font-size:14px;line-height:1.45;background:{{ m.bg }};color:{{ m.fg }}">{{ m.text }}<span style="display:block;margin-top:4px;font-size:11px;opacity:.6">{{ m.meta }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <textarea value="{{ draft }}" onChange="{{ onDraft }}" rows="2" placeholder="Reply – goes to the customer's dashboard and email" style="flex:1;min-width:0;border:0;background:#F4F4F4;border-radius:16px;padding:13px 15px;font-size:15px;outline:none;resize:none"></textarea>
+          <button onClick="{{ sendMsg }}" aria-label="Send" style="flex:none;width:50px;height:50px;border:0;cursor:pointer;background:#151515;border-radius:16px;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;position:{{ sidePos }};top:16px">
+      <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:20px;font-weight:600;letter-spacing:-.02em">Payment</span><span style="font-size:12px;font-weight:500;border-radius:9px;padding:5px 9px;background:{{ o.chipBg }};color:{{ o.chipFg }};border:1px solid {{ o.chipBd }}">{{ o.pay }}</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:14px">
+          <div style="display:flex;justify-content:space-between"><span style="color:#6B6B6B">{{ o.removedCount }} removed</span><span>{{ o.subtotal }}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#6B6B6B">Volume discount {{ o.discPct }}</span><span>{{ o.discAmt }}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;border-top:1px solid #F0F0F0"><span style="font-weight:600">Total</span><span style="font-size:32px;font-weight:600;letter-spacing:-.04em">{{ o.total }}</span></div>
+        </div>
+        <sc-if value="{{ o.payNothing }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#8A8A8A;background:#F4F4F4;border-radius:14px;padding:14px">Nothing to bill yet – mark reviews as removed first.</span></sc-if>
+        <sc-if value="{{ o.payUnpaid }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ sendPayLink }}" style="height:60px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:18px;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 20px">Send payment link<span style="width:44px;height:44px;background:#FFFFFF;border-radius:14px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#151515" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
+          <span style="font-size:12px;color:#8A8A8A;line-height:1.5">Creates a Stripe link for {{ o.total }}, emails it to the customer and shows it in their dashboard.</span>
+        </sc-if>
+        <sc-if value="{{ o.payLink }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:6px;align-items:center;background:#F4F4F4;border-radius:14px;padding:6px 6px 6px 14px"><span style="flex:1;min-width:0;font-family:'Geist Mono',monospace;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.link }}</span><button onClick="{{ copyLink }}" style="border:0;cursor:pointer;background:#151515;color:#fff;border-radius:10px;padding:8px 12px;font-size:13px">{{ copyLabel }}</button></div>
+          <span style="font-size:12px;color:#8A8A8A">Sent {{ o.linkSentAt }} · waiting for Stripe</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button onClick="{{ resendLink }}" style="flex:1;border:1px solid #D2D2D2;cursor:pointer;background:#FFFFFF;border-radius:12px;padding:11px;font-size:14px;font-weight:500">Resend</button>
+          </div>
+          <button onClick="{{ markPaid }}" style="align-self:flex-start;border:0;background:transparent;cursor:pointer;font-size:13px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px;padding:2px 0">Mark as paid manually</button>
+        </sc-if>
+        <sc-if value="{{ o.payPaid }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#151515;color:#fff;border-radius:18px;padding:16px;display:flex;align-items:center;gap:12px"><span style="width:38px;height:38px;border-radius:12px;background:#FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#151515" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><div style="display:flex;flex-direction:column"><span style="font-size:15px;font-weight:600">Paid {{ o.total }}</span><span style="font-size:12px;color:#B5B5B5">{{ o.paidAt }} · {{ o.paidVia }}</span></div></div>
+        </sc-if>
+      </div>
+
+      <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:20px;font-weight:600;letter-spacing:-.02em">Customer</span>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.45">
+          <span style="font-weight:600;font-size:15px">{{ o.cust.name }}</span>
+          <span style="color:#555">{{ o.cust.company }}</span>
+          <span style="color:#555;word-break:break-all">{{ o.cust.email }}</span>
+          <span style="color:#555">{{ o.cust.phone }}</span>
+          <span style="color:#8A8A8A">{{ o.cust.address }} · {{ o.cust.country }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <a href="{{ o.mailto }}" style="background:#151515;color:#fff;border-radius:12px;padding:12px;font-size:14px;font-weight:500;text-align:center">Email</a>
+          <a href="{{ o.waCustomer }}" target="_blank" style="background:#F4F4F4;border-radius:12px;padding:12px;font-size:14px;font-weight:500;text-align:center">WhatsApp customer</a>
+        </div>
+        <button onClick="{{ sendPw }}" style="align-self:flex-start;border:0;background:transparent;cursor:pointer;font-size:13px;color:#6B6B6B;text-decoration:underline;text-underline-offset:3px;padding:2px 0">Send new password</button>
+        <div style="border-top:1px solid #F0F0F0;padding-top:12px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:#6B6B6B">
+          <span style="font-family:'Geist Mono',monospace;font-size:11px">BUSINESS</span>
+          <span style="color:#151515;font-weight:500">{{ o.biz.name }}</span>
+          <span>{{ o.biz.address }}</span>
+          <span>{{ o.biz.rating }} ★ · {{ o.biz.count }} reviews at order</span>
+          <a href="{{ o.biz.profile }}" target="_blank" style="font-weight:500;color:#151515">Google profile ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isAnalytics }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="05 Analytics" style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:12px 4px 0">
+    <div style="display:flex;flex-direction:column;gap:6px"><h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:600;letter-spacing:-.045em;line-height:1">Analytics</h1><span style="font-size:13px;color:#6B6B6B">{{ an.periodLabel }} · compared to previous period</span></div>
+    <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px">
+      <sc-for list="{{ rangeTabs }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 13px;font-size:14px;font-weight:500;white-space:nowrap;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</button></sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ an.empty }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(40px,7vw,80px) 24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+      <span style="width:64px;height:64px;border-radius:20px;background:#EEEEEE;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="#8A8A8A" stroke-width="1.8" stroke-linecap="round"></path></svg></span>
+      <span style="font-size:22px;font-weight:600;letter-spacing:-.02em">No data yet</span>
+      <span style="font-size:15px;color:#6B6B6B">Stats appear after the first visitors.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ an.has }}" hint-placeholder-val="{{ true }}">
+  <div style="display:grid;grid-template-columns:{{ kpiCols }};gap:10px">
+    <sc-for list="{{ an.kpis }}" as="k" hint-placeholder-count="5">
+      <div style="background:#FFFFFF;border-radius:24px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0">
+        <span style="font-size:13px;color:#6B6B6B">{{ k.label }}</span>
+        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:clamp(24px,2.6vw,32px);font-weight:600;letter-spacing:-.04em;line-height:1">{{ k.value }}</span><span style="font-size:12px;font-weight:600;border-radius:8px;padding:3px 7px;background:{{ k.dBg }};color:{{ k.dFg }}">{{ k.delta }}</span></div>
+        <svg viewBox="0 0 100 28" preserveAspectRatio="none" style="width:100%;height:28px;display:block"><polyline points="{{ k.spark }}" fill="none" stroke="#151515" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></polyline></svg>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px;min-width:0">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font-size:18px;font-weight:600;letter-spacing:-.02em">Where people drop off</span><span style="font-size:13px;color:#6B6B6B">Biggest drop: <strong style="color:#D93025;font-weight:600">{{ an.worstLabel }}</strong></span></div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <sc-for list="{{ an.funnel }}" as="f" hint-placeholder-count="7">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <sc-if value="{{ f.hasDrop }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;padding-left:4px;font-weight:{{ f.dropW }};color:{{ f.dropCol }}">↓ {{ f.drop }} drop</span></sc-if>
+          <div style="display:grid;grid-template-columns:{{ funnelCols }};gap:10px;align-items:center">
+            <span style="font-size:14px;font-weight:500">{{ f.label }}</span>
+            <div style="height:30px;background:#F4F4F4;border-radius:10px;overflow:hidden"><div style="height:100%;border-radius:10px;width:{{ f.w }};background:{{ f.bar }}"></div></div>
+            <span style="font-size:14px;font-weight:600;text-align:right;white-space:nowrap">{{ f.n }} <span style="font-weight:400;color:#6B6B6B;font-size:12px">{{ f.pct }}</span></span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:{{ anCols }};gap:14px">
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span style="font-size:18px;font-weight:600;letter-spacing:-.02em">Profile checks vs. orders</span><div style="display:flex;gap:12px;font-size:12px;color:#6B6B6B"><span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:3px;background:#151515;display:block;border-radius:2px"></span>Checks</span><span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:3px;background:#9E9E9E;display:block;border-radius:2px"></span>Orders</span></div></div>
+      <svg viewBox="0 0 300 140" preserveAspectRatio="none" style="width:100%;height:180px;display:block">
+        <line x1="0" y1="35" x2="300" y2="35" stroke="#F0F0F0" stroke-width="1" vector-effect="non-scaling-stroke"></line><line x1="0" y1="70" x2="300" y2="70" stroke="#F0F0F0" stroke-width="1" vector-effect="non-scaling-stroke"></line><line x1="0" y1="105" x2="300" y2="105" stroke="#F0F0F0" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+        <path d="{{ an.lineArea }}" fill="#151515" opacity=".05"></path>
+        <polyline points="{{ an.lineChecks }}" fill="none" stroke="#151515" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+        <polyline points="{{ an.lineOrders }}" fill="none" stroke="#9E9E9E" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+      </svg>
+      <div style="display:flex;justify-content:space-between;font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A"><sc-for list="{{ an.lineLabels }}" as="l" hint-placeholder-count="4"><span>{{ l }}</span></sc-for></div>
+    </div>
+
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span style="font-size:18px;font-weight:600;letter-spacing:-.02em">Revenue per week</span><div style="display:flex;gap:12px;font-size:12px;color:#6B6B6B"><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#151515;display:block;border-radius:3px"></span>Paid</span><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#D2D2D2;display:block;border-radius:3px"></span>Open</span></div></div>
+      <div style="height:180px;display:flex;align-items:flex-end;gap:{{ an.barGap }}">
+        <sc-for list="{{ an.weeks }}" as="w" hint-placeholder-count="8">
+          <div title="{{ w.tip }}" style="flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:2px">
+            <div style="background:#D2D2D2;border-radius:6px 6px 2px 2px;height:{{ w.openH }}"></div>
+            <div style="background:#151515;border-radius:2px 2px 6px 6px;height:{{ w.paidH }}"></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A"><span>{{ an.weekFirst }}</span><span>{{ an.weekTotal }}</span><span>{{ an.weekLast }}</span></div>
+    </div>
+
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px;min-width:0">
+      <span style="font-size:18px;font-weight:600;letter-spacing:-.02em">Where visitors come from</span>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <sc-for list="{{ an.countries }}" as="c" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:110px minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13px"><span>{{ c.label }}</span><div style="height:10px;background:#F4F4F4;border-radius:5px;overflow:hidden"><div style="height:100%;background:#151515;border-radius:5px;width:{{ c.w }}"></div></div><span style="text-align:right;font-weight:600">{{ c.pct }}</span></div>
+        </sc-for>
+      </div>
+      <div style="border-top:1px solid #F0F0F0;padding-top:12px;display:flex;flex-direction:column;gap:8px">
+        <span style="font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A">TRAFFIC SOURCES</span>
+        <sc-for list="{{ an.sources }}" as="c" hint-placeholder-count="4">
+          <div style="display:flex;justify-content:space-between;gap:10px;font-size:14px"><span>{{ c.label }}</span><span style="font-weight:600;white-space:nowrap;flex:none">{{ c.n }} <span style="font-weight:400;color:#6B6B6B;font-size:12px">{{ c.pct }}</span></span></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px;min-width:0">
+      <span style="font-size:18px;font-weight:600;letter-spacing:-.02em">Reviews</span>
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <div style="position:relative;width:150px;height:150px;flex:none">
+          <svg viewBox="0 0 42 42" style="width:150px;height:150px;transform:rotate(-90deg)">
+            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#F4F4F4" stroke-width="6"></circle>
+            <sc-for list="{{ an.donut }}" as="d" hint-placeholder-count="4"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="{{ d.col }}" stroke-width="6" stroke-dasharray="{{ d.dash }}" stroke-dashoffset="{{ d.off }}"></circle></sc-for>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:26px;font-weight:600;letter-spacing:-.03em">{{ an.revTotal }}</span><span style="font-size:11px;color:#6B6B6B">reviews</span></div>
+        </div>
+        <div style="flex:1;min-width:160px;display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ an.donut }}" as="d" hint-placeholder-count="4"><div style="display:flex;justify-content:space-between;gap:10px;font-size:14px"><span style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:3px;display:block;background:{{ d.col }};border:1px solid {{ d.bd }}"></span>{{ d.label }}</span><span style="font-weight:600">{{ d.n }}</span></div></sc-for>
+        </div>
+      </div>
+      <div style="background:#F4F4F4;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:14px;color:#555">Ø days until removed</span><span style="font-size:26px;font-weight:600;letter-spacing:-.03em">{{ an.avgDays }}</span></div>
+    </div>
+  </div>
+
+  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px;min-width:0">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><span style="font-size:18px;font-weight:600;letter-spacing:-.02em">Recently checked</span><span style="font-size:13px;color:#6B6B6B"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#D93025;margin-right:6px"></span>Hot lead = checked but no order</span></div>
+    <div style="overflow-x:auto">
+      <div style="min-width:1000px;display:flex;flex-direction:column">
+        <div style="display:grid;grid-template-columns:minmax(200px,1.6fr) 110px 64px 70px 56px minmax(130px,1.2fr) 84px 160px;gap:12px;padding:0 10px 10px;font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A"><span>COMPANY</span><span>COUNTRY</span><span>RATING</span><span>REVIEWS</span><span>1–3★</span><span>REACHED STEP</span><span>WHEN</span><span></span></div>
+        <sc-for list="{{ an.checked }}" as="c" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:minmax(200px,1.6fr) 110px 64px 70px 56px minmax(130px,1.2fr) 84px 160px;gap:12px;align-items:center;padding:12px 10px;border-top:1px solid #F0F0F0;font-size:14px;border-radius:12px;background:{{ c.bg }}">
+            <span style="font-weight:600;display:flex;align-items:center;gap:8px;min-width:0"><sc-if value="{{ c.hot }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:8px;height:8px;border-radius:50%;background:#D93025;display:block"></span></sc-if><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.name }}</span></span>
+            <span style="color:#555">{{ c.country }}</span><span>{{ c.rating }} ★</span><span>{{ c.count }}</span><span>{{ c.low }}</span>
+            <span style="font-size:13px;color:{{ c.stepCol }};font-weight:{{ c.stepW }}">{{ c.step }}</span>
+            <span style="font-size:13px;color:#6B6B6B">{{ c.when }}</span>
+            <sc-if value="{{ c.hot }}" hint-placeholder-val="{{ false }}"><a href="{{ c.profile }}" target="_blank" style="background:#151515;color:#fff;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:500;text-align:center;white-space:nowrap">Open Google profile ↗</a></sc-if>
+            <sc-if value="{{ c.ordered }}" hint-placeholder-val="{{ true }}"><span style="font-size:12px;color:#8A8A8A;text-align:center">Ordered</span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <div style="background:#FFFFFF;border-radius:22px;padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <span style="font-size:13px;font-weight:600;white-space:nowrap">SerpApi this month</span>
+    <div style="flex:1;min-width:140px;height:8px;background:#F4F4F4;border-radius:4px;overflow:hidden"><div style="height:100%;border-radius:4px;width:{{ an.serpPct }};background:{{ an.serpCol }}"></div></div>
+    <span style="font-size:13px;white-space:nowrap"><strong style="font-weight:600">{{ an.serpUsed }}</strong> / {{ an.serpMax }} checks</span>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="04 Settings" style="display:flex;flex-direction:column;gap:14px;max-width:760px">
+  <h1 style="margin:0;padding:12px 4px 0;font-size:clamp(34px,4vw,52px);font-weight:600;letter-spacing:-.045em;line-height:1">Settings</h1>
+  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:10px">
+    <span style="font-size:18px;font-weight:600">Removal partner</span>
+    <label style="font-size:13px;color:#6B6B6B">WhatsApp number</label>
+    <input value="{{ partnerNo }}" onChange="{{ onPartnerNo }}" style="border:0;background:#F4F4F4;border-radius:14px;padding:14px 16px;font-size:16px;outline:none">
+  </div>
+  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:10px">
+    <span style="font-size:18px;font-weight:600">WhatsApp message template</span>
+    <textarea value="{{ template }}" onChange="{{ onTemplate }}" rows="7" style="border:0;background:#F4F4F4;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5;outline:none;resize:vertical;font-family:'Geist Mono',monospace"></textarea>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-family:'Geist Mono',monospace;font-size:12px;background:#EEEEEE;border-radius:8px;padding:5px 8px">{company}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;background:#EEEEEE;border-radius:8px;padding:5px 8px">{profile_link}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;background:#EEEEEE;border-radius:8px;padding:5px 8px">{order_id}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;background:#EEEEEE;border-radius:8px;padding:5px 8px">{reviews}</span></div>
+  </div>
+  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(18px,2.4vw,26px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px">
+    <div style="display:flex;flex-direction:column;gap:10px"><span style="font-size:18px;font-weight:600">Sender email</span><input value="{{ sender }}" onChange="{{ onSender }}" style="border:0;background:#F4F4F4;border-radius:14px;padding:14px 16px;font-size:16px;outline:none"></div>
+    <div style="display:flex;flex-direction:column;gap:10px"><span style="font-size:18px;font-weight:600">Stripe</span><div style="display:flex;align-items:center;gap:10px;background:#F4F4F4;border-radius:14px;padding:12px 14px"><span style="width:10px;height:10px;border-radius:50%;background:{{ stripeDot }};display:block"></span><span style="font-size:15px;font-weight:500;flex:1">{{ stripeLabel }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ stripeAcct }}</span></div></div>
+  </div>
+  <button onClick="{{ saveSettings }}" style="align-self:flex-start;height:54px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:18px;padding:0 26px;font-size:15px;font-weight:600">Save settings</button>
+</section>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:200;background:#151515;color:#fff;border-radius:16px;padding:14px 18px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100vw - 32px)"><span style="width:22px;height:22px;border-radius:7px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;flex:none"><svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3L13 5" stroke="#151515" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>{{ toast }}</div>
+</sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  fmtD(d) { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); }
+  seed() {
+    const d = k => Date.now() - k * 86400000;
+    const R = (author, stars, age, text, status, extra) => ({ id: Math.random().toString(36).slice(2), author, stars, age, text, status, link: 'https://share.google/' + Math.random().toString(36).slice(2, 12), ...(extra || {}) });
+    const C = (name, company, email, phone, address, country) => ({ name, company, email, phone, address, country });
+    return [
+      { id: 'BR-48213', date: d(2), cust: C('Anna Rossi', 'Osteria da Anna', 'anna@osteria-anna.it', '+39 331 555 0147', 'Via Roma 12, 16043 Chiavari', 'Italy'),
+        biz: { name: 'Osteria da Anna', address: 'Via Roma 12, Chiavari', profile: 'https://maps.google.com/?cid=1', rating: 4.2, count: 138 },
+        reviews: [R('Mark T.', 1, 'recent', "Never been here but heard it's terrible. Avoid at all costs!! The owner should be ashamed and nobody should ever go there.", 'submitted'), R('D. Miller', 1, 'older', 'Complete scam. The owner is a criminal who rips people off and lies to every guest who walks in.', 'submitted'), R('Tom W.', 1, 'recent', 'Fake place. Photos are stolen from another restaurant.', 'submitted')],
+        payment: { status: 'none' }, msgs: [{ from: 'cust', text: 'Hi, how long does this usually take?', at: d(1) }] },
+      { id: 'BR-48190', date: d(4), cust: C('James Carter', 'Carter Dental', 'james@carterdental.com', '+1 312 555 0110', '214 W Lake St, Chicago, IL', 'United States'),
+        biz: { name: 'Carter Dental Chicago', address: '214 W Lake St, Chicago', profile: 'https://maps.google.com/?cid=2', rating: 4.3, count: 212 },
+        reviews: [R('Sarah K.', 1, 'recent', 'Rude staff, dirty rooms. Go to the clinic next door.', 'removed', { updatedAt: d(0) }), R('Kevin L.', 2, 'older', 'Staff told me the owner is a fraud.', 'in_progress', { sentAt: d(1) }), R('Priya N.', 1, 'recent', 'Worst dentist in Chicago.', 'in_progress', { sentAt: d(1) }), R('Jonas B.', 1, 'older', '', 'not_eligible'), R('Chris P.', 1, 'recent', 'Ruined my teeth, total quack.', 'removed', { updatedAt: d(0) })],
+        payment: { status: 'unpaid' }, msgs: [] },
+      { id: 'BR-48177', date: d(6), cust: C('Lena Hofer', 'Studio Hofer', 'lena@studiohofer.at', '+43 660 555 0123', 'Mariahilfer Str. 50, 1070 Wien', 'Austria'),
+        biz: { name: 'Studio Hofer Hair', address: 'Mariahilfer Str. 50, Wien', profile: 'https://maps.google.com/?cid=3', rating: 4.5, count: 96 },
+        reviews: [R('Max R.', 1, 'recent', 'Terrible haircut, never again.', 'removed'), R('Anon', 1, 'older', 'They are thieves.', 'removed')],
+        payment: { status: 'link_sent', link: 'https://buy.stripe.com/test_8wM4gz', linkSentAt: d(1) }, msgs: [] },
+      { id: 'BR-48152', date: d(9), cust: C('Oliver Grant', 'Grant Plumbing', 'oliver@grantplumbing.co.uk', '+44 7700 900123', '18 King St, Manchester', 'United Kingdom'),
+        biz: { name: 'Grant Plumbing Ltd', address: '18 King St, Manchester', profile: 'https://maps.google.com/?cid=4', rating: 4.1, count: 54 },
+        reviews: [R('Paul S.', 1, 'recent', 'Flooded my kitchen. Cowboys.', 'removed'), R('Eve M.', 1, 'recent', 'Overpriced, rude.', 'removed'), R('Rob T.', 1, 'older', 'Use anyone else.', 'removed')],
+        payment: { status: 'paid', link: 'https://buy.stripe.com/test_3cs5kq', paidAt: d(2) }, msgs: [{ from: 'team', text: 'All three reviews are gone. Thanks for your payment!', at: d(2) }] },
+      { id: 'BR-48101', date: d(14), cust: C('Sophie Martin', 'Boulangerie Martin', 'sophie@boulangerie-martin.fr', '+33 6 55 50 12 34', '8 Rue Cler, 75007 Paris', 'France'),
+        biz: { name: 'Boulangerie Martin', address: '8 Rue Cler, Paris', profile: 'https://maps.google.com/?cid=5', rating: 4.6, count: 301 },
+        reviews: [R('Luc D.', 1, 'older', '', 'not_eligible'), R('Nina V.', 1, 'older', 'Found glass in my bread.', 'removed')],
+        payment: { status: 'paid', paidAt: d(10) }, msgs: [] }
+    ];
+  }
+  state = { screen: 'login', view: 'orders', orders: [], openId: null, filter: 'all', q: '', sel: {}, expanded: {}, draft: '', empty: false, toast: '', flashId: null, copied: false,
+    partnerNo: '+49 151 555 01234', sender: 'hello@byereviews.com', loginEmail: 'max@byereviews.com', loginPass: '',
+    template: 'Hi! New removal request – {order_id}\n\nCompany: {company}\nGoogle profile: {profile_link}\n\n{reviews}\n\nThanks!',
+    vw: (typeof window !== 'undefined' && window.innerWidth) || 1200, custId: 'BR-48190' };
+  _designDidMount() { this.onResize = () => { const w = window.innerWidth || document.documentElement.clientWidth; if (w) this.setState({ vw: w }); }; window.addEventListener('resize', this.onResize); requestAnimationFrame(this.onResize); }
+  _designWillUnmount() { window.removeEventListener('resize', this.onResize); clearTimeout(this.tT); clearTimeout(this.fT); }
+  fmt(n) { return '€' + n.toLocaleString('en-US'); }
+  price(r) { return r.age === 'recent' ? 90 : 125; }
+  rate(n) { return n >= 6 ? .15 : n >= 3 ? .10 : n === 2 ? .05 : 0; }
+  calc(o) { const rem = o.reviews.filter(r => r.status === 'removed'), sub = rem.reduce((a, r) => a + this.price(r), 0), rt = this.rate(rem.length), disc = Math.round(sub * rt); return { rem, sub, rt, disc, total: sub - disc }; }
+  payInfo(o) {
+    const c = this.calc(o);
+    if (o.payment.status === 'paid') return ['Paid', '#151515', '#FFFFFF', '#151515'];
+    if (o.payment.status === 'link_sent') return ['Link sent', '#FFFFFF', '#151515', '#151515'];
+    if (c.total > 0) return ['Unpaid', '#EEEEEE', '#151515', '#EEEEEE'];
+    return ['—', '#FFFFFF', '#8A8A8A', '#E4E4E4'];
+  }
+  stage(o) {
+    const active = o.reviews.some(r => r.status === 'submitted' || r.status === 'in_progress'), c = this.calc(o);
+    return { isNew: o.reviews.every(r => r.status === 'submitted'), inProg: o.reviews.some(r => r.status === 'in_progress'), awaiting: c.total > 0 && o.payment.status !== 'paid', paid: o.payment.status === 'paid', closed: !active && (o.payment.status === 'paid' || c.total === 0) };
+  }
+  toast(t) { clearTimeout(this.tT); this.setState({ toast: t }); this.tT = setTimeout(() => this.setState({ toast: '' }), 2600); }
+  updOrder(id, fn) { this.setState(s => ({ orders: s.orders.map(o => o.id === id ? fn(o) : o) })); }
+  _designSetStatus(oid, rid, status) {
+    this.updOrder(oid, o => ({ ...o, payment: status !== 'removed' && o.payment.status === 'link_sent' ? { status: 'unpaid' } : o.payment, reviews: o.reviews.map(r => r.id === rid ? { ...r, status, updatedAt: Date.now() } : r) }));
+    clearTimeout(this.fT); this.setState({ flashId: rid }); this.fT = setTimeout(() => this.setState({ flashId: null }), 900);
+    this.toast('Saved · Customer notified by email');
+  }
+  _designSendWa(o, list) {
+    if (!list.length) return;
+    const lines = list.map((r, i) => `${i + 1}. ${r.author} – ${r.stars}★ – ${r.link}`).join('\n');
+    const msg = this.state.template.replace('{company}', o.biz.name).replace('{profile_link}', o.biz.profile).replace('{order_id}', o.id).replace('{reviews}', lines);
+    const no = this.state.partnerNo.replace(/[^\d]/g, '');
+    try { window.open('https://wa.me/' + no + '?text=' + encodeURIComponent(msg), '_blank'); } catch (e) {}
+    const ids = new Set(list.map(r => r.id));
+    this.updOrder(o.id, x => ({ ...x, reviews: x.reviews.map(r => ids.has(r.id) ? { ...r, status: 'in_progress', sentAt: Date.now(), updatedAt: Date.now() } : r) }));
+    this.setState({ sel: {} });
+    this.toast(list.length + ' review' + (list.length > 1 ? 's' : '') + ' sent via WhatsApp · set to In progress');
+  }
+  statusMeta(st) { return { submitted: ['Submitted', '#EEEEEE', '#555', '#EEEEEE'], in_progress: ['In progress', '#FFFFFF', '#151515', '#151515'], removed: ['✓ Removed', '#151515', '#FFFFFF', '#151515'], not_eligible: ['Not eligible', '#FFFFFF', '#8A8A8A', '#D2D2D2'] }[st]; }
+  _designAnalytics(range, empty, mob) {
+    const days = range || 180;
+    let seed = days * 9301 + 49297; const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    const serpUsed = empty ? 0 : 87, serpMax = 250;
+    const serp = { serpUsed, serpMax, serpPct: (serpUsed / serpMax * 100) + '%', serpCol: serpUsed / serpMax > .8 ? '#D93025' : '#151515' };
+    if (empty) return { empty: true, has: false, periodLabel: 'No data', ...serp };
+    const checks = Array.from({ length: days }, (_, i) => Math.round(18 + 10 * Math.sin(i / 5) + rnd() * 14 + i * 0.08));
+    const orders = checks.map(c => Math.max(0, Math.round(c * (0.12 + rnd() * 0.08))));
+    const sum = a => a.reduce((x, y) => x + y, 0), C = sum(checks), O = sum(orders);
+    const rev = Math.round(O * 0.78 * 2.1 * 98), conv = O / C, rate = 0.71 + rnd() * 0.06;
+    const dPct = () => { const v = Math.round((rnd() - 0.35) * 30); return v; };
+    const chip = v => ({ delta: (v >= 0 ? '+' : '−') + Math.abs(v) + '%', dBg: v >= 0 ? '#E6F4EA' : '#FCE8E6', dFg: v >= 0 ? '#1E8E3E' : '#D93025' });
+    const spark = arr => { const n = Math.min(arr.length, 30), a = arr.slice(-n), mx = Math.max(...a), mn = Math.min(...a); return a.map((v, i) => (i / (n - 1) * 100).toFixed(1) + ',' + (26 - (v - mn) / ((mx - mn) || 1) * 24).toFixed(1)).join(' '); };
+    const fmt = n => '€' + n.toLocaleString('en-US');
+    const kpis = [['Profiles checked', C.toLocaleString('en-US'), checks], ['Orders', O.toLocaleString('en-US'), orders], ['Conversion', (conv * 100).toFixed(1) + '%', checks.map((c, i) => orders[i] / (c || 1))], ['Revenue paid', fmt(rev), orders.map(o => o * 98)], ['Removal rate', Math.round(rate * 100) + '%', checks.map(() => rate + (rnd() - .5) * .1)]].map(([label, value, arr]) => ({ label, value, spark: spark(arr), ...chip(dPct()) }));
+    const visitors = Math.round(C * 2.4), started = Math.round(C * 1.35);
+    const steps = [['Visited order page', visitors], ['Started search', started], ['Selected profile', C], ['Selected ≥ 1 review', Math.round(C * 0.46)], ['Entered contact', Math.round(C * 0.29)], ['Submitted order', O], ['Paid', Math.round(O * 0.78)]];
+    let worst = 1, worstDrop = 0;
+    steps.forEach((st, i) => { if (i) { const d = 1 - st[1] / steps[i - 1][1]; if (d > worstDrop) { worstDrop = d; worst = i; } } });
+    const funnel = steps.map(([label, n], i) => { const d = i ? 1 - n / steps[i - 1][1] : 0, isW = i === worst;
+      return { label, n: n.toLocaleString('en-US'), pct: Math.round(n / visitors * 100) + '%', w: Math.max(2, n / visitors * 100) + '%', bar: isW ? '#D93025' : '#151515',
+        hasDrop: i > 0, drop: Math.round(d * 100) + '%', dropCol: isW ? '#D93025' : '#8A8A8A', dropW: isW ? 600 : 400 }; });
+    // line chart (bucket to max 30 points)
+    const b = Math.max(1, Math.ceil(days / 30)), buck = arr => { const out = []; for (let i = 0; i < arr.length; i += b) out.push(sum(arr.slice(i, i + b))); return out; };
+    const bc = buck(checks), bo = buck(orders), mx = Math.max(...bc) || 1, n = bc.length;
+    const pt = (v, i) => (i / Math.max(1, n - 1) * 300).toFixed(1) + ',' + (130 - v / mx * 115).toFixed(1);
+    const lineChecks = bc.map(pt).join(' '), lineOrders = bo.map(pt).join(' ');
+    const lineArea = 'M0,140 L' + bc.map(pt).join(' L') + ' L300,140 Z';
+    const d0 = Date.now() - days * 86400000, lab = k => new Date(d0 + k * 86400000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const lineLabels = [0, .33, .66, 1].map(f => lab(Math.round(f * (days - 1))));
+    // weekly revenue
+    const wk = Math.max(2, Math.min(13, Math.ceil(days / 7)));
+    const weeksRaw = Array.from({ length: wk }, (_, i) => { const paid = Math.round((600 + rnd() * 1400) * (0.8 + i / wk * 0.4)), open = i >= wk - 2 ? Math.round(300 + rnd() * 700) : Math.round(rnd() * 200); return { paid, open }; });
+    const wmx = Math.max(...weeksRaw.map(w => w.paid + w.open));
+    const weeks = weeksRaw.map((w, i) => ({ paidH: (w.paid / wmx * 100) + '%', openH: (w.open / wmx * 100) + '%', tip: 'Week ' + (i + 1) + ': ' + fmt(w.paid) + ' paid, ' + fmt(w.open) + ' open' }));
+    const countries = [['United States', 38], ['Germany', 17], ['United Kingdom', 14], ['Austria', 9], ['Canada', 7], ['Other', 15]].map(([label, p]) => ({ label, pct: p + '%', w: (p / 38 * 100) + '%' }));
+    const srcTotal = visitors;
+    const sources = [['Google search', .46], ['Blog articles', .21], ['Direct', .18], ['Instagram', .15]].map(([label, p]) => ({ label, n: Math.round(srcTotal * p).toLocaleString('en-US'), pct: Math.round(p * 100) + '%' }));
+    const rv = [['Submitted', Math.round(O * .5), '#EEEEEE', '#D2D2D2'], ['In progress', Math.round(O * .9), '#9E9E9E', '#9E9E9E'], ['Removed', Math.round(O * 2.3), '#151515', '#151515'], ['Not eligible', Math.round(O * .4), '#D93025', '#D93025']];
+    const rt = sum(rv.map(r => r[1])); let acc = 0;
+    const donut = rv.map(([label, n, col, bd]) => { const p = n / rt * 100, off = 100 - acc + 0; acc += p; return { label, n, col, bd, dash: p.toFixed(2) + ' ' + (100 - p).toFixed(2), off: off.toFixed(2) }; });
+    const names = [['Osteria da Anna', 'Italy'], ['Smile Studio Dallas', 'United States'], ['Bäckerei Huber', 'Austria'], ['Northside Auto Repair', 'United States'], ['The Copper Pot', 'United Kingdom'], ['Praxis Dr. Weber', 'Germany'], ['Maple Dental', 'Canada'], ['Harbor Yoga', 'Australia']];
+    const stepNames = ['Selected profile', 'Selected reviews', 'Entered contact', 'Submitted order'];
+    const checked = names.map(([name, country], i) => { const stepI = Math.floor(rnd() * 4), ordered = stepI === 3, hot = !ordered;
+      return { name, country, rating: (3.6 + rnd() * 1.1).toFixed(1), count: Math.round(40 + rnd() * 300), low: Math.round(3 + rnd() * 18), step: stepNames[stepI], ordered, hot,
+        stepCol: ordered ? '#151515' : '#555', stepW: ordered ? 600 : 400, bg: hot ? '#FFF7F6' : 'transparent', profile: 'https://www.google.com/maps/search/' + encodeURIComponent(name),
+        when: i === 0 ? '12 min ago' : i < 3 ? (i * 2) + ' h ago' : (i - 2) + ' d ago' }; });
+    return { empty: false, has: true, periodLabel: range ? 'Last ' + range + ' days' : 'All time', kpis, funnel, worstLabel: steps[worst - 1][0] + ' → ' + steps[worst][0] + ' (' + Math.round(worstDrop * 100) + '%)',
+      lineChecks, lineOrders, lineArea, lineLabels, weeks, barGap: wk > 8 ? '4px' : '8px', weekFirst: 'W1', weekLast: 'W' + wk, weekTotal: fmt(sum(weeksRaw.map(w => w.paid))) + ' paid',
+      countries, sources, donut, revTotal: rt, avgDays: (4 + rnd() * 3).toFixed(1), checked, ...serp };
+  }
+  isToday(t) { return t && new Date(t).toDateString() === new Date().toDateString(); }
+  _designRenderVals() {
+    const s = this.state, mob = s.vw < 760, orders = s.empty ? [] : s.orders;
+    const scr = [['admin', 'Admin'], ['cust', 'Customer dashboard'], ['mail_status', 'Email · Status update'], ['mail_pay', 'Email · Payment']];
+    const curScr = s.screen === 'login' ? 'admin' : s.screen;
+    const base = {
+      desktop: !mob, mobile: mob, today: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }),
+      screenTabs: scr.map(([k, label]) => ({ label, bg: curScr === k ? '#FFFFFF' : 'transparent', fg: curScr === k ? '#151515' : '#B5B5B5', go: () => this.setState({ screen: k === 'admin' ? (s.authed ? 'admin' : 'login') : k }) })),
+      toggleEmpty: () => this.setState({ empty: !s.empty }), emptyLabel: s.empty ? 'Show demo orders' : 'Show empty state',
+      isLogin: s.screen === 'login', isAdmin: s.screen === 'admin', isCustDash: s.screen === 'cust', isEmail: s.screen === 'mail_status' || s.screen === 'mail_pay',
+      isMailStatus: s.screen === 'mail_status', isMailPay: s.screen === 'mail_pay', emailLabel: s.screen === 'mail_pay' ? '07 Email – Payment' : '06 Email – Status update',
+      loginEmail: s.loginEmail, loginPass: s.loginPass, onLoginEmail: e => this.setState({ loginEmail: e.target.value }), onLoginPass: e => this.setState({ loginPass: e.target.value }),
+      doLogin: () => this.setState({ screen: 'admin', authed: true }), onLoginKey: e => { if (e.key === 'Enter') this.setState({ screen: 'admin', authed: true }); },
+      logout: () => this.setState({ screen: 'login', authed: false, loginPass: '' }), logoutLabel: mob ? '' : 'Log out',
+      goOrders: e => { e && e.preventDefault && e.preventDefault(); this.setState({ view: 'orders', openId: null, sel: {} }); window.scrollTo({ top: 0 }); },
+      goSettings: () => this.setState({ view: 'settings', openId: null }),
+      navOrdersBg: (s.view === 'orders' || s.view === 'detail') ? '#151515' : 'transparent', navOrdersFg: (s.view === 'orders' || s.view === 'detail') ? '#fff' : '#555',
+      navAnBg: s.view === 'analytics' ? '#151515' : 'transparent', navAnFg: s.view === 'analytics' ? '#fff' : '#555',
+      goAnalytics: () => { this.setState({ view: 'analytics', openId: null }); window.scrollTo({ top: 0 }); }, isAnalytics: s.view === 'analytics',
+      an: this.analytics(s.range || 30, s.empty, mob), kpiCols: mob ? 'repeat(2,minmax(0,1fr))' : 'repeat(5,minmax(0,1fr))', anCols: mob ? 'minmax(0,1fr)' : 'repeat(2,minmax(0,1fr))', funnelCols: mob ? '110px minmax(0,1fr) 84px' : '220px minmax(0,1fr) 110px',
+      rangeTabs: [[7, '7 days'], [30, '30 days'], [90, '90 days'], [0, 'All']].map(([k, label]) => ({ label, bg: (s.range || 30) === k ? '#151515' : 'transparent', fg: (s.range || 30) === k ? '#fff' : '#555', go: () => this.setState({ range: k }) })),
+      navSetBg: s.view === 'settings' ? '#151515' : 'transparent', navSetFg: s.view === 'settings' ? '#fff' : '#555',
+      isOrders: s.view === 'orders', isDetail: s.view === 'detail', isSettings: s.view === 'settings',
+      hasToast: !!s.toast, toast: s.toast, sender: s.sender,
+      partnerNo: s.partnerNo, onPartnerNo: e => this.setState({ partnerNo: e.target.value }), template: s.template, onTemplate: e => this.setState({ template: e.target.value }), onSender: e => this.setState({ sender: e.target.value }),
+      saveSettings: () => this.toast('Settings saved')
+    };
+    const st = o => this.stage(o);
+    const openOrders = orders.filter(o => !st(o).closed).length;
+    const inProgRev = orders.reduce((a, o) => a + o.reviews.filter(r => r.status === 'in_progress').length, 0);
+    const openAmt = orders.filter(o => o.payment.status !== 'paid').reduce((a, o) => a + this.calc(o).total, 0);
+    const month = new Date().getMonth();
+    const paidMonth = orders.filter(o => o.payment.status === 'paid' && new Date(o.payment.paidAt || 0).getMonth() === month).reduce((a, o) => a + this.calc(o).total, 0);
+    const kpis = [['Open orders', String(openOrders)], ['Reviews in progress', String(inProgRev)], ['Payment open', this.fmt(openAmt)], ['Paid this month', this.fmt(paidMonth)]].map(([label, value], i) => ({ label, value, bg: i === 3 ? '#151515' : '#FFFFFF', fg: i === 3 ? '#FFFFFF' : '#151515', sub: i === 3 ? '#B5B5B5' : '#6B6B6B' }));
+    const filters = [['all', 'All', () => true], ['new', 'New', o => st(o).isNew], ['prog', 'In progress', o => st(o).inProg], ['await', 'Awaiting payment', o => st(o).awaiting], ['paid', 'Paid', o => st(o).paid], ['closed', 'Closed', o => st(o).closed]];
+    const fn = (filters.find(f => f[0] === s.filter) || filters[0])[2];
+    const q = s.q.trim().toLowerCase();
+    const list = orders.filter(fn).filter(o => !q || (o.id + ' ' + o.cust.name + ' ' + o.cust.company + ' ' + o.biz.name).toLowerCase().includes(q));
+    const rows = list.map(o => { const c = this.calc(o), p = this.payInfo(o), n = o.reviews.filter(r => r.status !== 'not_eligible').length;
+      return { id: o.id, company: o.biz.name, customer: o.cust.name, date: this.fmtD(o.date), progressText: c.rem.length + ' of ' + n + ' removed', pct: (n ? c.rem.length / n * 100 : 0) + '%', amount: c.total ? this.fmt(c.total) : '—',
+        pay: p[0], chipBg: p[1], chipFg: p[2], chipBd: p[3], open: () => { this.setState({ view: 'detail', openId: o.id, sel: {}, draft: '' }); window.scrollTo({ top: 0 }); } }; });
+    Object.assign(base, { kpis, rows, hasRows: rows.length > 0, noRows: rows.length === 0, q: s.q, onQ: e => this.setState({ q: e.target.value }),
+      emptyTitle: orders.length === 0 ? 'No orders yet' : 'Nothing matches', emptyText: orders.length === 0 ? 'New orders from byereviews.com will show up here automatically.' : 'Try another filter or search term.',
+      rowCols: mob ? 'minmax(0,1fr) auto' : '110px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.2fr) 110px 110px 90px', rowGap: mob ? '8px 12px' : '14px',
+      filterTabs: filters.map(([k, label, f]) => ({ label, count: orders.filter(f).length, bg: s.filter === k ? '#151515' : 'transparent', fg: s.filter === k ? '#fff' : '#555', go: () => this.setState({ filter: k }) })) });
+    const od = s.orders.find(o => o.id === s.openId);
+    if (od) {
+      const c = this.calc(od), p = this.payInfo(od), open = od.reviews.filter(r => r.status === 'submitted');
+      const selected = od.reviews.filter(r => s.sel[r.id]);
+      Object.assign(base, {
+        detailCols: mob ? 'minmax(0,1fr)' : 'minmax(0,1fr) 360px', sidePos: mob ? 'static' : 'sticky',
+        hasSelection: selected.length > 0, selCount: selected.length, clearSel: () => this.setState({ sel: {} }),
+        sendSelWa: () => this.sendWa(od, selected), sendAllWa: () => this.sendWa(od, open),
+        draft: s.draft, onDraft: e => this.setState({ draft: e.target.value }),
+        sendMsg: () => { const t = s.draft.trim(); if (!t) return; this.updOrder(od.id, o => ({ ...o, msgs: [...o.msgs, { from: 'team', text: t, at: Date.now() }] })); this.setState({ draft: '' }); this.toast('Sent to customer dashboard & email'); },
+        sendPayLink: () => { this.updOrder(od.id, o => ({ ...o, payment: { status: 'link_sent', link: 'https://buy.stripe.com/' + Math.random().toString(36).slice(2, 12), linkSentAt: Date.now() } })); this.toast('Payment link created · emailed to customer'); },
+        resendLink: () => { this.updOrder(od.id, o => ({ ...o, payment: { ...o.payment, linkSentAt: Date.now() } })); this.toast('Payment email resent'); },
+        copyLink: () => { try { navigator.clipboard.writeText(od.payment.link); } catch (e) {} this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1500); }, copyLabel: s.copied ? 'Copied' : 'Copy',
+        simulatePaid: () => { this.updOrder(od.id, o => ({ ...o, payment: { ...o.payment, status: 'paid', paidAt: Date.now() } })); this.toast('Stripe: payment received · status set to Paid'); },
+        markPaid: () => { this.updOrder(od.id, o => ({ ...o, payment: { ...o.payment, status: 'paid', paidAt: Date.now() } })); this.toast('Marked as paid'); },
+        sendPw: () => this.toast('New password emailed to ' + od.cust.email),
+        o: { ...od, company: od.biz.name, date: this.fmtD(od.date), pay: p[0], chipBg: p[1], chipFg: p[2], chipBd: p[3], headBg: p[1] === '#EEEEEE' ? '#FFFFFF' : p[1], headBd: p[3] === '#EEEEEE' ? '#D2D2D2' : p[3],
+          removedCount: c.rem.length, reviewCount: od.reviews.filter(r => r.status !== 'not_eligible').length, hasOpen: open.length > 0,
+          subtotal: this.fmt(c.sub), discPct: Math.round(c.rt * 100) + '%', discAmt: '– ' + this.fmt(c.disc), total: this.fmt(c.total),
+          payNothing: c.total === 0 && od.payment.status !== 'paid', payUnpaid: c.total > 0 && (od.payment.status === 'unpaid' || od.payment.status === 'none'), payLink: od.payment.status === 'link_sent', payPaid: od.payment.status === 'paid',
+          link: od.payment.link, linkSentAt: od.payment.linkSentAt ? this.fmtD(od.payment.linkSentAt) : '', paidAt: od.payment.paidAt ? this.fmtD(od.payment.paidAt) : '',
+          mailto: 'mailto:' + od.cust.email + '?subject=' + encodeURIComponent('Your order ' + od.id), waCustomer: 'https://wa.me/' + od.cust.phone.replace(/[^\d]/g, ''),
+          msgs: od.msgs.length ? od.msgs.map(m => ({ text: m.text, meta: (m.from === 'team' ? 'You' : od.cust.name) + ' · ' + this.fmtD(m.at), justify: m.from === 'team' ? 'flex-end' : 'flex-start', bg: m.from === 'team' ? '#151515' : '#F4F4F4', fg: m.from === 'team' ? '#fff' : '#151515' })) : [{ text: 'No messages yet.', meta: '', justify: 'center', bg: 'transparent', fg: '#8A8A8A' }],
+          reviews: od.reviews.map(r => { const exp = !!s.expanded[r.id], long = r.text.length > 90, selectable = r.status === 'submitted' || r.status === 'in_progress', on = !!s.sel[r.id];
+            return { ...r, starsOn: '★'.repeat(r.stars), starsOff: '★'.repeat(5 - r.stars), price: this.fmt(this.price(r)), age: r.age === 'recent' ? 'recent' : 'older',
+              textShown: !r.text ? 'Star rating only – no text' : (long && !exp ? r.text.slice(0, 90) + '…' : r.text), moreLabel: long ? (exp ? 'less' : 'more') : '',
+              toggleText: () => this.setState({ expanded: { ...s.expanded, [r.id]: !exp } }),
+              toggleSel: () => { if (selectable) this.setState({ sel: { ...s.sel, [r.id]: !on } }); }, boxBg: on ? '#151515' : '#FFFFFF', boxBd: on ? '#151515' : '#C8C8C8', selOpacity: selectable ? 1 : .3, selCursor: selectable ? 'pointer' : 'not-allowed',
+              wasSent: !!r.sentAt, sentAt: r.sentAt ? this.fmtD(r.sentAt) + ', ' + new Date(r.sentAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '',
+              flash: s.flashId === r.id ? '#F4F4F4' : 'transparent', canQuick: r.status !== 'removed' && r.status !== 'not_eligible', markRemoved: () => this.setStatus(od.id, r.id, 'removed'),
+              seg: [['submitted', 'Submitted'], ['in_progress', 'In progress'], ['removed', 'Removed'], ['not_eligible', 'Not eligible']].map(([k, label]) => ({ label, bg: r.status === k ? (k === 'removed' ? '#151515' : '#FFFFFF') : 'transparent', fg: r.status === k ? (k === 'removed' ? '#FFFFFF' : '#151515') : '#8A8A8A', sh: r.status === k && k !== 'removed' ? '0 1px 3px rgba(0,0,0,.08)' : 'none', go: () => { if (r.status !== k) this.setStatus(od.id, r.id, k); } })) }; }) }
+      });
+    }
+    const co = s.orders.find(o => o.id === s.custId) || s.orders[0] || { id: '', biz: { name: '' }, cust: { name: ' ', email: '' }, reviews: [], payment: { status: 'none' }, msgs: [] };
+    const cc = this.calc(co), phase = co.payment.status === 'paid' ? 4 : cc.rem.length ? 3 : co.reviews.some(r => r.status === 'in_progress') ? 2 : 1;
+    const changed = co.reviews.filter(r => this.isToday(r.updatedAt));
+    const mk = r => { const m = this.statusMeta(r.status); return { author: r.author, stars: r.stars, status: m[0], chipBg: m[1], chipFg: m[2], chipBd: m[3], short: r.text ? (r.text.length > 70 ? r.text.slice(0, 70) + '…' : r.text) : 'Star rating only', price: this.fmt(this.price(r)) }; };
+    Object.assign(base, {
+      goCustDash: e => { e && e.preventDefault && e.preventDefault(); this.setState({ screen: 'cust' }); },
+      custPay: e => { e && e.preventDefault && e.preventDefault(); this.updOrder(co.id, o => ({ ...o, payment: { ...o.payment, status: 'paid', paidAt: Date.now() } })); this.setState({ screen: 'cust' }); this.toast('Stripe Checkout · payment successful'); },
+      mailSubject: s.screen === 'mail_pay' ? cc.rem.length + ' review' + (cc.rem.length === 1 ? '' : 's') + ' removed – ' + this.fmt(cc.total) + ' due' : 'Status update on your order ' + co.id,
+      mailChanged: (changed.length ? changed : co.reviews.slice(0, 2)).map(mk),
+      c: { id: co.id, company: co.biz.name, first: co.cust.name.split(' ')[0], email: co.cust.email,
+        showPay: co.payment.status !== 'paid' && cc.total > 0, paid: co.payment.status === 'paid',
+        payTitle: cc.rem.length + ' review' + (cc.rem.length === 1 ? '' : 's') + ' removed – pay ' + this.fmt(cc.total),
+        removedWord: cc.rem.length === 1 ? '1 review is' : cc.rem.length + ' reviews are', removedList: cc.rem.map(mk), discPct: Math.round(cc.rt * 100) + '%', discAmt: '– ' + this.fmt(cc.disc), total: this.fmt(cc.total),
+        timeline: ['Submitted', 'In progress', 'Removed', 'Paid'].map((label, i) => ({ label, bar: i < phase ? '#151515' : '#E4E4E4', fg: i < phase ? '#151515' : '#8A8A8A' })),
+        reviews: co.reviews.map(r => { const m = mk(r), t = this.isToday(r.updatedAt); return { ...m, updatedToday: t, hl: t ? '#151515' : 'transparent', textCol: r.status === 'removed' ? '#9E9E9E' : '#333', deco: r.status === 'removed' ? 'line-through' : 'none' }; }) }
+    });
+    return base;
+  }
+  // ===== byereviews production layer for the admin panel (injected by tools/build_admin.py) =====
+
+  api(action, opts = {}) {
+    const q = opts.query ? '&' + new URLSearchParams(opts.query).toString() : '';
+    const init = opts.body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(opts.body) } : { credentials: 'same-origin' };
+    return fetch('/order.php?a=' + action + q, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
+  }
+  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, anData: null, anLoading: false, adminEmail: '' });
+
+  componentDidMount() {
+    this._designDidMount();
+    this.api('admin-me').then(r => {
+      if (r.ok && r.authed) { this.setState({ screen: 'admin', authed: true, adminEmail: r.email }); this.load(true); }
+      else this.setState({ screen: 'login', notConfigured: r.ok && !r.configured });
+    });
+    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) this.load(false); }, 20000);
+    window.addEventListener('hashchange', this.onHash = () => this.fromHash());
+  }
+  componentWillUnmount() { this._designWillUnmount(); clearInterval(this.poll); window.removeEventListener('hashchange', this.onHash); }
+
+  load(first) {
+    return this.api('admin-orders').then(r => {
+      if (!r.ok) { if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false }); return; }
+      const st = r.settings || {};
+      this.setState(s => ({ orders: r.orders,
+        ...(first ? { partnerNo: st.partnerNo || '', template: st.template || s.template, sender: st.sender || '' } : {}),
+        stripe: st.stripe || s.stripe }), () => { if (first) this.fromHash(); });
+    });
+  }
+  // #BR-12345 opens an order, #analytics / #settings the views
+  fromHash() {
+    const h = decodeURIComponent((location.hash || '').slice(1));
+    if (/^BR-\d{5}$/.test(h) && this.state.orders.some(o => o.id === h)) this.setState({ view: 'detail', openId: h, sel: {}, draft: '' });
+    else if (h === 'analytics') { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); }
+    else if (h === 'settings') this.setState({ view: 'settings', openId: null });
+  }
+  componentDidUpdate() {
+    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : '';
+    if (s.authed && (location.hash || '') !== h) history.replaceState(null, '', location.pathname + h);
+    if (s.view === 'analytics' && (s.range || 30) !== this._anRange) this.loadAnalytics();
+  }
+  loadAnalytics() {
+    const range = this.state.range || 30; this._anRange = range;
+    this.setState({ anLoading: true });
+    this.api('admin-analytics', { query: { range } }).then(r => { if (r.ok && (this.state.range || 30) === range) this.setState({ anData: r, anLoading: false }); });
+  }
+  replaceOrder(o) { if (o) this.setState(s => ({ orders: s.orders.map(x => x.id === o.id ? o : x) })); }
+  fail(r, fallback) {
+    const m = { stripe_not_configured: 'Stripe is not connected – add the Stripe key on the server', stripe_failed: 'Stripe error – please try again', nothing_billable: 'Nothing to bill yet', not_authed: 'Session expired – please sign in again', invalid_sender: 'Invalid sender email' }[r.error];
+    this.toast(m || fallback || 'Something went wrong');
+    if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false });
+  }
+
+  login() {
+    const s = this.state;
+    this.api('admin-login', { body: { email: s.loginEmail.trim(), password: s.loginPass } }).then(r => {
+      if (!r.ok) return this.toast(r.error === 'not_configured' ? 'Admin login is not configured on the server' : r.error === 'too_many_requests' ? 'Too many attempts – wait a few minutes' : "Email or password doesn't match");
+      this.setState({ screen: 'admin', authed: true, loginPass: '', adminEmail: r.email, view: 'orders' });
+      this.load(true);
+    });
+  }
+
+  setStatus(oid, rid, status) {
+    this._designSetStatus(oid, rid, status); // optimistic update, row flash, toast
+    this.api('admin-status', { body: { order: oid, review: rid, status } }).then(r => r.ok ? this.replaceOrder(r.order) : (this.fail(r, 'Could not save'), this.load(false)));
+  }
+  sendWa(o, list) {
+    if (!list.length) return;
+    if (!(this.state.partnerNo || '').replace(/[^\d]/g, '')) return this.toast('Add the removal partner\'s WhatsApp number in Settings first');
+    this._designSendWa(o, list); // opens wa.me with the template, marks in progress locally
+    this.api('admin-wa', { body: { order: o.id, reviews: list.map(r => r.id) } }).then(r => r.ok ? this.replaceOrder(r.order) : this.fail(r, 'Could not save'));
+  }
+
+  // real numbers for the analytics view, in the shape the design renders
+  analytics(range, empty, mob) {
+    const d = this.state.anData, s = this.state;
+    const serpOf = sp => { const used = sp ? sp.used : 0, max = sp && sp.max ? sp.max : 0; return { serpUsed: used, serpMax: max || '—', serpPct: (max ? Math.min(100, used / max * 100) : 0) + '%', serpCol: max && used / max > .8 ? '#D93025' : '#151515' }; };
+    if (!d || !d.hasData) return { empty: true, has: false, periodLabel: s.anLoading ? 'Loading…' : 'No data', ...serpOf(d && d.serp) };
+    const fmt = n => '€' + Math.round(n).toLocaleString('en-US');
+    const chip = (a, b) => { if (b == null || a == null) return { delta: '—', dBg: '#EEEEEE', dFg: '#6B6B6B' }; const v = b ? Math.round((a - b) / b * 100) : (a ? 100 : 0); return { delta: (v >= 0 ? '+' : '−') + Math.abs(v) + '%', dBg: v >= 0 ? '#E6F4EA' : '#FCE8E6', dFg: v >= 0 ? '#1E8E3E' : '#D93025' }; };
+    const spark = arr => { const n = Math.min(arr.length, 30), a = arr.slice(-n), mx = Math.max(...a), mn = Math.min(...a); return a.map((v, i) => (i / Math.max(1, n - 1) * 100).toFixed(1) + ',' + (26 - (v - mn) / ((mx - mn) || 1) * 24).toFixed(1)).join(' '); };
+    const k = d.kpi, se = d.series;
+    const conv = se.checks.map((c, i) => c ? se.orders[i] / c : 0);
+    const kpis = [
+      ['Profiles checked', k.checks[0].toLocaleString('en-US'), se.checks, chip(k.checks[0], k.checks[1])],
+      ['Orders', k.orders[0].toLocaleString('en-US'), se.orders, chip(k.orders[0], k.orders[1])],
+      ['Conversion', (k.conv[0] * 100).toFixed(1) + '%', conv, chip(k.conv[0], k.conv[1])],
+      ['Revenue paid', fmt(k.revenue[0]), se.revenue, chip(k.revenue[0], k.revenue[1])],
+      ['Removal rate', k.removal[0] == null ? '—' : Math.round(k.removal[0] * 100) + '%', se.orders, chip(k.removal[0], k.removal[1])]
+    ].map(([label, value, arr, c]) => ({ label, value, spark: spark(arr), ...c }));
+    const steps = d.funnel, start = steps[0][1] || 1;
+    let worst = 1, worstDrop = -1;
+    steps.forEach((st, i) => { if (i && steps[i - 1][1]) { const dr = 1 - st[1] / steps[i - 1][1]; if (dr > worstDrop) { worstDrop = dr; worst = i; } } });
+    const funnel = steps.map(([label, n], i) => { const prev = i ? steps[i - 1][1] : 0, dr = i && prev ? 1 - n / prev : 0, isW = i === worst && worstDrop > 0;
+      return { label, n: n.toLocaleString('en-US'), pct: Math.round(n / start * 100) + '%', w: Math.max(2, n / start * 100) + '%', bar: isW ? '#D93025' : '#151515',
+        hasDrop: i > 0, drop: Math.round(Math.max(0, dr) * 100) + '%', dropCol: isW ? '#D93025' : '#8A8A8A', dropW: isW ? 600 : 400 }; });
+    const days = d.days, sum = a => a.reduce((x, y) => x + y, 0), b = Math.max(1, Math.ceil(days / 30));
+    const buck = arr => { const out = []; for (let i = 0; i < arr.length; i += b) out.push(sum(arr.slice(i, i + b))); return out; };
+    const bc = buck(se.checks), bo = buck(se.orders), mx = Math.max(1, ...bc, ...bo), n = bc.length;
+    const pt = (v, i) => (i / Math.max(1, n - 1) * 300).toFixed(1) + ',' + (130 - v / mx * 115).toFixed(1);
+    const lab = kk => new Date(d.from * 1000 + kk * 86400000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const wmx = Math.max(1, ...d.weeks.map(w => w.paid + w.open));
+    const weeks = d.weeks.map((w, i) => ({ paidH: (w.paid / wmx * 100) + '%', openH: (w.open / wmx * 100) + '%', tip: 'Week ' + (i + 1) + ': ' + fmt(w.paid) + ' paid, ' + fmt(w.open) + ' open' }));
+    const cEntries = Object.entries(d.countries), cTotal = sum(cEntries.map(e => e[1])) || 1;
+    const top = cEntries.slice(0, 5), rest = sum(cEntries.slice(5).map(e => e[1]));
+    const cList = (rest ? [...top, ['Other', rest]] : top).map(([label, v]) => [label, Math.round(v / cTotal * 100)]);
+    const cMax = Math.max(1, ...cList.map(c => c[1]));
+    const countries = cList.map(([label, p]) => ({ label, pct: p + '%', w: (p / cMax * 100) + '%' }));
+    const srcNames = { google: 'Google search', blog: 'Blog articles', direct: 'Direct', instagram: 'Instagram', other: 'Other' }, sTotal = sum(Object.values(d.sources)) || 1;
+    const sources = Object.entries(d.sources).sort((x, y) => y[1] - x[1]).map(([kk, v]) => ({ label: srcNames[kk] || kk, n: v.toLocaleString('en-US'), pct: Math.round(v / sTotal * 100) + '%' }));
+    const rv = [['Submitted', d.reviews.submitted, '#EEEEEE', '#D2D2D2'], ['In progress', d.reviews.in_progress, '#9E9E9E', '#9E9E9E'], ['Removed', d.reviews.removed, '#151515', '#151515'], ['Not eligible', d.reviews.not_eligible, '#D93025', '#D93025']];
+    const rt = sum(rv.map(r => r[1])); let acc = 0;
+    const donut = rv.map(([label, nn, col, bd]) => { const p = rt ? nn / rt * 100 : 0, off = 100 - acc; acc += p; return { label, n: nn, col, bd, dash: p.toFixed(2) + ' ' + (100 - p).toFixed(2), off: off.toFixed(2) }; });
+    const ago = t => { const m = Math.round((Date.now() / 1000 - t) / 60); return m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
+    const checked = d.recent.map(c => ({ name: c.name, country: c.country || '—', rating: c.rating != null ? Number(c.rating).toFixed(1) : '—', count: c.count, low: c.low, step: c.reached, ordered: c.ordered, hot: !c.ordered,
+      stepCol: c.ordered ? '#151515' : '#555', stepW: c.ordered ? 600 : 400, bg: c.ordered ? 'transparent' : '#FFF7F6', profile: c.mapsUrl, when: ago(c.t) }));
+    return { empty: false, has: true, periodLabel: (range ? 'Last ' + range + ' days' : 'All time'), kpis, funnel,
+      worstLabel: worstDrop > 0 ? steps[worst - 1][0] + ' → ' + steps[worst][0] + ' (' + Math.round(worstDrop * 100) + '%)' : '—',
+      lineChecks: bc.map(pt).join(' '), lineOrders: bo.map(pt).join(' '), lineArea: 'M0,140 L' + bc.map(pt).join(' L') + ' L300,140 Z',
+      lineLabels: [0, .33, .66, 1].map(f => lab(Math.round(f * (days - 1)))), weeks, barGap: weeks.length > 8 ? '4px' : '8px', weekFirst: 'W1', weekLast: 'W' + weeks.length,
+      weekTotal: fmt(sum(d.weeks.map(w => w.paid))) + ' paid', countries, sources, donut, revTotal: rt, avgDays: d.avgDays == null ? '—' : d.avgDays.toFixed(1), checked, ...serpOf(d.serp) };
+  }
+
+  renderVals() {
+    const s = this.state, v = this._designRenderVals();
+    const od = s.orders.find(o => o.id === s.openId);
+    const cur = od && od.currency === 'USD' ? '$' : '€', money = n => cur + Number(n).toLocaleString('en-US');
+    Object.assign(v, {
+      isLogin: s.screen === 'login', isAdmin: s.screen === 'admin', isCustDash: false, isEmail: false,
+      adminInitial: (s.adminEmail || 'A')[0].toUpperCase(),
+      doLogin: () => this.login(), onLoginKey: e => { if (e.key === 'Enter') this.login(); },
+      logout: () => { this.api('admin-logout', { body: {} }); this.setState({ screen: 'login', authed: false, loginPass: '', orders: [], view: 'orders', openId: null }); },
+      goAnalytics: () => { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); window.scrollTo({ top: 0 }); },
+      saveSettings: () => this.api('admin-settings', { body: { partnerNo: s.partnerNo, template: s.template, sender: s.sender } }).then(r => r.ok ? this.toast('Settings saved') : this.fail(r)),
+      stripeLabel: s.stripe.connected ? 'Connected' : 'Not connected', stripeAcct: s.stripe.account ? s.stripe.account.slice(0, 5) + '…' + s.stripe.account.slice(-4) : 'add key on server', stripeDot: s.stripe.connected ? '#151515' : '#D93025',
+      loginHint: s.notConfigured ? 'Admin login is not configured on the server yet.' : ''
+    });
+    if (od) {
+      const busy = fnName => { if (this._busy) return true; this._busy = fnName; setTimeout(() => { this._busy = null; }, 1500); return false; };
+      Object.assign(v, {
+        sendMsg: () => { const t = s.draft.trim(); if (!t) return; this.setState({ draft: '' });
+          this.api('admin-message', { body: { order: od.id, text: t } }).then(r => r.ok ? (this.replaceOrder(r.order), this.toast('Sent to customer dashboard & email')) : this.fail(r, 'Message not sent')); },
+        sendPayLink: () => { if (busy('pay')) return; this.toast('Creating payment link…');
+          this.api('admin-paylink', { body: { order: od.id } }).then(r => r.ok ? (this.replaceOrder(r.order), this.toast('Payment link created · emailed to customer')) : this.fail(r)); },
+        resendLink: () => { if (busy('resend')) return; this.api('admin-paylink', { body: { order: od.id, resend: true } }).then(r => r.ok ? (this.replaceOrder(r.order), this.toast('Payment email resent')) : this.fail(r)); },
+        markPaid: () => { if (!confirm('Mark ' + od.id + ' as paid?')) return; this.api('admin-markpaid', { body: { order: od.id } }).then(r => r.ok ? (this.replaceOrder(r.order), this.toast('Marked as paid')) : this.fail(r)); },
+        sendPw: () => { if (!confirm('Send a new password to ' + od.cust.email + '?')) return; this.api('admin-resetpw', { body: { order: od.id } }).then(r => r.ok ? this.toast('New password emailed to ' + r.email) : this.fail(r)); }
+      });
+      if (v.o) {
+        const c = this.calc(od);
+        Object.assign(v.o, { subtotal: money(c.sub), discAmt: '– ' + money(c.disc), total: money(c.total),
+          mailto: 'mailto:' + od.cust.email + '?subject=' + encodeURIComponent('Your order ' + od.id), waCustomer: 'https://wa.me/' + (od.cust.phone || '').replace(/[^\d]/g, ''), hasPhone: !!(od.cust.phone || '').replace(/[^\d]/g, ''),
+          paidVia: od.payment.via === 'manual' ? 'marked manually' : 'via Stripe' });
+        v.o.reviews = v.o.reviews.map(r => ({ ...r, price: money(r.age === 'recent' ? 90 : 125) }));
+      }
+    }
+    return v;
+  }
+
+}
+</script>
+</body>
+</html>
