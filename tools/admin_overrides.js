@@ -18,9 +18,10 @@
   }
   componentWillUnmount() { this._designWillUnmount(); clearInterval(this.poll); window.removeEventListener('hashchange', this.onHash); }
 
+  loadAds() { this.api('admin-ads').then(r => { if (r.ok) this.setState({ ads: r.ads, adsStats: r.stats }); }); }
   loadUnread() { this.api('admin-inbox-unread').then(r => { if (r.ok && r.unread !== this.state.inboxUnread) this.setState({ inboxUnread: r.unread }); }); }
   load(first) {
-    if (first) this.loadUnread();
+    if (first) { this.loadUnread(); this.loadAds(); }
     return this.api('admin-orders').then(r => {
       if (!r.ok) { if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false }); return; }
       const st = r.settings || {};
@@ -151,7 +152,14 @@
       goAnalytics: () => { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); window.scrollTo({ top: 0 }); },
       saveSettings: () => this.api('admin-settings', { body: { partnerNo: s.partnerNo, template: s.template, sender: s.sender } }).then(r => r.ok ? this.toast('Settings saved') : this.fail(r)),
       stripeLabel: s.stripe.connected ? 'Connected' : 'Not connected', stripeAcct: s.stripe.account ? s.stripe.account.slice(0, 5) + '…' + s.stripe.account.slice(-4) : 'add key on server', stripeDot: s.stripe.connected ? '#151515' : '#D93025',
-      loginHint: s.notConfigured ? 'Admin login is not configured on the server yet.' : ''
+      loginHint: s.notConfigured ? 'Admin login is not configured on the server yet.' : '',
+      adsSwBg: s.ads && s.ads.clickIds ? '#151515' : '#D2D2D2', adsSwJust: s.ads && s.ads.clickIds ? 'flex-end' : 'flex-start',
+      adsToggle: () => { const on = !(s.ads && s.ads.clickIds);
+        this.api('admin-ads', { body: { clickIds: on } }).then(r => r.ok ? (this.setState({ ads: r.ads, adsStats: r.stats }), this.toast(on ? 'Click IDs are stored with new orders' : 'Click IDs off')) : this.fail(r)); },
+      adsText: s.ads && s.ads.clickIds
+        ? 'On: when someone orders after clicking an ad, the Google click ID (gclid) is stored with the order. No cookies, nothing stored in the browser. Upload the CSVs in Google Ads → Goals → Conversions → Uploads (conversion actions "' + s.ads.orderName + '" and "' + s.ads.paidName + '", source: clicks).'
+        : 'Off. Turn on to store the Google click ID (gclid) with orders that come from an ad – cookie-free – and export them as offline conversions for Google Ads. Mention it in the privacy policy before turning it on.',
+      adsStatsText: s.adsStats ? s.adsStats.orders + ' orders from ad clicks · ' + s.adsStats.paid + ' paid · ' + (Math.round(s.adsStats.value * 100) / 100) + ' paid value' : ''
     });
     if (od) {
       const busy = fnName => { if (this._busy) return true; this._busy = fnName; setTimeout(() => { this._busy = null; }, 1500); return false; };

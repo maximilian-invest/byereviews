@@ -97,6 +97,21 @@ idx = s.rindex('\n}\n</script>')
 s = s[:idx] + '\n' + overrides + s[idx:]
 
 assert 'fonts.googleapis' not in s and 'PROTOTYPE' not in s
+# Settings: Google Ads conversions (cookie-free click IDs + CSV export for offline conversion import, app/ads.php)
+rep('  <button onClick="{{ saveSettings }}" style="align-self:flex-start;height:54px;', """  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span style="font-size:18px;font-weight:600">Google Ads conversions</span>
+      <button onClick="{{ adsToggle }}" aria-label="Store Google Ads click IDs" style="flex:none;width:52px;height:30px;border:0;cursor:pointer;border-radius:15px;padding:3px;background:{{ adsSwBg }};display:flex;justify-content:{{ adsSwJust }}"><span style="width:24px;height:24px;border-radius:50%;background:#fff;display:block"></span></button>
+    </div>
+    <span style="font-size:14px;line-height:1.5;color:#555">{{ adsText }}</span>
+    <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ adsStatsText }}</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a href="/order.php?a=admin-ads-export&amp;kind=order" style="background:#F4F4F4;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500;color:#151515">Download order conversions (CSV)</a>
+      <a href="/order.php?a=admin-ads-export&amp;kind=paid" style="background:#F4F4F4;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500;color:#151515">Download payment conversions (CSV)</a>
+    </div>
+  </div>
+  <button onClick="{{ saveSettings }}" style="align-self:flex-start;height:54px;""")
+
 out = ROOT / 'public' / 'admin' / 'index.html'
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(s, encoding='utf-8')

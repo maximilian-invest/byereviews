@@ -165,6 +165,7 @@ function action_order(): void {
         'payToken' => bin2hex(random_bytes(16)),
         'ip' => client_ip(),
     ];
+    if (ads_settings()['clickIds'] && ($ads = ads_capture($d))) $order['ads'] = $ads; // Google Ads click ID (Admin → Settings)
 
     $password = null;
     $newAccount = false;
