@@ -172,6 +172,7 @@ pages = {
     'pricing/index.html': ('/', ''),
     'how-it-works/index.html': ('/', ''),
     'faq/index.html': ('/', ''),
+    'results/index.html': ('/', ''),
     'order/thanks/index.html': ('/order/', '<meta name="robots" content="noindex, nofollow">\n'),
     'login/index.html': ('/login/', '<meta name="robots" content="noindex, follow">\n'),
     'dashboard/index.html': ('/dashboard/', '<meta name="robots" content="noindex, nofollow">\n'),
@@ -183,7 +184,7 @@ for path, (canonical, robots) in pages.items():
     prev = out.read_text(encoding='utf-8') if out.exists() else ''
     # keep an existing prerender snapshot (made by tools/prerender.js)
     snap = re.search(r'<div id="prerender">.*?</div><!--/prerender-->', prev, flags=re.S)
-    if snap and path in ('index.html', 'pricing/index.html', 'how-it-works/index.html', 'faq/index.html'):
+    if snap and path in ('index.html', 'pricing/index.html', 'how-it-works/index.html', 'faq/index.html', 'results/index.html'):
         html = html.replace('<!--PRERENDER-->', snap.group(0), 1)
     out.write_text(html, encoding='utf-8')
 print('built', ', '.join(pages))
