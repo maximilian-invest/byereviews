@@ -126,7 +126,7 @@ function leads_settings(): array {
     $sel = [];
     foreach (['GB', 'US'] as $r) $sel[$r] = isset($s['sel'][$r]) ? leads_clean_sel($r, $s['sel'][$r]) : LEADS_DEFAULT_SEL[$r];
     return ['region' => $s['region'] ?? 'GB', 'sel' => $sel, 'crit' => ($s['crit'] ?? []) + LEADS_CRIT, 'ig' => $s['ig'] ?? true,
-        'exclude' => $s['exclude'] ?? ''];
+        'exclude' => $s['exclude'] ?? '', 'target' => (int)($s['target'] ?? 500)];
 }
 
 /** Chain / franchise branch? Built-in list + own exclude list (name), store-locator style website, or a website shared with another place of this run. */
@@ -173,15 +173,13 @@ function leads_purge(): void {
 // ---------- run ----------
 
 function leads_new_stats(): array {
-    return ['places' => 0, 'small' => 0, 'rev' => 0, 'leads' => 0, 'skip' => 0];
+    return ['searches' => 0, 'places' => 0, 'small' => 0, 'rev' => 0, 'leads' => 0, 'skip' => 0, 'chains' => 0];
 }
 
 function leads_run_view(?array $r): ?array {
     if (!$r) return null;
-    return ['id' => $r['id'], 'status' => $r['status'], 'region' => $r['region'], 'total' => $r['total'], 'i' => $r['done'],
-        'current' => $r['current'] ?? '', 'startedAt' => $r['startedAt'], 'endedAt' => $r['endedAt'] ?? null, 'stopReason' => $r['stopReason'] ?? '',
-        'remaining' => count(array_filter($r['tasks'], fn($t) => $t['t'] === 'search')),
-        'pending' => 0] + $r['stats'];
+    return ['id' => $r['id'], 'status' => $r['status'], 'region' => $r['region'], 'target' => (int)($r['target'] ?? 0),
+        'current' => $r['current'] ?? '', 'startedAt' => $r['startedAt'], 'endedAt' => $r['endedAt'] ?? null, 'stopReason' => $r['stopReason'] ?? ''] + $r['stats'] + ['searches' => 0];
 }
 
 /** Up to 5 reviews per place come back with the search (Google picks them by relevance) → fresh bad ones. */
@@ -214,7 +212,8 @@ function leads_task(array &$run, array $t): bool {
     $res = config('mock_google') ? leads_mock_search($t['q'] . ($t['page'] ?? 1))
         : leads_google('POST', 'https://places.googleapis.com/v1/places:searchText', LEADS_TEXT_MASK, $body);
     $page = (int)($t['page'] ?? 1);
-    if (!$res['ok']) { if (!empty($res['fatal'])) { $run['stopReason'] = 'api_error'; return false; } $run['done']++; return true; }
+    $run['stats']['searches'] = ($run['stats']['searches'] ?? 0) + 1;
+    if (!$res['ok']) { if (!empty($res['fatal'])) { $run['stopReason'] = 'api_error'; return false; } return true; }
     foreach ($res['data']['places'] ?? [] as $p) {
         $run['stats']['places']++;
         $id = (string)($p['id'] ?? ''); $n = (int)($p['userRatingCount'] ?? 0); $rating = (float)($p['rating'] ?? 0);
@@ -242,23 +241,46 @@ function leads_task(array &$run, array $t): bool {
     }
     $next = (string)($res['data']['nextPageToken'] ?? '');
     if ($next !== '' && $page < LEADS_PAGES) $run['tasks'][] = ['t' => 'search', 'q' => $t['q'], 'page' => $page + 1, 'token' => $next];
-    else $run['done']++;
     return true;
 }
 
+/** Queues the next search of the picked list (continues where the last run stopped). False when every search was done once in this run. */
+function leads_next_query(array &$run): bool {
+    $n = count($run['queries']);
+    if (!$n || $run['visited'] >= $n) return false;
+    $run['tasks'][] = ['t' => 'search', 'q' => $run['queries'][$run['qi'] % $n]];
+    $run['qi'] = ($run['qi'] + 1) % $n;
+    $run['visited']++;
+    return true;
+}
+
+/** Runs tasks for up to LEADS_STEP_SECONDS; a run ends once `target` places were checked. */
 function leads_work(array $run): array {
     $until = microtime(true) + LEADS_STEP_SECONDS;
-    while ($run['status'] === 'running' && $run['tasks'] && microtime(true) < $until) {
-        $t = $run['tasks'][0];
+    while ($run['status'] === 'running' && microtime(true) < $until) {
+        if ($run['stats']['places'] >= $run['target']) // enough profiles: finish only the Instagram lookups
+            $run['tasks'] = array_values(array_filter($run['tasks'], fn($t) => $t['t'] !== 'search'));
+        if (!$run['tasks'] && ($run['stats']['places'] >= $run['target'] || !leads_next_query($run))) {
+            $run['status'] = 'done'; $run['endedAt'] = date('c'); $run['current'] = '';
+            break;
+        }
+        $t = array_shift($run['tasks']);
         if (!leads_task($run, $t)) {
+            array_unshift($run['tasks'], $t); // retried when the run is continued
             $run['status'] = $run['stopReason'] === 'api_error' ? 'error' : 'quota';
             $run['endedAt'] = date('c');
             break;
         }
-        array_shift($run['tasks']);
     }
-    if ($run['status'] === 'running' && !$run['tasks']) { $run['status'] = 'done'; $run['endedAt'] = date('c'); $run['current'] = ''; }
+    if ($run['status'] !== 'running') leads_save_cursor($run);
     return $run;
+}
+
+/** Where the next run with the same selection starts. */
+function leads_save_cursor(array $run): void {
+    $qi = $run['qi'];
+    foreach ($run['tasks'] as $t) if ($t['t'] === 'search' && empty($t['page'])) { $qi = ($qi - 1 + count($run['queries'])) % max(1, count($run['queries'])); }
+    store_update('leadsys', 'settings', function (?array $s) use ($run, $qi) { $s = $s ?? []; $s['cursors'][$run['key']] = $qi; return $s; });
 }
 
 // ---------- actions ----------
@@ -282,7 +304,7 @@ function action_admin_leads(): void {
     json_out(leads_state_payload());
 }
 
-/** Starts a run (or a dry run estimate). A run stopped by the quota is resumed when the queries are unchanged. */
+/** Starts a run (or a dry-run estimate). Checks `target` places; continues the picked list where the last run stopped. */
 function action_admin_leads_run(): void {
     leads_admin();
     $d = json_body();
@@ -291,32 +313,28 @@ function action_admin_leads_run(): void {
     $queries = leads_build_queries($region, $sel);
     $crit = leads_clean_crit($d['crit'] ?? []);
     $ig = !empty($d['ig']);
-    $st = leads_settings();
     $exclude = clean($d['exclude'] ?? '', 1000);
-    $st['region'] = $region; $st['sel'][$region] = $sel; $st['crit'] = $crit; $st['ig'] = $ig; $st['exclude'] = $exclude;
-    $st['monthlyLimit'] = (store_get('leadsys', 'settings') ?? [])['monthlyLimit'] ?? null;
-    if ($st['monthlyLimit'] === null) unset($st['monthlyLimit']);
-    store_put('leadsys', 'settings', $st);
-    if (!$queries) fail(400, $sel['cats'] ? 'no_cities' : 'no_categories');
+    $target = (int)max(20, min(100000, (int)($d['target'] ?? 500)));
+    $key = md5($region . json_encode($sel));
+    $saved = store_get('leadsys', 'settings') ?? [];
+    $cursor = (int)($saved['cursors'][$key] ?? 0) % max(1, count($queries));
+    store_update('leadsys', 'settings', function (?array $s) use ($region, $sel, $crit, $ig, $exclude, $target) {
+        $s = $s ?? [];
+        $s['region'] = $region; $s['sel'][$region] = $sel; $s['crit'] = $crit; $s['ig'] = $ig; $s['exclude'] = $exclude; $s['target'] = $target;
+        return $s;
+    });
     if (!(string)config('google_places_key', '') && !config('mock_google')) fail(503, 'not_configured');
-
-    $prev = store_get('leadsys', 'run');
-    $resume = $prev && in_array($prev['status'], ['quota', 'cancelled'], true) && !empty($prev['tasks']) && $prev['region'] === $region && $prev['queries'] === $queries && $prev['crit'] === $crit;
     if (!empty($d['dry'])) {
-        $pending = $resume ? count(array_filter($prev['tasks'], fn($t) => $t['t'] === 'search')) : count($queries);
-        json_out(['ok' => true, 'dry' => ['queries' => $pending, 'text' => $pending * LEADS_PAGES, 'details' => 0,
-            'textLeft' => leads_quota_left('text'), 'detailsLeft' => leads_quota_left('details'), 'resume' => $resume]]);
+        $calls = (int)ceil($target / 20);
+        json_out(['ok' => true, 'dry' => ['searches' => count($queries), 'cursor' => $cursor, 'calls' => $calls, 'left' => leads_quota_left('text')]]);
     }
+    $prev = store_get('leadsys', 'run');
     if ($prev && $prev['status'] === 'running' && strtotime($prev['touchedAt'] ?? $prev['startedAt']) > time() - 120) fail(409, 'already_running');
-    if ($resume) {
-        $run = $prev;
-        $run['status'] = 'running'; $run['stopReason'] = ''; $run['endedAt'] = null;
-    } else {
-        $run = ['id' => bin2hex(random_bytes(6)), 'status' => 'running', 'region' => $region, 'queries' => $queries, 'crit' => $crit, 'ig' => $ig, 'exclude' => $exclude, 'hosts' => [],
-            'tasks' => array_map(fn($q) => ['t' => 'search', 'q' => $q], $queries), 'total' => count($queries), 'done' => 0,
-            'queued' => [], 'newIds' => [], 'stats' => leads_new_stats(), 'startedAt' => date('c'), 'stopReason' => ''];
-    }
-    $run['touchedAt'] = date('c');
+    $run = ['id' => bin2hex(random_bytes(6)), 'status' => 'running', 'region' => $region, 'key' => $key, 'queries' => $queries, 'qi' => $cursor, 'visited' => 0,
+        'target' => $target, 'crit' => $crit, 'ig' => $ig, 'exclude' => $exclude, 'hosts' => [], 'tasks' => [], 'queued' => [], 'newIds' => [],
+        'stats' => leads_new_stats(), 'startedAt' => date('c'), 'stopReason' => '', 'touchedAt' => date('c')];
+    // a run stopped by the monthly limit with this selection: pick up its open pages first
+    if ($prev && $prev['status'] === 'quota' && ($prev['key'] ?? '') === $key) $run['tasks'] = array_values(array_filter($prev['tasks'] ?? [], fn($t) => !empty($t['page']) || $t['t'] === 'ig'));
     store_put('leadsys', 'run', $run);
     json_out(['ok' => true, 'run' => leads_run_view($run)]);
 }
@@ -328,6 +346,7 @@ function action_admin_leads_step(): void {
     $id = clean($d['run'] ?? '', 20);
     $run = store_update('leadsys', 'run', function (?array $r) use ($id) {
         if (!$r || $r['id'] !== $id || $r['status'] !== 'running') return $r;
+        if (!isset($r['qi'])) { $r['status'] = 'cancelled'; $r['endedAt'] = date('c'); return $r; } // run from an older version
         $r = leads_work($r);
         $r['touchedAt'] = date('c');
         return $r;
