@@ -1508,6 +1508,9 @@ class Component extends DCLogic {
     this._lastView = v === 'portal' ? 'login' : v;
     this.setState({ view: this._lastView });
     if (v === 'home' && /^[a-z]+$/.test(hash)) setTimeout(() => this.scrollToId(hash), 80);
+    // /pricing/, /how-it-works/, /faq/ = the landing page opened at that section (own URLs for Google Ads sitelinks)
+    const sec = { '/pricing/': 'pricing', '/how-it-works/': 'how', '/faq/': 'faq' }[location.pathname];
+    if (v === 'home' && sec) setTimeout(() => this.scrollToId(sec), 250);
     this.onHashNav = () => { const h = (location.hash || '').slice(1); if (h === 'order' || h === 'login') this.setState({ view: h }); else if (/^[a-z]+$/.test(h)) this.setState({ view: 'home' }, () => setTimeout(() => this.scrollToId(h), 60)); };
     window.addEventListener('hashchange', this.onHashNav);
     this.onPop = () => { const pv = this.viewFromPath(); const nv = pv === 'portal' && !this.state.portalIn ? 'login' : pv; this._lastView = nv; this.setState({ view: nv, menuOpen: false }); };
