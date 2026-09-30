@@ -1,3 +1,4 @@
 public/orders/*.json
 public/orders/.rl_*
 byereviews-website-upload.zip
+smtp-config.php

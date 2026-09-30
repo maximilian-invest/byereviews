@@ -8,6 +8,44 @@ const TEAM_EMAIL = 'info@byereviews.com';
 const FROM_EMAIL = 'info@byereviews.com';
 const FROM_NAME  = 'byereviews';
 
+// SMTP credentials live outside the repo: /etc/byereviews/smtp.php or ../smtp-config.php
+// returning ['host' => 'smtp.hostinger.com', 'port' => 465, 'user' => 'info@byereviews.com', 'pass' => '...'].
+// Without it, PHP mail() is used.
+function smtp_config(): ?array {
+    foreach (['/etc/byereviews/smtp.php', dirname(__DIR__) . '/smtp-config.php'] as $f) {
+        if (is_readable($f)) { $c = require $f; if (is_array($c) && !empty($c['host'])) return $c; }
+    }
+    return null;
+}
+
+function smtp_send(array $c, string $to, string $subject, string $body, string $headers): bool {
+    $port = (int)($c['port'] ?? 465);
+    $fp = @stream_socket_client(($port === 465 ? 'ssl://' : 'tcp://') . $c['host'] . ':' . $port, $en, $es, 15);
+    if (!$fp) return false;
+    stream_set_timeout($fp, 15);
+    $read = function () use ($fp) { $r = ''; while (($l = fgets($fp, 515)) !== false) { $r .= $l; if (isset($l[3]) && $l[3] === ' ') break; } return $r; };
+    $cmd = function (string $line, string $expect) use ($fp, $read) { fwrite($fp, $line . "\r\n"); return strncmp($read(), $expect, 3) === 0; };
+    $ok = strncmp($read(), '220', 3) === 0 && $cmd('EHLO byereviews.com', '250');
+    if ($ok && $port !== 465) {
+        $ok = $cmd('STARTTLS', '220') && stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT) && $cmd('EHLO byereviews.com', '250');
+    }
+    $ok = $ok && $cmd('AUTH LOGIN', '334') && $cmd(base64_encode($c['user']), '334') && $cmd(base64_encode($c['pass']), '235')
+        && $cmd('MAIL FROM:<' . FROM_EMAIL . '>', '250') && $cmd('RCPT TO:<' . $to . '>', '250') && $cmd('DATA', '354');
+    if ($ok) {
+        $msg = 'To: <' . $to . ">\r\nSubject: $subject\r\nDate: " . date('r') . "\r\nMessage-ID: <" . bin2hex(random_bytes(12)) . "@byereviews.com>\r\n"
+            . $headers . "\r\n\r\n" . str_replace("\n", "\r\n", str_replace("\r\n", "\n", $body));
+        $msg = preg_replace('/^\./m', '..', $msg);
+        $ok = $cmd($msg . "\r\n.", '250');
+    }
+    @fwrite($fp, "QUIT\r\n"); fclose($fp);
+    return $ok;
+}
+
+function send_mail(string $to, string $subject, string $body, string $headers): bool {
+    $c = smtp_config();
+    return $c ? smtp_send($c, $to, $subject, $body, $headers) : @mail($to, $subject, $body, $headers, '-f' . FROM_EMAIL);
+}
+
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
@@ -129,8 +167,7 @@ $teamBody = "New order $orderId\n\n"
     . ($businessText ? "— BUSINESS —\n$businessText\n\n" : '')
     . "— REVIEWS —\n$reviewText\n\n"
     . "— PRICING —\n$pricingText\n";
-$teamOk = @mail(TEAM_EMAIL, $encSubject("New order $orderId – $name"), $teamBody,
-    $headers($email), '-f' . FROM_EMAIL);
+$teamOk = send_mail(TEAM_EMAIL, $encSubject("New order $orderId – $name"), $teamBody, $headers($email));
 
 // Customer confirmation
 $first = explode(' ', $name)[0];
@@ -144,7 +181,6 @@ $customerBody = "Hi $first,\n\n"
     . ($password !== '' ? "— DASHBOARD LOGIN —\nEmail: $email\nPassword: $password\nhttps://byereviews.com/\n\n" : '')
     . "Questions? Just reply to this email or write to " . TEAM_EMAIL . ".\n\n"
     . "Best regards\nThe byereviews team\nhttps://byereviews.com\n";
-$customerOk = @mail($email, $encSubject("Your byereviews order $orderId"), $customerBody,
-    $headers(TEAM_EMAIL), '-f' . FROM_EMAIL);
+$customerOk = send_mail($email, $encSubject("Your byereviews order $orderId"), $customerBody, $headers(TEAM_EMAIL));
 
 echo json_encode(['ok' => $teamOk, 'confirmationSent' => $customerOk]);

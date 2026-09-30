@@ -13,25 +13,16 @@ public/            → everything that goes into Hostinger's public_html
   assets/          → logo, favicon, fonts, media, vendor scripts
 ```
 
-## Deployment (Hostinger)
+## Deployment (VPS)
 
-Every push to `main` that touches `public/` is uploaded automatically via FTP
-(`.github/workflows/deploy.yml`). It can also be started manually under
-**Actions → Deploy to Hostinger → Run workflow**.
-
-One-time setup: in GitHub under **Settings → Secrets and variables → Actions** add
-
-| Secret | Where to find it (hPanel → Websites → byereviews.com → Files → FTP Accounts) |
-| --- | --- |
-| `FTP_SERVER` | FTP IP / hostname, e.g. `ftp.byereviews.com` |
-| `FTP_USERNAME` | FTP username, e.g. `u123456789` or `u123456789.byereviews.com` |
-| `FTP_PASSWORD` | FTP password |
-| `FTP_SERVER_DIR` | optional, default `public_html/` (use `/` if the FTP account already starts in public_html) |
-
-Also in hPanel:
-
-1. **Emails**: create the mailbox `info@byereviews.com` (order emails are sent from and to this address).
-2. **Security → SSL**: make sure the free SSL certificate is active (the site forces HTTPS).
+1. Copy the contents of `public/` to `/var/www/byereviews` (e.g. `git pull` + `rsync -a --delete --exclude orders/ public/ /var/www/byereviews/`).
+2. `mkdir -p /var/www/byereviews/orders && chown www-data /var/www/byereviews/orders` so orders can be stored.
+3. Nginx: use `deploy/nginx-byereviews.conf` (needs `php-fpm`; certificate via `certbot --nginx -d byereviews.com -d www.byereviews.com`).
+   On Apache the included `public/.htaccess` does the same job.
+4. Email: copy `deploy/smtp.example.php` to `/etc/byereviews/smtp.php`, enter the password of the
+   `info@byereviews.com` mailbox (Hostinger SMTP) and make it readable for the PHP user only
+   (`chown root:www-data`, `chmod 640`). Without this file PHP `mail()` is used, which usually does not work on a VPS.
+5. Test: place a test order, both the team email and the customer confirmation should arrive.
 
 ## Local preview
 
