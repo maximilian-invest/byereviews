@@ -5,7 +5,7 @@
     const init = opts.body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(opts.body) } : { credentials: 'same-origin' };
     return fetch('/order.php?a=' + action + q, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
   }
-  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, anData: null, anLoading: false, adminEmail: '' });
+  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, stripeKeyDraft: '', stripeWhDraft: '', stripeSaving: false, anData: null, anLoading: false, adminEmail: '' });
 
   componentDidMount() {
     this._designDidMount();
@@ -52,7 +52,7 @@
   }
   replaceOrder(o) { if (o) this.setState(s => ({ orders: s.orders.map(x => x.id === o.id ? o : x) })); }
   fail(r, fallback) {
-    const m = { stripe_not_configured: 'Stripe is not connected – add the Stripe key on the server', stripe_failed: 'Stripe error – please try again', nothing_billable: 'Nothing to bill yet', not_authed: 'Session expired – please sign in again', invalid_sender: 'Invalid sender email' }[r.error];
+    const m = { stripe_not_configured: 'Stripe is not connected – paste the Stripe key in Settings', stripe_key_invalid: 'That is not a Stripe secret or restricted key (sk_… / rk_…)', stripe_key_rejected: 'Stripe rejected this key', stripe_key_permissions: 'Key works but lacks permissions – it needs Payment Links, Products and Prices (write)', stripe_webhook_invalid: 'Webhook secret must start with whsec_', nothing_to_save: 'Paste a key or webhook secret first', stripe_failed: 'Stripe error – please try again', nothing_billable: 'Nothing to bill yet', not_authed: 'Session expired – please sign in again', invalid_sender: 'Invalid sender email' }[r.error];
     this.toast(m || fallback || 'Something went wrong');
     if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false });
   }
@@ -151,7 +151,17 @@
       logout: () => { this.api('admin-logout', { body: {} }); this.setState({ screen: 'login', authed: false, loginPass: '', orders: [], view: 'orders', openId: null }); },
       goAnalytics: () => { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); window.scrollTo({ top: 0 }); },
       saveSettings: () => this.api('admin-settings', { body: { partnerNo: s.partnerNo, template: s.template, sender: s.sender } }).then(r => r.ok ? this.toast('Settings saved') : this.fail(r)),
-      stripeLabel: s.stripe.connected ? 'Connected' : 'Not connected', stripeAcct: s.stripe.account ? s.stripe.account.slice(0, 5) + '…' + s.stripe.account.slice(-4) : 'add key on server', stripeDot: s.stripe.connected ? '#151515' : '#D93025',
+      stripeLabel: s.stripe.connected ? 'Connected' : 'Not connected', stripeAcct: s.stripe.account ? s.stripe.account.slice(0, 5) + '…' + s.stripe.account.slice(-4) : 'paste key below',
+      stripeNoWebhook: !!s.stripe.connected && !s.stripe.webhook, stripeKeyDraft: s.stripeKeyDraft, stripeWhDraft: s.stripeWhDraft,
+      stripeKeyPh: s.stripe.connected ? 'New secret / restricted key (optional)' : 'Secret or restricted key (sk_live_… / rk_live_…)',
+      stripeWhPh: s.stripe.webhook ? 'New webhook signing secret (optional)' : 'Webhook signing secret (whsec_…)',
+      stripeSaveLabel: s.stripeSaving ? 'Checking…' : 'Save Stripe keys',
+      onStripeKey: e => this.setState({ stripeKeyDraft: e.target.value }), onStripeWh: e => this.setState({ stripeWhDraft: e.target.value }),
+      saveStripe: () => { if (s.stripeSaving) return; this.setState({ stripeSaving: true });
+        this.api('admin-stripe', { body: { secretKey: s.stripeKeyDraft.trim(), webhookSecret: s.stripeWhDraft.trim() } }).then(r => {
+          this.setState({ stripeSaving: false });
+          if (!r.ok) return this.fail(r);
+          this.setState({ stripe: r.stripe, stripeKeyDraft: '', stripeWhDraft: '' }); this.toast(r.stripe.connected ? 'Stripe connected' : 'Saved – but Stripe is not reachable yet'); }); }, stripeDot: s.stripe.connected ? '#151515' : '#D93025',
       loginHint: s.notConfigured ? 'Admin login is not configured on the server yet.' : '',
       adsSwBg: s.ads && s.ads.clickIds ? '#151515' : '#D2D2D2', adsSwJust: s.ads && s.ads.clickIds ? 'flex-end' : 'flex-start',
       adsToggle: () => { const on = !(s.ads && s.ads.clickIds);

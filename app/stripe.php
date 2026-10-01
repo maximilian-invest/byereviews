@@ -2,8 +2,18 @@
 // Stripe Checkout for removed reviews + webhook verification.
 declare(strict_types=1);
 
+/** Stripe keys: server config (/etc/byereviews/config.php) first, otherwise the ones saved in Admin → Settings. */
+function stripe_key(): string {
+    $k = (string)config('stripe_secret_key', '');
+    return $k !== '' ? $k : (string)((store_get('settings', 'stripe') ?? [])['secretKey'] ?? '');
+}
+function stripe_webhook_key(): string {
+    $k = (string)config('stripe_webhook_secret', '');
+    return $k !== '' ? $k : (string)((store_get('settings', 'stripe') ?? [])['webhookSecret'] ?? '');
+}
+
 function stripe_request(string $method, string $path, array $params = [], string $idempotencyKey = ''): array {
-    $key = (string)config('stripe_secret_key', '');
+    $key = stripe_key();
     $headers = ['Authorization: Bearer ' . $key, 'Content-Type: application/x-www-form-urlencoded'];
     if ($idempotencyKey !== '') $headers[] = 'Idempotency-Key: ' . $idempotencyKey;
     if ($method === 'GET' && $params) { $path .= (str_contains($path, '?') ? '&' : '?') . http_build_query($params); $params = []; }
@@ -41,7 +51,7 @@ function stripe_customer(array $order): string {
  */
 function stripe_invoice(array $order): ?array {
     if (config('mock_stripe')) return ['url' => 'https://invoice.stripe.com/i/test_' . strtolower($order['id']), 'id' => 'in_test_' . $order['id'], 'number' => 'TEST-' . $order['id'], 'pdf' => ''];
-    if ((string)config('stripe_secret_key', '') === '') return null;
+    if (stripe_key() === '') return null;
     $inv = invoice($order);
     if ($inv['total'] <= 0) return null;
     $customer = stripe_customer($order);
@@ -82,7 +92,7 @@ function stripe_invoice(array $order): ?array {
 
 /** Voids an open invoice (the billable reviews changed) or deactivates an old Payment Link. */
 function stripe_cancel_payment(string $id): void {
-    if ($id === '' || (string)config('stripe_secret_key', '') === '' || config('mock_stripe')) return;
+    if ($id === '' || stripe_key() === '' || config('mock_stripe')) return;
     if (str_starts_with($id, 'in_')) stripe_request('POST', 'invoices/' . rawurlencode($id) . '/void');
     elseif (str_starts_with($id, 'plink_')) stripe_request('POST', 'payment_links/' . rawurlencode($id), ['active' => 'false']);
 }
@@ -93,7 +103,7 @@ function stripe_cancel_payment(string $id): void {
  * Returns null when Stripe isn't configured (the admin can then set a manual payment link).
  */
 function stripe_checkout_url(array $order): ?string {
-    if ((string)config('stripe_secret_key', '') === '') return null;
+    if (stripe_key() === '') return null;
     $inv = invoice($order);
     if ($inv['total'] <= 0) return null;
     $cur = strtolower($order['currency']);
@@ -123,7 +133,7 @@ function stripe_checkout_url(array $order): ?string {
 
 /** Verifies the Stripe-Signature header. Returns the decoded event or null. */
 function stripe_verify_webhook(string $payload, string $sigHeader): ?array {
-    $secret = (string)config('stripe_webhook_secret', '');
+    $secret = stripe_webhook_key();
     if ($secret === '') return null;
     $parts = [];
     foreach (explode(',', $sigHeader) as $kv) { [$k, $v] = array_pad(explode('=', trim($kv), 2), 2, ''); $parts[$k][] = $v; }
@@ -140,7 +150,7 @@ function stripe_verify_webhook(string $payload, string $sigHeader): ?array {
  */
 function stripe_payment_link(array $order): ?array {
     if (config('mock_stripe')) return ['url' => 'https://buy.stripe.com/test_' . strtolower($order['id']), 'id' => 'plink_test_' . $order['id']];
-    if ((string)config('stripe_secret_key', '') === '') return null;
+    if (stripe_key() === '') return null;
     $inv = invoice($order);
     if ($inv['total'] <= 0) return null;
     $name = 'Google review removal – order ' . $order['id'] . ' (' . $inv['n'] . ' removed' . ($inv['rate'] > 0 ? ', ' . round($inv['rate'] * 100) . '% volume discount' : '') . ')';
@@ -161,15 +171,20 @@ function stripe_payment_link(array $order): ?array {
 }
 
 function stripe_deactivate_link(string $id): void {
-    if ($id !== '' && (string)config('stripe_secret_key', '') !== '') stripe_request('POST', 'payment_links/' . rawurlencode($id), ['active' => 'false']);
+    if ($id !== '' && stripe_key() !== '') stripe_request('POST', 'payment_links/' . rawurlencode($id), ['active' => 'false']);
 }
 
 /** "Connected · acct_…" for the settings page. */
 function stripe_status(): array {
-    if ((string)config('stripe_secret_key', '') === '') return ['connected' => false, 'account' => ''];
-    if ($c = cache_get('stripe_account', 3600)) return $c;
+    if (stripe_key() === '') return ['connected' => false, 'account' => '', 'webhook' => stripe_webhook_key() !== ''];
+    $ck = 'stripe_account:' . hash('sha256', stripe_key());   // a new key never sees the old key's cached status
+    if ($c = cache_get($ck, 3600)) return $c + ['webhook' => stripe_webhook_key() !== ''];
     $r = stripe_request('GET', 'account');
     $out = ['connected' => $r['code'] === 200, 'account' => (string)($r['data']['id'] ?? '')];
-    cache_put('stripe_account', $out);
-    return $out;
+    if (!$out['connected']) {   // restricted keys may not read the account – Payment Links access is what matters
+        $t = stripe_request('GET', 'payment_links', ['limit' => 1]);
+        $out = ['connected' => $t['code'] === 200, 'account' => $t['code'] === 200 ? substr(stripe_key(), 0, 8) . '…' . substr(stripe_key(), -4) : ''];
+    }
+    if ($out['connected']) cache_put($ck, $out);
+    return $out + ['webhook' => stripe_webhook_key() !== ''];
 }

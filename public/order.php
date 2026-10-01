@@ -70,6 +70,7 @@ $routes = [
     'admin-lead' => 'action_admin_lead',
     'admin-leads-limit' => 'action_admin_leads_limit',
     'admin-ads' => 'action_admin_ads',
+    'admin-stripe' => 'action_admin_stripe',
     'admin-ads-export' => 'action_admin_ads_export',
     'admin-inbox' => 'action_admin_inbox',
     'admin-inbox-unread' => 'action_admin_inbox_unread',

@@ -403,7 +403,12 @@ button,input,textarea{font-family:inherit}
   </div>
   <div style="background:#FFFFFF;border-radius:28px;padding:clamp(18px,2.4vw,26px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px">
     <div style="display:flex;flex-direction:column;gap:10px"><span style="font-size:18px;font-weight:600">Sender email</span><input value="{{ sender }}" onChange="{{ onSender }}" style="border:0;background:#F4F4F4;border-radius:14px;padding:14px 16px;font-size:16px;outline:none"></div>
-    <div style="display:flex;flex-direction:column;gap:10px"><span style="font-size:18px;font-weight:600">Stripe</span><div style="display:flex;align-items:center;gap:10px;background:#F4F4F4;border-radius:14px;padding:12px 14px"><span style="width:10px;height:10px;border-radius:50%;background:{{ stripeDot }};display:block"></span><span style="font-size:15px;font-weight:500;flex:1">{{ stripeLabel }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ stripeAcct }}</span></div></div>
+    <div style="display:flex;flex-direction:column;gap:10px"><span style="font-size:18px;font-weight:600">Stripe</span><div style="display:flex;align-items:center;gap:10px;background:#F4F4F4;border-radius:14px;padding:12px 14px"><span style="width:10px;height:10px;border-radius:50%;background:{{ stripeDot }};display:block"></span><span style="font-size:15px;font-weight:500;flex:1">{{ stripeLabel }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ stripeAcct }}</span></div>
+      <sc-if value="{{ stripeNoWebhook }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#D93025;line-height:1.45">Webhook secret missing – payments won't be marked as paid automatically.</span></sc-if>
+      <input type="password" autocomplete="off" spellcheck="false" value="{{ stripeKeyDraft }}" onChange="{{ onStripeKey }}" placeholder="{{ stripeKeyPh }}" style="border:0;background:#F4F4F4;border-radius:14px;padding:14px 16px;font-size:14px;outline:none;font-family:'Geist Mono',monospace">
+      <input type="password" autocomplete="off" spellcheck="false" value="{{ stripeWhDraft }}" onChange="{{ onStripeWh }}" placeholder="{{ stripeWhPh }}" style="border:0;background:#F4F4F4;border-radius:14px;padding:14px 16px;font-size:14px;outline:none;font-family:'Geist Mono',monospace">
+      <span style="font-size:12px;color:#6B6B6B;line-height:1.5">Webhook URL: <span style="font-family:'Geist Mono',monospace;user-select:all">https://byereviews.com/order.php?a=stripe-webhook</span> · events checkout.session.completed + checkout.session.async_payment_succeeded</span>
+      <button onClick="{{ saveStripe }}" style="align-self:flex-start;height:44px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 18px;font-size:14px;font-weight:600">{{ stripeSaveLabel }}</button></div>
   </div>
   <div style="background:#FFFFFF;border-radius:28px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -674,7 +679,7 @@ class Component extends DCLogic {
     const init = opts.body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(opts.body) } : { credentials: 'same-origin' };
     return fetch('/order.php?a=' + action + q, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
   }
-  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, anData: null, anLoading: false, adminEmail: '' });
+  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, stripeKeyDraft: '', stripeWhDraft: '', stripeSaving: false, anData: null, anLoading: false, adminEmail: '' });
 
   componentDidMount() {
     this._designDidMount();
@@ -721,7 +726,7 @@ class Component extends DCLogic {
   }
   replaceOrder(o) { if (o) this.setState(s => ({ orders: s.orders.map(x => x.id === o.id ? o : x) })); }
   fail(r, fallback) {
-    const m = { stripe_not_configured: 'Stripe is not connected – add the Stripe key on the server', stripe_failed: 'Stripe error – please try again', nothing_billable: 'Nothing to bill yet', not_authed: 'Session expired – please sign in again', invalid_sender: 'Invalid sender email' }[r.error];
+    const m = { stripe_not_configured: 'Stripe is not connected – paste the Stripe key in Settings', stripe_key_invalid: 'That is not a Stripe secret or restricted key (sk_… / rk_…)', stripe_key_rejected: 'Stripe rejected this key', stripe_key_permissions: 'Key works but lacks permissions – it needs Payment Links, Products and Prices (write)', stripe_webhook_invalid: 'Webhook secret must start with whsec_', nothing_to_save: 'Paste a key or webhook secret first', stripe_failed: 'Stripe error – please try again', nothing_billable: 'Nothing to bill yet', not_authed: 'Session expired – please sign in again', invalid_sender: 'Invalid sender email' }[r.error];
     this.toast(m || fallback || 'Something went wrong');
     if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false });
   }
@@ -820,7 +825,17 @@ class Component extends DCLogic {
       logout: () => { this.api('admin-logout', { body: {} }); this.setState({ screen: 'login', authed: false, loginPass: '', orders: [], view: 'orders', openId: null }); },
       goAnalytics: () => { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); window.scrollTo({ top: 0 }); },
       saveSettings: () => this.api('admin-settings', { body: { partnerNo: s.partnerNo, template: s.template, sender: s.sender } }).then(r => r.ok ? this.toast('Settings saved') : this.fail(r)),
-      stripeLabel: s.stripe.connected ? 'Connected' : 'Not connected', stripeAcct: s.stripe.account ? s.stripe.account.slice(0, 5) + '…' + s.stripe.account.slice(-4) : 'add key on server', stripeDot: s.stripe.connected ? '#151515' : '#D93025',
+      stripeLabel: s.stripe.connected ? 'Connected' : 'Not connected', stripeAcct: s.stripe.account ? s.stripe.account.slice(0, 5) + '…' + s.stripe.account.slice(-4) : 'paste key below',
+      stripeNoWebhook: !!s.stripe.connected && !s.stripe.webhook, stripeKeyDraft: s.stripeKeyDraft, stripeWhDraft: s.stripeWhDraft,
+      stripeKeyPh: s.stripe.connected ? 'New secret / restricted key (optional)' : 'Secret or restricted key (sk_live_… / rk_live_…)',
+      stripeWhPh: s.stripe.webhook ? 'New webhook signing secret (optional)' : 'Webhook signing secret (whsec_…)',
+      stripeSaveLabel: s.stripeSaving ? 'Checking…' : 'Save Stripe keys',
+      onStripeKey: e => this.setState({ stripeKeyDraft: e.target.value }), onStripeWh: e => this.setState({ stripeWhDraft: e.target.value }),
+      saveStripe: () => { if (s.stripeSaving) return; this.setState({ stripeSaving: true });
+        this.api('admin-stripe', { body: { secretKey: s.stripeKeyDraft.trim(), webhookSecret: s.stripeWhDraft.trim() } }).then(r => {
+          this.setState({ stripeSaving: false });
+          if (!r.ok) return this.fail(r);
+          this.setState({ stripe: r.stripe, stripeKeyDraft: '', stripeWhDraft: '' }); this.toast(r.stripe.connected ? 'Stripe connected' : 'Saved – but Stripe is not reachable yet'); }); }, stripeDot: s.stripe.connected ? '#151515' : '#D93025',
       loginHint: s.notConfigured ? 'Admin login is not configured on the server yet.' : '',
       adsSwBg: s.ads && s.ads.clickIds ? '#151515' : '#D2D2D2', adsSwJust: s.ads && s.ads.clickIds ? 'flex-end' : 'flex-start',
       adsToggle: () => { const on = !(s.ads && s.ads.clickIds);

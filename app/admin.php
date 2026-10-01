@@ -217,7 +217,7 @@ function action_admin_paylink(): void {
     } else {
         $link = stripe_payment_link($o);
         if (!$link && !empty($o['payment']['manualLink'])) $link = ['url' => $o['payment']['manualLink'], 'id' => ''];
-        if (!$link) fail(503, (string)config('stripe_secret_key', '') === '' ? 'stripe_not_configured' : 'stripe_failed');
+        if (!$link) fail(503, stripe_key() === '' ? 'stripe_not_configured' : 'stripe_failed');
     }
     $o = admin_order_update($id, function (array $o) use ($link) {
         $o['payment'] = array_merge($o['payment'], ['status' => 'link_sent', 'link' => $link['url'], 'linkId' => $link['id'], 'linkSentAt' => date('c')],
@@ -261,6 +261,31 @@ function action_admin_settings(): void {
     $s = ['partnerNo' => clean($d['partnerNo'] ?? '', 40), 'template' => mb_substr(str_replace("\r", '', (string)($d['template'] ?? '')), 0, 2000), 'sender' => $sender ?: TEAM_EMAIL];
     store_put('settings', 'app', $s);
     json_out(['ok' => true]);
+}
+
+/** Admin → Settings → Stripe: save the secret/restricted key and the webhook signing secret (stored outside the web root's
+ *  reach in the data dir, never returned to the browser). The key is checked against Stripe before it is saved. */
+function action_admin_stripe(): void {
+    admin_required();
+    $d = json_body();
+    $cur = store_get('settings', 'stripe') ?? [];
+    $key = trim((string)($d['secretKey'] ?? ''));
+    $wh = trim((string)($d['webhookSecret'] ?? ''));
+    if ($key !== '') {
+        if (!preg_match('/^(sk|rk)_(live|test)_[A-Za-z0-9]{20,}$/', $key)) fail(400, 'stripe_key_invalid');
+        $t = http_json('GET', 'https://api.stripe.com/v1/payment_links?limit=1', ['Authorization: Bearer ' . $key], null, 20);
+        if ($t['code'] !== 200) fail(400, $t['code'] === 401 ? 'stripe_key_rejected' : 'stripe_key_permissions');
+        $cur['secretKey'] = $key;
+    }
+    if ($wh !== '') {
+        if (!preg_match('/^whsec_[A-Za-z0-9+\/=]{20,}$/', $wh)) fail(400, 'stripe_webhook_invalid');
+        $cur['webhookSecret'] = $wh;
+    }
+    if ($key === '' && $wh === '') fail(400, 'nothing_to_save');
+    $cur['updatedAt'] = date('c');
+    store_put('settings', 'stripe', $cur);
+    log_event('stripe keys updated in admin' . ($key !== '' ? ' (key)' : '') . ($wh !== '' ? ' (webhook secret)' : ''));
+    json_out(['ok' => true, 'stripe' => stripe_status()]);
 }
 
 function action_admin_analytics(): void {
