@@ -109,7 +109,8 @@ function action_ads_feed(): void {
     if (!$s['clickIds'] || $token === '' || !rate_ok('ads_feed', 60)) fail(404, 'not_found');
     if ($user !== 'googleads' || !hash_equals($token, $pass)) {
         header('WWW-Authenticate: Basic realm="byereviews conversions"');
-        fail(401, 'unauthorized');
+        log_event('ads feed: auth failed (' . ($user === '' ? 'no credentials received' : 'wrong ' . ($user !== 'googleads' ? 'user' : 'password, length ' . strlen($pass))) . ')');
+        fail(401, $user === '' ? 'no_credentials' : 'unauthorized');
     }
     ads_csv(($_GET['kind'] ?? '') === 'paid' ? 'paid' : 'order', false);
 }
