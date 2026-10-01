@@ -272,6 +272,8 @@ pages = {
 # the homepage snapshot (made by tools/prerender.js) is reused for every landing-page URL
 home = (PUBLIC / 'index.html').read_text(encoding='utf-8') if (PUBLIC / 'index.html').exists() else ''
 snap = re.search(r'<div id="prerender">.*?</div><!--/prerender-->', home, flags=re.S)
+if snap:  # hidden for JS visitors: its images must not download (display:none doesn't stop <img>)
+    snap = re.sub(r'<img(?![^>]*\bloading=)', '<img loading="lazy"', snap.group(0))
 for path, (canonical, robots) in pages.items():
     out = PUBLIC / path
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -280,7 +282,7 @@ for path, (canonical, robots) in pages.items():
     html = html.replace('__FAQLD__', FAQ_LD if (path == 'index.html' or path in INTENTS) else '', 1)
     html = html.replace('__PRELOAD__\n', HERO_PRELOAD if (path in HOME_LIKE or path in INTENTS) else '', 1)
     if snap and (path in HOME_LIKE or path in INTENTS):
-        html = html.replace('<!--PRERENDER-->', snap.group(0), 1)
+        html = html.replace('<!--PRERENDER-->', snap, 1)
     if path in INTENTS:
         html = html.replace('<meta property="og:url" content="https://byereviews.com/">', f'<meta property="og:url" content="https://byereviews.com{canonical}">', 1)
         html = intent_page(html, INTENTS[path])
