@@ -105,6 +105,12 @@ rep('  <button onClick="{{ saveSettings }}" style="align-self:flex-start;height:
     </div>
     <span style="font-size:14px;line-height:1.5;color:#555">{{ adsText }}</span>
     <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ adsStatsText }}</span>
+    <sc-if value="{{ adsFeed }}" hint-placeholder-val="{{ false }}"><div style="background:#F4F4F4;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.5">
+      <span style="font-weight:600">Automatic upload (Google Ads → Goals → Conversions → Uploads → Schedules → HTTPS)</span>
+      <span style="font-family:'Geist Mono',monospace;font-size:12px;word-break:break-all">{{ adsFeedOrder }}</span>
+      <span style="font-family:'Geist Mono',monospace;font-size:12px;word-break:break-all">{{ adsFeedPaid }}</span>
+      <span style="font-family:'Geist Mono',monospace;font-size:12px;word-break:break-all">user: googleads · password: {{ adsFeedPw }}</span>
+    </div></sc-if>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a href="/order.php?a=admin-ads-export&amp;kind=order" style="background:#F4F4F4;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500;color:#151515">Download order conversions (CSV)</a>
       <a href="/order.php?a=admin-ads-export&amp;kind=paid" style="background:#F4F4F4;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500;color:#151515">Download payment conversions (CSV)</a>

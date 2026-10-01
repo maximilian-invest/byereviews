@@ -15,6 +15,7 @@ $routes = [
     'check-email' => 'action_check_email',
     'order' => 'action_order',
     'track' => 'action_track',
+    'ads-feed' => 'action_ads_feed', // Google Ads scheduled conversion upload (Basic auth)
     // customer dashboard
     'login' => 'action_login',
     'logout' => 'action_logout',

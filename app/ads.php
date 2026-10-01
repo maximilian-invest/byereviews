@@ -47,19 +47,22 @@ function action_admin_ads(): void {
         $d = json_body();
         $s = ads_settings();
         if (array_key_exists('clickIds', $d)) $s['clickIds'] = (bool)$d['clickIds'];
+        if ($s['clickIds'] && empty($s['feedToken'])) $s['feedToken'] = bin2hex(random_bytes(16));
         foreach (['orderName', 'paidName'] as $k) if (isset($d[$k])) $s[$k] = clean($d[$k], 100) ?: ADS_DEFAULTS[$k];
         store_put('settings', 'ads', $s);
         log_event('ads settings: click IDs ' . ($s['clickIds'] ? 'on' : 'off'));
     }
-    json_out(['ok' => true, 'ads' => ads_settings(), 'stats' => ads_stats()]);
+    $s = ads_settings();
+    $feed = $s['clickIds'] && !empty($s['feedToken']) ? ['user' => 'googleads', 'password' => $s['feedToken'],
+        'order' => 'https://byereviews.com/order.php?a=ads-feed&kind=order', 'paid' => 'https://byereviews.com/order.php?a=ads-feed&kind=paid'] : null;
+    unset($s['feedToken']);
+    json_out(['ok' => true, 'ads' => $s, 'stats' => ads_stats(), 'feed' => $feed]);
 }
 
 /** CSV for Google Ads → Goals → Conversions → Uploads (template "Conversions from clicks").
  *  kind=order: every order that came from an ad click (value = list price of the submitted reviews).
  *  kind=paid:  paid orders (value = amount actually paid). Clicks older than 90 days are skipped (Google's limit). */
-function action_admin_ads_export(): void {
-    admin_required();
-    $kind = ($_GET['kind'] ?? '') === 'paid' ? 'paid' : 'order';
+function ads_csv(string $kind, bool $download): void {
     $s = ads_settings();
     $tz = new DateTimeZone($s['timezone']);
     $rows = [];
@@ -81,11 +84,32 @@ function action_admin_ads_export(): void {
     usort($rows, fn($a, $b) => strcmp($a[2], $b[2]));
     header('Content-Type: text/csv; charset=utf-8');
     header('Cache-Control: no-store');
-    header('Content-Disposition: attachment; filename="google-ads-' . $kind . '-conversions-' . date('Y-m-d') . '.csv"');
+    if ($download) header('Content-Disposition: attachment; filename="google-ads-' . $kind . '-conversions-' . date('Y-m-d') . '.csv"');
     $f = fopen('php://output', 'w');
     fwrite($f, 'Parameters:TimeZone=' . $s['timezone'] . "\n");
     fputcsv($f, ['Google Click ID', 'Conversion Name', 'Conversion Time', 'Conversion Value', 'Conversion Currency'], ',', '"', '');
     foreach ($rows as $r) fputcsv($f, $r, ',', '"', '');
     fclose($f);
     exit;
+}
+
+function action_admin_ads_export(): void {
+    admin_required();
+    ads_csv(($_GET['kind'] ?? '') === 'paid' ? 'paid' : 'order', true);
+}
+
+/** Same CSV for Google Ads scheduled uploads (source "HTTPS"): HTTP Basic auth with user "googleads"
+ *  and the feed password shown in Admin → Settings. Only while click IDs are switched on. */
+function action_ads_feed(): void {
+    $s = ads_settings();
+    $user = $_SERVER['PHP_AUTH_USER'] ?? ''; $pass = $_SERVER['PHP_AUTH_PW'] ?? '';
+    $h = (string)($_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
+    if ($user === '' && stripos($h, 'basic ') === 0) [$user, $pass] = array_pad(explode(':', (string)base64_decode(substr($h, 6)), 2), 2, '');
+    $token = (string)($s['feedToken'] ?? '');
+    if (!$s['clickIds'] || $token === '' || !rate_ok('ads_feed', 60)) fail(404, 'not_found');
+    if ($user !== 'googleads' || !hash_equals($token, $pass)) {
+        header('WWW-Authenticate: Basic realm="byereviews conversions"');
+        fail(401, 'unauthorized');
+    }
+    ads_csv(($_GET['kind'] ?? '') === 'paid' ? 'paid' : 'order', false);
 }
