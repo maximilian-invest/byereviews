@@ -18,7 +18,7 @@ return [
     // Stripe Dashboard → Developers → API keys (secret key, sk_live_…)
     'stripe_secret_key' => '',
     // Stripe Dashboard → Developers → Webhooks → endpoint https://byereviews.com/order.php?a=stripe-webhook,
-    // events "invoice.paid" + "checkout.session.completed" → signing secret (whsec_…)
+    // events "checkout.session.completed" + "checkout.session.async_payment_succeeded" (+ "invoice.paid") → signing secret (whsec_…)
     'stripe_webhook_secret' => '',
     // Payment Links create a numbered Stripe invoice + PDF after payment (Stripe charges a small invoicing fee)
     'stripe_invoice_pdf' => true,

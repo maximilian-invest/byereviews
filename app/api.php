@@ -280,7 +280,8 @@ function action_stripe_webhook(): void {
         }
     }
     // Checkout Sessions / Payment Links (older orders)
-    if (($event['type'] ?? '') === 'checkout.session.completed' && ($event['data']['object']['payment_status'] ?? '') === 'paid') {
+    // delayed methods (bank transfer, SEPA/ACH debit) arrive later as async_payment_succeeded
+    if (in_array($event['type'] ?? '', ['checkout.session.completed', 'checkout.session.async_payment_succeeded'], true) && ($event['data']['object']['payment_status'] ?? '') === 'paid') {
         $obj = $event['data']['object'];
         $id = (string)($obj['metadata']['order_id'] ?? '');
         if ($id === '' && !empty($obj['payment_link'])) foreach (store_list('order') as $x) if (($x['payment']['linkId'] ?? '') === $obj['payment_link']) { $id = $x['id']; break; }
