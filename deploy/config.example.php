@@ -20,7 +20,9 @@ return [
     // Stripe Dashboard → Developers → Webhooks → endpoint https://byereviews.com/order.php?a=stripe-webhook,
     // events "invoice.paid" + "checkout.session.completed" → signing secret (whsec_…)
     'stripe_webhook_secret' => '',
-    // Stripe Tax on invoices (only after Stripe Tax is set up in the Dashboard: origin address + registrations)
+    // Payment Links create a numbered Stripe invoice + PDF after payment (Stripe charges a small invoicing fee)
+    'stripe_invoice_pdf' => true,
+    // Stripe Tax (only after Stripe Tax is set up in the Dashboard: origin address + registrations)
     'stripe_tax' => false,
 
     // Admin panel at https://byereviews.com/admin/ (sign in with this email + password)

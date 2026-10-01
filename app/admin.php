@@ -187,7 +187,7 @@ function action_admin_paylink(): void {
     if ($resend) {
         $link = ['url' => $o['payment']['link'], 'id' => $o['payment']['linkId'] ?? ''];
     } else {
-        $link = stripe_invoice($o);
+        $link = stripe_payment_link($o);
         if (!$link && !empty($o['payment']['manualLink'])) $link = ['url' => $o['payment']['manualLink'], 'id' => ''];
         if (!$link) fail(503, (string)config('stripe_secret_key', '') === '' ? 'stripe_not_configured' : 'stripe_failed');
     }

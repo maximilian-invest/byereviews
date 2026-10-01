@@ -150,7 +150,12 @@ function stripe_payment_link(array $order): ?array {
         'line_items[0][price]' => $price['data']['id'], 'line_items[0][quantity]' => 1,
         'metadata[order_id]' => $order['id'], 'payment_intent_data[metadata][order_id]' => $order['id'],
         'after_completion[type]' => 'redirect', 'after_completion[redirect][url]' => SITE_URL . '/dashboard/?paid=1',
-    ]);
+    ] + (config('stripe_invoice_pdf', true) ? [   // Stripe creates a numbered invoice + PDF after payment
+        'invoice_creation[enabled]' => 'true',
+        'invoice_creation[invoice_data][description]' => 'Google review removal – order ' . $order['id'] . ' (' . ($order['business']['name'] ?: $order['customer']['company']) . ')',
+        'invoice_creation[invoice_data][footer]' => 'Thank you! You only pay for reviews that have been removed. Questions: ' . TEAM_EMAIL,
+        'invoice_creation[invoice_data][metadata][order_id]' => $order['id'],
+    ] : []) + (config('stripe_tax') ? ['automatic_tax[enabled]' => 'true', 'billing_address_collection' => 'required'] : []));
     if ($link['code'] !== 200 || empty($link['data']['url'])) { log_event('stripe payment link failed ' . $link['code'] . ' ' . substr((string)$link['raw'], 0, 300)); return null; }
     return ['url' => $link['data']['url'], 'id' => $link['data']['id']];
 }

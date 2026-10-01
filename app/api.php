@@ -238,11 +238,10 @@ function action_pay(): void {
     if (!$o || (!$owner && !$tokenOk)) { header('Location: /login/'); exit; }
     if (($o['payment']['status'] ?? '') === 'paid' || invoice($o)['total'] <= 0) { header('Location: /dashboard/'); exit; }
     $url = (($o['payment']['status'] ?? '') === 'link_sent' && !empty($o['payment']['link'])) ? $o['payment']['link'] : null;
-    if (!$url && ($link = stripe_invoice($o))) {   // first click on "Pay": create the Stripe invoice once and keep it
+    if (!$url && ($link = stripe_payment_link($o))) {   // first click on "Pay": create the order's Payment Link once and keep it
         store_update('order', $o['id'], function (?array $x) use ($link) {
             if (!$x) return null;
-            $x['payment'] = array_merge($x['payment'], ['status' => 'link_sent', 'link' => $link['url'], 'linkId' => $link['id'], 'linkSentAt' => date('c'),
-                'invoiceNumber' => $link['number'], 'invoicePdf' => $link['pdf']]);
+            $x['payment'] = array_merge($x['payment'], ['status' => 'link_sent', 'link' => $link['url'], 'linkId' => $link['id'], 'linkSentAt' => date('c')]);
             return $x;
         });
         $url = $link['url'];
@@ -285,14 +284,29 @@ function action_stripe_webhook(): void {
         $obj = $event['data']['object'];
         $id = (string)($obj['metadata']['order_id'] ?? '');
         if ($id === '' && !empty($obj['payment_link'])) foreach (store_list('order') as $x) if (($x['payment']['linkId'] ?? '') === $obj['payment_link']) { $id = $x['id']; break; }
-        $o = store_update('order', $id, function (?array $o) use ($event) {
-            if (!$o) return null;
-            $o['payment'] = array_merge($o['payment'], ['status' => 'paid', 'paidAt' => date('c'), 'amount' => ($event['data']['object']['amount_total'] ?? 0) / 100, 'stripeSession' => $event['data']['object']['id'] ?? '']);
+        $justPaid = false;
+        $o = store_update('order', $id, function (?array $o) use ($event, &$justPaid) {
+            if (!$o || ($o['payment']['status'] ?? '') === 'paid') return $o;
+            $obj = $event['data']['object'];
+            $o['payment'] = array_merge($o['payment'], ['status' => 'paid', 'paidAt' => date('c'), 'amount' => ($obj['amount_total'] ?? 0) / 100, 'stripeSession' => $obj['id'] ?? '',
+                'invoiceId' => is_string($obj['invoice'] ?? null) ? $obj['invoice'] : '']);
             $o['timeline']['paid'] = date('c');
             $o['payment']['via'] = 'Stripe';
+            $justPaid = true;
             return $o;
         });
-        if ($o) { log_event("order $id paid via stripe"); mail_paid($o); }
+        if ($o && $justPaid) {
+            // Payment Links create a post-payment invoice (invoice_creation): fetch number + PDF for the paid email
+            if (!empty($o['payment']['invoiceId'])) {
+                $inv = stripe_request('GET', 'invoices/' . rawurlencode($o['payment']['invoiceId']));
+                if ($inv['code'] === 200) $o = store_update('order', $id, function (?array $x) use ($inv) {
+                    if ($x) $x['payment'] += ['invoiceNumber' => (string)($inv['data']['number'] ?? ''), 'invoicePdf' => (string)($inv['data']['invoice_pdf'] ?? '')];
+                    return $x;
+                }) ?? $o;
+            }
+            log_event("order $id paid via stripe");
+            mail_paid($o);
+        }
     }
     json_out(['ok' => true]);
 }
