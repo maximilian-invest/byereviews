@@ -5,6 +5,14 @@ declare(strict_types=1);
 header('X-Content-Type-Options: nosniff');
 require __DIR__ . '/../app/admin.php';
 
+// Google Ads' HTTPS fetcher sends the query string URL-encoded (twice): "?a%253Dads-feed%2526kind…".
+// Decode it back into normal parameters when no "a" arrived.
+$qs = (string)($_SERVER['QUERY_STRING'] ?? '');
+if (!isset($_GET['a']) && preg_match('/^a%(25)*3D/i', $qs)) {
+    for ($i = 0; $i < 3 && preg_match('/%(25)*(3D|26)/i', $qs); $i++) $qs = rawurldecode($qs);
+    parse_str($qs, $fixed);
+    if (isset($fixed['a'])) $_GET = $fixed;
+}
 $action = preg_replace('/[^a-z_-]/', '', (string)($_GET['a'] ?? 'order'));
 // Diagnostics for the Google Ads feed: record requests that look like the feed but arrive mangled
 $uri = (string)($_SERVER['REQUEST_URI'] ?? '');
