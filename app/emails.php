@@ -161,8 +161,10 @@ function mail_paid(array $order): void {
     $amount = $order['payment']['amount'] ?? $inv['total'];
     $inner = m_h1('Paid –', 'thank you.')
         . m_p('Hi ' . eh(first_name($c['name'])) . ', we\'ve received your payment for order ' . eh($order['id']) . '.')
-        . m_box([['Amount', eh(money($amount, $order['currency'])), true], ['Date', eh(date('j M Y'))]])
-        . email_button(SITE_URL . '/dashboard/', 'View in dashboard');
+        . m_box(array_merge([['Amount', eh(money($amount, $order['currency'])), true], ['Date', eh(date('j M Y'))]],
+            !empty($order['payment']['invoiceNumber']) ? [['Invoice', eh($order['payment']['invoiceNumber'])]] : []))
+        . email_button(SITE_URL . '/dashboard/', 'View in dashboard')
+        . (!empty($order['payment']['invoicePdf']) ? '<p style="margin:14px 0 0;text-align:center"><a href="' . eh($order['payment']['invoicePdf']) . '" style="font-size:14px;color:#6B6B6B;text-decoration:underline">Download invoice (PDF)</a></p>' : '');
     send_branded($c['email'], "Payment received – order {$order['id']}", $inner, '// order ' . $order['id'], 'Your profile is cleaner – thanks for your payment.');
 }
 

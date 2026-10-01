@@ -2,11 +2,89 @@
 // Stripe Checkout for removed reviews + webhook verification.
 declare(strict_types=1);
 
-function stripe_request(string $method, string $path, array $params = []): array {
+function stripe_request(string $method, string $path, array $params = [], string $idempotencyKey = ''): array {
     $key = (string)config('stripe_secret_key', '');
-    return http_json($method, 'https://api.stripe.com/v1/' . $path,
-        ['Authorization: Bearer ' . $key, 'Content-Type: application/x-www-form-urlencoded'],
-        $params ? http_build_query($params) : null, 30);
+    $headers = ['Authorization: Bearer ' . $key, 'Content-Type: application/x-www-form-urlencoded'];
+    if ($idempotencyKey !== '') $headers[] = 'Idempotency-Key: ' . $idempotencyKey;
+    if ($method === 'GET' && $params) { $path .= (str_contains($path, '?') ? '&' : '?') . http_build_query($params); $params = []; }
+    return http_json($method, 'https://api.stripe.com/v1/' . $path, $headers, $params ? http_build_query($params) : null, 30);
+}
+
+const STRIPE_COUNTRY_CODES = ['United States' => 'US', 'United Kingdom' => 'GB', 'Canada' => 'CA', 'Australia' => 'AU', 'Ireland' => 'IE',
+    'Austria' => 'AT', 'Germany' => 'DE', 'Switzerland' => 'CH', 'France' => 'FR', 'Italy' => 'IT', 'Spain' => 'ES', 'Netherlands' => 'NL'];
+
+/** Find (by email) or create the Stripe customer for an order and keep name/address current. Returns the customer id or ''. */
+function stripe_customer(array $order): string {
+    $c = $order['customer'];
+    $params = ['email' => $c['email'], 'name' => $c['company'] !== '' ? $c['company'] : $c['name'],
+        'metadata[contact_name]' => $c['name'], 'preferred_locales[0]' => 'en'];
+    if ($c['company'] !== '') $params['description'] = $c['name'];
+    $cc = STRIPE_COUNTRY_CODES[$c['country'] ?? ''] ?? '';
+    if ($cc !== '') {
+        $params['address[country]'] = $cc;
+        if (($c['street'] ?? '') !== '') $params['address[line1]'] = $c['street'];
+        if (($c['city'] ?? '') !== '') $params['address[city]'] = $c['city'];
+    }
+    $found = stripe_request('GET', 'customers', ['email' => $c['email'], 'limit' => 1]);
+    $id = (string)($found['data']['data'][0]['id'] ?? '');
+    $r = $id !== '' ? stripe_request('POST', 'customers/' . rawurlencode($id), $params) : stripe_request('POST', 'customers', $params, 'cust-' . sha1(strtolower($c['email'])));
+    if ($r['code'] !== 200 || empty($r['data']['id'])) { log_event('stripe customer failed ' . $r['code'] . ' ' . substr((string)$r['raw'], 0, 300)); return ''; }
+    return (string)$r['data']['id'];
+}
+
+/**
+ * Stripe invoice (Invoicing API) for everything removed in the order: one line per price tier plus a negative
+ * line for the volume discount, so the total matches invoice() exactly. Finalized right away so it gets a number,
+ * a PDF and a hosted payment page (card, Apple/Google Pay, bank transfer – whatever is enabled in the Dashboard).
+ * Optional Stripe Tax ('stripe_tax' => true in the server config; needs Stripe Tax set up in the Dashboard).
+ * Returns ['url' => hosted_invoice_url, 'id' => in_…, 'number' => …, 'pdf' => …] or null.
+ */
+function stripe_invoice(array $order): ?array {
+    if (config('mock_stripe')) return ['url' => 'https://invoice.stripe.com/i/test_' . strtolower($order['id']), 'id' => 'in_test_' . $order['id'], 'number' => 'TEST-' . $order['id'], 'pdf' => ''];
+    if ((string)config('stripe_secret_key', '') === '') return null;
+    $inv = invoice($order);
+    if ($inv['total'] <= 0) return null;
+    $customer = stripe_customer($order);
+    if ($customer === '') return null;
+    $cur = strtolower($order['currency']);
+    // same order + same billable reviews → same idempotency key (safe to retry)
+    $billable = implode(',', array_map(fn($r) => $r['id'], array_filter($order['reviews'], fn($r) => $r['status'] === 'removed')));
+    $key = 'inv-' . $order['id'] . '-' . substr(sha1($billable . '|' . $inv['total'] . '|' . ($order['payment']['invoiceRound'] ?? 0)), 0, 16);
+    $params = [
+        'customer' => $customer, 'currency' => $cur, 'collection_method' => 'send_invoice', 'days_until_due' => 14,
+        'auto_advance' => 'false', 'pending_invoice_items_behavior' => 'exclude',
+        'description' => 'Google review removal – order ' . $order['id'] . ' (' . ($order['business']['name'] ?: $order['customer']['company']) . ')',
+        'footer' => 'Thank you! You only pay for reviews that have been removed. Questions: ' . TEAM_EMAIL,
+        'metadata[order_id]' => $order['id'],
+    ];
+    if (config('stripe_tax')) $params['automatic_tax[enabled]'] = 'true';
+    $r = stripe_request('POST', 'invoices', $params, $key);
+    if ($r['code'] !== 200 || empty($r['data']['id'])) { log_event('stripe invoice failed ' . $r['code'] . ' ' . substr((string)$r['raw'], 0, 300)); return null; }
+    $inId = (string)$r['data']['id'];
+    if (($r['data']['status'] ?? '') === 'draft') {   // fresh invoice (an idempotent replay returns the earlier one)
+        $lines = [];
+        if ($inv['recent']) $lines[] = ['Review removal – posted within 4 weeks', PRICE_RECENT, $inv['recent']];
+        if ($inv['older']) $lines[] = ['Review removal – older than 4 weeks', PRICE_OLDER, $inv['older']];
+        if ($inv['discount'] > 0) $lines[] = ['Volume discount ' . round($inv['rate'] * 100) . '%', -$inv['discount'], 1];
+        foreach ($lines as $i => [$desc, $unit, $qty]) {
+            $li = stripe_request('POST', 'invoiceitems', ['customer' => $customer, 'invoice' => $inId, 'currency' => $cur,
+                'description' => $qty > 1 ? "$qty × $desc" : $desc, 'amount' => (int)round($unit * $qty * 100), 'metadata[order_id]' => $order['id']], "$key-line$i");
+            if ($li['code'] !== 200) { log_event('stripe invoice item failed ' . $li['code'] . ' ' . substr((string)$li['raw'], 0, 300)); return null; }
+        }
+        $r = stripe_request('POST', 'invoices/' . rawurlencode($inId) . '/finalize', ['auto_advance' => 'false'], "$key-finalize");
+        if ($r['code'] !== 200) { log_event('stripe invoice finalize failed ' . $r['code'] . ' ' . substr((string)$r['raw'], 0, 300)); return null; }
+    }
+    $d = $r['data'];
+    if (empty($d['hosted_invoice_url'])) { $g = stripe_request('GET', 'invoices/' . rawurlencode($inId)); $d = $g['data'] ?? $d; }
+    if (empty($d['hosted_invoice_url'])) return null;
+    return ['url' => $d['hosted_invoice_url'], 'id' => $inId, 'number' => (string)($d['number'] ?? ''), 'pdf' => (string)($d['invoice_pdf'] ?? '')];
+}
+
+/** Voids an open invoice (the billable reviews changed) or deactivates an old Payment Link. */
+function stripe_cancel_payment(string $id): void {
+    if ($id === '' || (string)config('stripe_secret_key', '') === '' || config('mock_stripe')) return;
+    if (str_starts_with($id, 'in_')) stripe_request('POST', 'invoices/' . rawurlencode($id) . '/void');
+    elseif (str_starts_with($id, 'plink_')) stripe_request('POST', 'payment_links/' . rawurlencode($id), ['active' => 'false']);
 }
 
 /**

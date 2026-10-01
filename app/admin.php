@@ -133,14 +133,14 @@ function action_admin_status(): void {
             // the invoice changed: an open payment link no longer matches → back to unpaid, new link needed
             if (($o['payment']['status'] ?? '') === 'link_sent' && ($wasRemoved || $st === 'removed')) {
                 $oldLink = (string)($o['payment']['linkId'] ?? '');
-                $o['payment'] = ['status' => 'unpaid', 'manualLink' => $o['payment']['manualLink'] ?? ''];
+                $o['payment'] = ['status' => 'unpaid', 'manualLink' => $o['payment']['manualLink'] ?? '', 'invoiceRound' => ($o['payment']['invoiceRound'] ?? 0) + 1];
             }
             if (($o['payment']['status'] ?? '') === 'paid' && $st === 'removed') { $o['payment']['status'] = 'unpaid'; $o['payment']['note'] = 'Re-opened: new removal after an earlier payment'; }
         }
         unset($r);
         return $o;
     });
-    if ($oldLink !== '') stripe_deactivate_link($oldLink);
+    if ($oldLink !== '') stripe_cancel_payment($oldLink);
     queue_notification($id, [$rid]);
     json_out(['ok' => true, 'order' => admin_order_view($o)]);
 }
@@ -187,12 +187,13 @@ function action_admin_paylink(): void {
     if ($resend) {
         $link = ['url' => $o['payment']['link'], 'id' => $o['payment']['linkId'] ?? ''];
     } else {
-        $link = stripe_payment_link($o);
+        $link = stripe_invoice($o);
         if (!$link && !empty($o['payment']['manualLink'])) $link = ['url' => $o['payment']['manualLink'], 'id' => ''];
         if (!$link) fail(503, (string)config('stripe_secret_key', '') === '' ? 'stripe_not_configured' : 'stripe_failed');
     }
     $o = admin_order_update($id, function (array $o) use ($link) {
-        $o['payment'] = array_merge($o['payment'], ['status' => 'link_sent', 'link' => $link['url'], 'linkId' => $link['id'], 'linkSentAt' => date('c')]);
+        $o['payment'] = array_merge($o['payment'], ['status' => 'link_sent', 'link' => $link['url'], 'linkId' => $link['id'], 'linkSentAt' => date('c')],
+            !empty($link['number']) ? ['invoiceNumber' => $link['number'], 'invoicePdf' => $link['pdf'] ?? ''] : []);
         return $o;
     });
     flush_notifications(true); // status emails first, then the payment email
@@ -260,7 +261,7 @@ function action_admin_delete(): void {
     $d = json_body();
     $id = clean($d['order'] ?? '', 20);
     $o = store_get('order', $id) ?? fail(404, 'order_not_found');
-    if (!empty($o['payment']['linkId']) && ($o['payment']['status'] ?? '') === 'link_sent') stripe_deactivate_link($o['payment']['linkId']);
+    if (!empty($o['payment']['linkId']) && ($o['payment']['status'] ?? '') === 'link_sent') stripe_cancel_payment($o['payment']['linkId']);
     $o['deletedAt'] = date('c');
     $o['deleteReason'] = clean($d['reason'] ?? '', 1000);
     store_put('deleted', $id, $o);
