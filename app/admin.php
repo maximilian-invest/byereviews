@@ -56,8 +56,14 @@ function queue_notification(string $orderId, array $reviewIds): void {
     });
 }
 
-/** Sends queued status emails whose last change is older than NOTIFY_DELAY. Called on every request (cheap glob). */
-function flush_notifications(bool $force = false): void {
+/**
+ * Sends queued status emails whose last change is older than NOTIFY_DELAY. Called on every request (cheap glob).
+ * If a review in the batch was marked removed and the order has an unpaid amount, the customer gets the payment
+ * email instead (removed reviews + total + Pay now button → Stripe Payment Link, created here). Returns the ids of
+ * orders that got a payment email.
+ */
+function flush_notifications(bool $force = false): array {
+    $paymentMails = [];
     foreach (glob(data_dir('notify') . '/*.json') ?: [] as $f) {
         $n = json_decode((string)file_get_contents($f), true);
         if (!is_array($n) || (!$force && ($n['last'] ?? 0) > time() - NOTIFY_DELAY)) continue;
@@ -65,8 +71,30 @@ function flush_notifications(bool $force = false): void {
         $o = store_get('order', basename($f, '.json'));
         if (!$o) continue;
         $changed = array_values(array_filter($o['reviews'], fn($r) => in_array($r['id'], $n['ids'], true)));
-        if ($changed) mail_status_update($o, $changed);
+        if (!$changed) continue;
+        $newlyRemoved = array_filter($changed, fn($r) => $r['status'] === 'removed');
+        if ($newlyRemoved && ($o['payment']['status'] ?? '') !== 'paid' && invoice($o)['total'] > 0 && ($o['status'] ?? '') !== 'cancelled') {
+            $o = ensure_payment_link($o);
+            mail_payment_link($o, (string)($o['payment']['link'] ?? ''), array_values(array_filter($changed, fn($r) => $r['status'] !== 'removed')));
+            $paymentMails[] = $o['id'];
+        } else {
+            mail_status_update($o, $changed);
+        }
     }
+    return $paymentMails;
+}
+
+/** Makes sure the order has a current Payment Link (Stripe, or the manual link) and marks it as sent. */
+function ensure_payment_link(array $o): array {
+    if (($o['payment']['status'] ?? '') === 'link_sent' && !empty($o['payment']['link'])) return $o;
+    $link = stripe_payment_link($o);
+    if (!$link && !empty($o['payment']['manualLink'])) $link = ['url' => $o['payment']['manualLink'], 'id' => ''];
+    if (!$link) { log_event("payment link for {$o['id']} not created yet (Stripe not configured or failed) – created on the customer's first click"); return $o; }
+    return store_update('order', $o['id'], function (?array $x) use ($link) {
+        if (!$x) return null;
+        $x['payment'] = array_merge($x['payment'], ['status' => 'link_sent', 'link' => $link['url'], 'linkId' => $link['id'], 'linkSentAt' => date('c')]);
+        return $x;
+    }) ?? $o;
 }
 
 // ---------- actions ----------
@@ -196,8 +224,8 @@ function action_admin_paylink(): void {
             !empty($link['number']) ? ['invoiceNumber' => $link['number'], 'invoicePdf' => $link['pdf'] ?? ''] : []);
         return $o;
     });
-    flush_notifications(true); // status emails first, then the payment email
-    mail_payment_link($o, $link['url']);
+    $sent = flush_notifications(true); // queued status emails first – they may already contain the payment request
+    if (!in_array($id, $sent, true)) mail_payment_link($o, $link['url']);
     json_out(['ok' => true, 'order' => admin_order_view($o)]);
 }
 
