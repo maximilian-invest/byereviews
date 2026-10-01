@@ -113,15 +113,17 @@ function action_ads_feed(): void {
     $h = (string)($_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
     if ($user === '' && stripos($h, 'basic ') === 0) [$user, $pass] = array_pad(explode(':', (string)base64_decode(substr($h, 6)), 2), 2, '');
     $token = (string)($s['feedToken'] ?? '');
-    if (!$s['clickIds'] || $token === '' || !rate_ok('ads_feed', 60)) fail(404, 'not_found');
-    $user = trim($user); $pass = trim($pass);   // tolerate a stray space/newline from copy & paste
+    if (!$s['clickIds'] || $token === '') fail(404, 'not_found');
+    if (!rate_ok('ads_feed', 120)) { ads_last_feed('blocked: too many requests'); fail(429, 'rate_limited'); }
+    $user = trim($user); $pass = trim($pass);
+    $via = ($_SERVER['REQUEST_METHOD'] ?? 'GET') . ', ' . substr((string)($_SERVER['HTTP_USER_AGENT'] ?? 'no UA'), 0, 60);   // tolerate a stray space/newline from copy & paste
     if ($user !== 'googleads' || !hash_equals($token, $pass)) {
         header('WWW-Authenticate: Basic realm="byereviews conversions"');
         $why = $user === '' ? 'no credentials received' : ($user !== 'googleads' ? 'wrong user name' : 'wrong password (' . strlen($pass) . ' characters, expected ' . strlen($token) . ')');
         log_event('ads feed: auth failed – ' . $why);
-        ads_last_feed('failed: ' . $why);
+        ads_last_feed('failed: ' . $why . ' [' . $via . ']');
         fail(401, $user === '' ? 'no_credentials' : 'unauthorized');
     }
-    ads_last_feed('ok (' . (($_GET['kind'] ?? '') === 'paid' ? 'payments' : 'orders') . ')');
+    ads_last_feed('ok (' . (($_GET['kind'] ?? '') === 'paid' ? 'payments' : 'orders') . ') [' . $via . ']');
     ads_csv(($_GET['kind'] ?? '') === 'paid' ? 'paid' : 'order', false);
 }

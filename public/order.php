@@ -6,6 +6,11 @@ header('X-Content-Type-Options: nosniff');
 require __DIR__ . '/../app/admin.php';
 
 $action = preg_replace('/[^a-z_-]/', '', (string)($_GET['a'] ?? 'order'));
+// Diagnostics for the Google Ads feed: record requests that look like the feed but arrive mangled
+$uri = (string)($_SERVER['REQUEST_URI'] ?? '');
+if ($action !== 'ads-feed' && (stripos($uri, 'ads-feed') !== false || stripos($uri, '.csv') !== false)) {
+    ads_last_feed('unexpected request ' . substr(preg_replace('/[^\x20-\x7e]/', '', $uri), 0, 160) . ' (' . ($_SERVER['REQUEST_METHOD'] ?? '') . ')');
+}
 $routes = [
     // site
     'places' => 'action_places',
