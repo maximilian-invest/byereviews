@@ -101,6 +101,10 @@ function ads_csv(string $kind, bool $download): void {
     } else {
         // Data Manager (scheduled HTTPS import): plain CSV with one header row, time incl. UTC offset, order ID as transaction ID
         fputcsv($f, ['Google Click ID', 'Conversion Name', 'Conversion Time', 'Conversion Value', 'Conversion Currency', 'Order ID'], ',', '"', '');
+        // Data Manager can't detect the columns of an empty file: until the first real conversion exists, send one
+        // example row with an invalid click ID (Google rejects it, nothing is counted).
+        if (!$rows) $rows[] = ['EXAMPLE-ROW-NOT-A-CLICK', $kind === 'paid' ? $s['paidName'] : $s['orderName'],
+            (new DateTime('-1 day'))->setTimezone($tz)->format('Y-m-d\\TH:i:sP'), '0.00', 'USD', 'EXAMPLE'];
         foreach ($rows as $r) fputcsv($f, $r, ',', '"', '');
     }
     fclose($f);
