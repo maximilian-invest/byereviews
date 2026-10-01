@@ -54,7 +54,7 @@ function action_admin_ads(): void {
     }
     $s = ads_settings();
     $feed = $s['clickIds'] && !empty($s['feedToken']) ? ['user' => 'googleads', 'password' => $s['feedToken'],
-        'order' => 'https://byereviews.com/order.php?a=ads-feed&kind=order', 'paid' => 'https://byereviews.com/order.php?a=ads-feed&kind=paid'] : null;
+        'order' => 'https://byereviews.com/order.php?a=ads-feed&kind=order&file=orders.csv', 'paid' => 'https://byereviews.com/order.php?a=ads-feed&kind=paid&file=payments.csv'] : null;
     unset($s['feedToken']);
     json_out(['ok' => true, 'ads' => $s, 'stats' => ads_stats(), 'feed' => $feed]);
 }
