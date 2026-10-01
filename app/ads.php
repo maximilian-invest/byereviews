@@ -85,17 +85,24 @@ function ads_csv(string $kind, bool $download): void {
             $value = (float)totals($o['reviews'])['total'];
         }
         if (strtotime($o['ads']['at'] ?? $o['createdAt']) < time() - 89 * 86400) continue;
-        $t = (new DateTime($at))->setTimezone($tz)->format('Y-m-d H:i:s');
-        $rows[] = [$gclid, $kind === 'paid' ? $s['paidName'] : $s['orderName'], $t, number_format($value, 2, '.', ''), $o['currency'] ?? 'USD'];
+        $t = (new DateTime($at))->setTimezone($tz)->format($download ? 'Y-m-d H:i:s' : 'Y-m-d\\TH:i:sP');
+        $rows[] = [$gclid, $kind === 'paid' ? $s['paidName'] : $s['orderName'], $t, number_format($value, 2, '.', ''), $o['currency'] ?? 'USD', $o['id'] . ($kind === 'paid' ? '-paid' : '')];
     }
     usort($rows, fn($a, $b) => strcmp($a[2], $b[2]));
     header('Content-Type: text/csv; charset=utf-8');
     header('Cache-Control: no-store');
     if ($download) header('Content-Disposition: attachment; filename="google-ads-' . $kind . '-conversions-' . date('Y-m-d') . '.csv"');
     $f = fopen('php://output', 'w');
-    fwrite($f, 'Parameters:TimeZone=' . $s['timezone'] . "\n");
-    fputcsv($f, ['Google Click ID', 'Conversion Name', 'Conversion Time', 'Conversion Value', 'Conversion Currency'], ',', '"', '');
-    foreach ($rows as $r) fputcsv($f, $r, ',', '"', '');
+    if ($download) {
+        // classic "conversions from clicks" template for manual upload in Google Ads
+        fwrite($f, 'Parameters:TimeZone=' . $s['timezone'] . "\n");
+        fputcsv($f, ['Google Click ID', 'Conversion Name', 'Conversion Time', 'Conversion Value', 'Conversion Currency'], ',', '"', '');
+        foreach ($rows as $r) fputcsv($f, array_slice($r, 0, 5), ',', '"', '');
+    } else {
+        // Data Manager (scheduled HTTPS import): plain CSV with one header row, time incl. UTC offset, order ID as transaction ID
+        fputcsv($f, ['Google Click ID', 'Conversion Name', 'Conversion Time', 'Conversion Value', 'Conversion Currency', 'Order ID'], ',', '"', '');
+        foreach ($rows as $r) fputcsv($f, $r, ',', '"', '');
+    }
     fclose($f);
     exit;
 }
