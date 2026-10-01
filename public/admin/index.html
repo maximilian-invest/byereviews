@@ -829,7 +829,7 @@ class Component extends DCLogic {
         ? 'On: when someone orders after clicking an ad, the Google click ID (gclid) is stored with the order. No cookies, nothing stored in the browser. Upload the CSVs in Google Ads → Goals → Conversions → Uploads (conversion actions "' + s.ads.orderName + '" and "' + s.ads.paidName + '", source: clicks).'
         : 'Off. Turn on to store the Google click ID (gclid) with orders that come from an ad – cookie-free – and export them as offline conversions for Google Ads. Mention it in the privacy policy before turning it on.',
       adsFeed: !!s.adsFeed, adsFeedOrder: s.adsFeed ? 'Orders: ' + s.adsFeed.order : '', adsFeedPaid: s.adsFeed ? 'Payments: ' + s.adsFeed.paid : '', adsFeedPw: s.adsFeed ? s.adsFeed.password : '',
-      adsStatsText: s.adsStats ? s.adsStats.orders + ' orders from ad clicks · ' + s.adsStats.paid + ' paid · ' + (Math.round(s.adsStats.value * 100) / 100) + ' paid value' : ''
+      adsStatsText: s.adsStats ? s.adsStats.orders + ' orders from ad clicks · ' + s.adsStats.paid + ' paid · ' + (Math.round(s.adsStats.value * 100) / 100) + ' paid value' + (s.adsStats.lastFeed ? ' · last Google fetch ' + new Date(s.adsStats.lastFeed.at).toLocaleString() + ': ' + s.adsStats.lastFeed.result : '') : ''
     });
     if (od) {
       const busy = fnName => { if (this._busy) return true; this._busy = fnName; setTimeout(() => { this._busy = null; }, 1500); return false; };

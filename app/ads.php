@@ -30,8 +30,15 @@ function ads_capture(array $d): ?array {
     return $out;
 }
 
+/** Remembers the last feed request (shown in the admin, never the password). */
+function ads_last_feed(string $result): void {
+    $s = store_get('settings', 'ads') ?? [];
+    $s['lastFeed'] = ['at' => date('c'), 'result' => $result];
+    store_put('settings', 'ads', $s);
+}
+
 function ads_stats(): array {
-    $n = ['orders' => 0, 'paid' => 0, 'value' => 0];
+    $n = ['orders' => 0, 'paid' => 0, 'value' => 0, 'lastFeed' => ads_settings()['lastFeed'] ?? null];
     foreach (store_list('order') as $o) {
         if (empty($o['ads']['gclid'])) continue;
         $n['orders']++;
@@ -107,10 +114,14 @@ function action_ads_feed(): void {
     if ($user === '' && stripos($h, 'basic ') === 0) [$user, $pass] = array_pad(explode(':', (string)base64_decode(substr($h, 6)), 2), 2, '');
     $token = (string)($s['feedToken'] ?? '');
     if (!$s['clickIds'] || $token === '' || !rate_ok('ads_feed', 60)) fail(404, 'not_found');
+    $user = trim($user); $pass = trim($pass);   // tolerate a stray space/newline from copy & paste
     if ($user !== 'googleads' || !hash_equals($token, $pass)) {
         header('WWW-Authenticate: Basic realm="byereviews conversions"');
-        log_event('ads feed: auth failed (' . ($user === '' ? 'no credentials received' : 'wrong ' . ($user !== 'googleads' ? 'user' : 'password, length ' . strlen($pass))) . ')');
+        $why = $user === '' ? 'no credentials received' : ($user !== 'googleads' ? 'wrong user name' : 'wrong password (' . strlen($pass) . ' characters, expected ' . strlen($token) . ')');
+        log_event('ads feed: auth failed – ' . $why);
+        ads_last_feed('failed: ' . $why);
         fail(401, $user === '' ? 'no_credentials' : 'unauthorized');
     }
+    ads_last_feed('ok (' . (($_GET['kind'] ?? '') === 'paid' ? 'payments' : 'orders') . ')');
     ads_csv(($_GET['kind'] ?? '') === 'paid' ? 'paid' : 'order', false);
 }
