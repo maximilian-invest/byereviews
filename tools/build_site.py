@@ -39,7 +39,7 @@ __ROBOTS__<link rel="icon" type="image/png" href="/assets/favicon.png">
 <meta property="og:title" content="byereviews – Remove fake &amp; unfair Google reviews">
 <meta property="og:description" content="No cure, no pay: you only pay for reviews that are actually removed.">
 <meta property="og:url" content="https://byereviews.com/">
-<meta property="og:image" content="https://byereviews.com/assets/media/hero-desktop-poster.webp">
+<meta property="og:image" content="https://byereviews.com/assets/media/hero-desktop-v2-poster.webp">
 <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://byereviews.com/#org","name":"byereviews","url":"https://byereviews.com/","logo":"https://byereviews.com/assets/byereviews-logo.png","email":"info@byereviews.com"},{"@type":"WebSite","name":"byereviews","url":"https://byereviews.com/","publisher":{"@id":"https://byereviews.com/#org"}},{"@type":"Service","name":"Google review removal","provider":{"@id":"https://byereviews.com/#org"},"areaServed":["US","GB","CA","AU","EU"],"offers":[{"@type":"Offer","name":"Review posted within the last 4 weeks","price":"90","priceCurrency":"USD"},{"@type":"Offer","name":"Review older than 4 weeks","price":"125","priceCurrency":"USD"}]}]}</script>
 <style>html.js #prerender{display:none}html:not(.js) x-dc{display:none!important}</style>
@@ -61,10 +61,10 @@ rep('<link rel="preconnect" href="https://fonts.googleapis.com">\n<link href="ht
     '<link href="/assets/fonts/fonts.css" rel="stylesheet">')
 
 # self-hosted media
-rep('assets/video/hero-desktop.mp4', '/assets/media/hero-desktop.mp4')
-rep('assets/video/hero-mobile.mp4', '/assets/media/hero-mobile.mp4')
-rep('assets/video/hero-desktop-poster.webp', '/assets/media/hero-desktop-poster.webp')
-rep('assets/video/hero-mobile-poster.webp', '/assets/media/hero-mobile-poster.webp')
+rep('assets/video/hero-desktop.mp4', '/assets/media/hero-desktop-v2.mp4')
+rep('assets/video/hero-mobile.mp4', '/assets/media/hero-mobile-v2.mp4')
+rep('assets/video/hero-desktop-poster.webp', '/assets/media/hero-desktop-v2-poster.webp')
+rep('assets/video/hero-mobile-poster.webp', '/assets/media/hero-mobile-v2-poster.webp')
 rep("assets/img/step-1-pick.png", "/assets/media/image-1.webp")
 rep("assets/img/step-2-check.png", "/assets/media/image-2.webp")
 rep("assets/img/step-3-pay.png", "/assets/media/image-3.webp")
