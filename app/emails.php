@@ -106,8 +106,8 @@ function send_branded(string $to, string $subject, string $inner, string $meta =
     return send_mail($to, $subject, $text, $replyTo, $html);
 }
 
-function price_note(array $r, string $cur): string {
-    return eh(money(tier_price($r['tier']), $cur)) . '<br><span style="font-size:12px;font-weight:400;color:#8A8A8A">' . ($r['tier'] === 'older' ? '&gt; 4 weeks' : '≤ 4 weeks') . '</span>';
+function price_note(array $r, string $cur, bool $bulk = false): string {
+    return eh(money($bulk ? BULK_PRICE : tier_price($r['tier']), $cur)) . '<br><span style="font-size:12px;font-weight:400;color:#8A8A8A">' . ($bulk ? 'bulk price' : ($r['tier'] === 'older' ? '&gt; 4 weeks' : '≤ 4 weeks')) . '</span>';
 }
 
 // ---------- customer emails ----------
@@ -118,9 +118,9 @@ function mail_order_confirmation(array $order, ?string $password): void {
     $biz = $order['business']['name'] ?: $c['company'];
     $inner = m_h1('Order received.', 'We\'re on it.')
         . m_p('Hi ' . eh(first_name($c['name'])) . ', thanks for your order' . ($biz ? ' for <strong style="color:#151515">' . eh($biz) . '</strong>' : '') . '. We\'re checking every review against Google\'s policies now and will email you at every step.')
-        . m_reviews($order['reviews'], fn($r) => price_note($r, $cur))
+        . m_reviews($order['reviews'], fn($r) => price_note($r, $cur, $t['bulk']))
         . m_box(array_merge([['Subtotal', eh(money($t['subtotal'], $cur))]],
-            $t['rate'] > 0 ? [['Volume discount ' . round($t['rate'] * 100) . '%', '– ' . eh(money($t['discount'], $cur))]] : [],
+            $t['discount'] > 0 ? [[eh(discount_label($t, $cur)), '– ' . eh(money($t['discount'], $cur))]] : [],
             [['Total if every review is removed', eh(money($t['total'], $cur)), true], ['Due today', eh(money(0, $cur))]]))
         . ($password !== null
             ? m_box([['Login', eh($c['email'])], ['Password', '<span style="font-family:' . MAIL_MONO . '">' . eh($password) . '</span>']], 'Your dashboard')
@@ -156,8 +156,8 @@ function mail_payment_link(array $order, string $link = '', array $others = []):
     $word = $n === 1 ? '1 review is' : "$n reviews are";
     $inner = m_h1('Good news –', $word . ' gone.')
         . m_p('Hi ' . eh(first_name($c['name'])) . ', we\'ve removed the following from ' . eh($order['business']['name'] ?: $c['company']) . '\'s Google profile:')
-        . m_reviews($rem, fn($r) => eh(money(tier_price($r['tier']), $cur)), true)
-        . m_box(array_merge($inv['rate'] > 0 ? [['Volume discount ' . round($inv['rate'] * 100) . '%', '– ' . eh(money($inv['discount'], $cur))]] : [],
+        . m_reviews($rem, fn($r) => eh(money($inv['bulk'] ? BULK_PRICE : tier_price($r['tier']), $cur)), true)
+        . m_box(array_merge($inv['discount'] > 0 ? [[eh(discount_label($inv, $cur)), '– ' . eh(money($inv['discount'], $cur))]] : [],
             [['Total due', eh(money($inv['total'], $cur)), true]]))
         . m_p('Pay securely by card, Apple Pay, Google Pay, PayPal or the other methods available in your country.', 'font-size:14px;color:#6B6B6B')
         . email_button(pay_url($order), 'Pay now', true)
@@ -285,7 +285,7 @@ function mail_team_new_order(array $order): void {
     $inner = m_box([['Name', eh($c['name'])], ['Email', '<a href="mailto:' . eh($c['email']) . '" style="color:#151515">' . eh($c['email']) . '</a>'], ['Company', eh($c['company'] ?: '—')],
             ['Phone', eh($c['phone'] ?: '—')], ['Address', eh(trim($c['street'] . ', ' . $c['city'] . ', ' . $c['country'], ', ')) ?: '—']], 'Customer')
         . m_box([['Business', eh($b['name'] ?: '—')], ['Address', eh($b['address'] ?: '—')], ['Rating at order', $b['rating'] !== null ? eh(number_format((float)$b['rating'], 1)) . ' ★ (' . (int)$b['reviewCount'] . ')' : '—']], 'Google profile')
-        . m_reviews($order['reviews'], fn($r) => price_note($r, $cur))
+        . m_reviews($order['reviews'], fn($r) => price_note($r, $cur, $t['bulk']))
         . m_box([['Potential total', eh(money($t['total'], $cur)), true]])
         . email_button(SITE_URL . '/admin/#' . $order['id'], 'Open in admin');
     mail_team("New order {$order['id']} – {$c['name']}", 'New order ' . $order['id'], $inner, $c['email'], '// ' . $order['id']);

@@ -45,7 +45,7 @@ __ROBOTS__<link rel="icon" type="image/png" href="/assets/favicon.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
 __PRELOAD__
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://byereviews.com/#org","name":"byereviews","url":"https://byereviews.com/","logo":"https://byereviews.com/assets/byereviews-logo.png","email":"info@byereviews.com"},{"@type":"WebSite","name":"byereviews","url":"https://byereviews.com/","publisher":{"@id":"https://byereviews.com/#org"}},{"@type":"Service","name":"Google review removal","provider":{"@id":"https://byereviews.com/#org"},"areaServed":["US","GB","CA","AU","EU"],"offers":[{"@type":"Offer","name":"Removal of a review posted within the last 4 weeks","price":"90","priceCurrency":"USD","url":"https://byereviews.com/pricing/","description":"Charged only once the review is removed. No upfront payment, no retainer."},{"@type":"Offer","name":"Removal of a review older than 4 weeks","price":"125","priceCurrency":"USD","url":"https://byereviews.com/pricing/","description":"Charged only once the review is removed. No upfront payment, no retainer."}],"serviceType":"Google review removal","description":"Removal of fake, spam, off-topic and otherwise policy-violating Google reviews through the official Google reporting and legal-removal channels. Pay per removed review."}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://byereviews.com/#org","name":"byereviews","url":"https://byereviews.com/","logo":"https://byereviews.com/assets/byereviews-logo.png","email":"info@byereviews.com"},{"@type":"WebSite","name":"byereviews","url":"https://byereviews.com/","publisher":{"@id":"https://byereviews.com/#org"}},{"@type":"Service","name":"Google review removal","provider":{"@id":"https://byereviews.com/#org"},"areaServed":["US","GB","CA","AU","EU"],"offers":[{"@type":"Offer","name":"Removal of a review posted within the last 4 weeks","price":"90","priceCurrency":"USD","url":"https://byereviews.com/pricing/","description":"Charged only once the review is removed. No upfront payment, no retainer."},{"@type":"Offer","name":"Removal of a review older than 4 weeks","price":"125","priceCurrency":"USD","url":"https://byereviews.com/pricing/","description":"Charged only once the review is removed. No upfront payment, no retainer."},{"@type":"Offer","name":"Bulk price: removal per review when 10 or more reviews are submitted","price":"50","priceCurrency":"USD","url":"https://byereviews.com/pricing/","description":"Flat price per removed review for orders with 10 or more submitted reviews, regardless of age. Charged only once the review is removed."}],"serviceType":"Google review removal","description":"Removal of fake, spam, off-topic and otherwise policy-violating Google reviews through the official Google reporting and legal-removal channels. Pay per removed review."}]}</script>
 __FAQLD__<style>html.js #prerender{display:none}html:not(.js) x-dc{display:none!important}</style>
 <script>
 document.documentElement.classList.add('js');
@@ -112,6 +112,30 @@ rep("tag: noText ? '' : on ? '✓ ' + this.fmt(p.days <= 28 ? 90 : 125) : this.f
 rep('Older<span style="font-weight:500">{{ priceOlder }}</span>',
     'Older<span style="font-weight:500">{{ priceOlder }}</span><span style="opacity:.7">· ~70% chance</span>')
 rep('<span>Older (&gt; 4 weeks) × {{ nOlder }}</span><span>{{ subOlder }}</span>', '<span>Older (&gt; 4 weeks) × {{ nOlder }}<span style="display:block;color:#8A8A8A;font-size:13px;margin-top:2px">~70% removal chance</span></span><span style="white-space:nowrap">{{ subOlder }}</span>')
+
+# bulk price: from 10 submitted reviews every removed review costs a flat 50 (app/lib.php BULK_MIN / BULK_PRICE)
+rep('Volume discount: 2 reviews −5% · 3–5 reviews −10% · 6+ reviews −15%.</span>',
+    'Volume discount: 2 reviews −5% · 3–5 reviews −10% · 6–9 reviews −15%.</span>\n'
+    '      <span style="font-size:15px;color:#FFFFFF;line-height:1.55">10 or more reviews: {{ priceBulk }} per removed review, whatever their age.</span>')
+rep('priceRecent: this.fmt(90), priceOlder: this.fmt(125),', 'priceRecent: this.fmt(90), priceOlder: this.fmt(125), priceBulk: this.fmt(50),')
+# the example has 3 reviews, so the 10 % volume discount applies (305 − 31 = 274, same rounding as app/lib.php)
+rep('exampleTotal: this.fmt(2 * 90 + 125),', 'exampleTotal: this.fmt(274),')
+rep("const nAll = nRecent + nOlder, rate = this.discountRate(nAll);\n    const subtotal = nRecent * 90 + nOlder * 125, discountAmt = Math.round(subtotal * rate), totalAmt = subtotal - discountAmt;\n    const nextTier = nAll < 2 ? [2, 5] : nAll < 3 ? [3, 10] : nAll < 6 ? [6, 15] : null;",
+    "const nAll = nRecent + nOlder, bulk = nAll >= 10, rate = bulk ? 0 : this.discountRate(nAll);\n"
+    "    const subtotal = nRecent * 90 + nOlder * 125, totalAmt = bulk ? nAll * 50 : subtotal - Math.round(subtotal * rate), discountAmt = subtotal - totalAmt;\n"
+    "    const nextTier = nAll < 2 ? [2, 5] : nAll < 3 ? [3, 10] : nAll < 6 ? [6, 15] : nAll < 10 ? [10, 0] : null;")
+rep("hasDiscount: rate > 0, discountPct: Math.round(rate * 100) + '%',",
+    "hasDiscount: discountAmt > 0, discountLabel: bulk ? 'Bulk price 10+ · ' + this.fmt(50) + ' each' : 'Volume discount ' + Math.round(rate * 100) + '%',")
+rep("nextTierText: nextTier ? `Add ${nextTier[0] - nAll} more for ${nextTier[1]}% off everything` : '',",
+    "nextTierText: nextTier ? (nextTier[0] === 10 ? `Add ${10 - nAll} more and every review costs only ${this.fmt(50)}` : `Add ${nextTier[0] - nAll} more for ${nextTier[1]}% off everything`) : '',")
+rep("tiers: [['1', '—'], ['2', '5%'], ['3–5', '10%'], ['6+', '15%']].map(([n, p], i) => ({ n, p, bg: [nAll <= 1, nAll === 2, nAll >= 3 && nAll <= 5, nAll >= 6][i] ? '#151515' : '#EFEFEF', fg: [nAll <= 1, nAll === 2, nAll >= 3 && nAll <= 5, nAll >= 6][i] ? '#FFFFFF' : '#555' }))",
+    "tiers: [['1', '—'], ['2', '5%'], ['3–5', '10%'], ['6–9', '15%'], ['10+', this.fmt(50)]].map(([n, p], i) => ({ n, p, bg: [nAll <= 1, nAll === 2, nAll >= 3 && nAll <= 5, nAll >= 6 && nAll <= 9, nAll >= 10][i] ? '#151515' : '#EFEFEF', fg: [nAll <= 1, nAll === 2, nAll >= 3 && nAll <= 5, nAll >= 6 && nAll <= 9, nAll >= 10][i] ? '#FFFFFF' : '#555' }))")
+rep('<span>Volume discount {{ discountPct }}</span>', '<span>{{ discountLabel }}</span>')
+rep('<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:0 8px">\n      <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="4">',
+    '<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:0 8px">\n      <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="5">')
+FAQ_COST = ("{ q: 'What does it cost?', a: `${this.fmt(90)} per review posted within the last 4 weeks, ${this.fmt(125)} per older review. You pay only for reviews that are actually removed.` },",
+            "{ q: 'What does it cost?', a: `${this.fmt(90)} per review posted within the last 4 weeks, ${this.fmt(125)} per older review. If you submit 10 or more reviews, every removed review costs ${this.fmt(50)}. You pay only for reviews that are actually removed.` },")
+rep(*FAQ_COST)
 
 # no unverified rating claims
 s, n = re.subn(r'\s*<span[^>]*>Trustpilot ★ 4\.9</span>', '', s)
@@ -181,9 +205,11 @@ import json as _json
 # FAQ JSON-LD from the design's FAQ list (the same text the page shows)
 _src = SRC.read_text(encoding='utf-8')
 _block = _src[_src.index('      faqs: ['):_src.index('].map((f, i) => ({ ...f, open: s.faqOpen')]
+assert FAQ_COST[0] in _block
+_block = _block.replace(*FAQ_COST)
 _faqs = []
 for _m in re.finditer(r"\{ q: '((?:[^'\\]|\\.)*)', a: (?:'((?:[^'\\]|\\.)*)'|`([^`]*)`) \}", _block):
-    _a = (_m.group(2) or _m.group(3)).replace("\\'", "'").replace('${this.fmt(90)}', '$90').replace('${this.fmt(125)}', '$125')
+    _a = (_m.group(2) or _m.group(3)).replace("\\'", "'").replace('${this.fmt(90)}', '$90').replace('${this.fmt(125)}', '$125').replace('${this.fmt(50)}', '$50')
     _faqs.append({'@type': 'Question', 'name': _m.group(1).replace("\\'", "'"), 'acceptedAnswer': {'@type': 'Answer', 'text': _a}})
 assert len(_faqs) >= 5 and '${' not in _json.dumps(_faqs), _faqs
 FAQ_LD = ('<script type="application/ld+json">'
@@ -219,9 +245,9 @@ INTENTS = {
         title='Google Review Dispute Service – Pay on Success | byereviews',
         desc='Policy-based Google review disputes for businesses. Transparent per-review pricing, no deposit, no retainer. Free case review within 24 hours.',
         grey='Google review removal service.', white='Pay only for what\'s gone.',
-        sub='The price is on the page: $90 per removed review posted within the last 4 weeks, $125 for older ones, up to 15% off for several. No deposit, no retainer, no sales call. Order online in about 2 minutes.',
+        sub='The price is on the page: $90 per removed review posted within the last 4 weeks, $125 for older ones, a flat $50 each from 10 reviews. No deposit, no retainer, no sales call. Order online in about 2 minutes.',
         h2a='Why businesses choose us.', h2b='No quote, no call, no risk.',
-        cards=[('Price shown upfront', 'Most removal services only quote after a call. Ours is fixed per review and on this page, including the volume discount.'),
+        cards=[('Price shown upfront', 'Most removal services only quote after a call. Ours is fixed per review and on this page, including volume and bulk prices.'),
                ('No deposit, no retainer', 'Nothing is charged when you order. You get a payment link only for reviews that are actually removed.'),
                ('Free check within 24h', 'We assess every review against Google\'s policies and tell you honestly which ones qualify before any work starts.')]),
 }

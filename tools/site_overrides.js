@@ -20,11 +20,14 @@
       let src = ss.getItem('br_src');
       if (!src) {
         const u = new URLSearchParams(location.search), utm = (u.get('utm_source') || '').toLowerCase(), ref = document.referrer || '';
-        src = /instagram/.test(utm + ref) ? 'instagram' : /google\./.test(ref) || utm === 'google' ? 'google' : /byereviews\.com\/blog\//.test(ref) || (ref && new URL(ref).host === location.host && ref.includes('/blog/')) ? 'blog' : !ref || new URL(ref).host === location.host ? 'direct' : 'other';
+        const paid = u.has('gclid') || u.has('gbraid') || u.has('wbraid') || /^(cpc|ppc|paid)/.test((u.get('utm_medium') || '').toLowerCase());
+        src = paid && (utm === '' || utm === 'google' || u.has('gclid')) ? 'ads' : /instagram/.test(utm + ref) ? 'instagram' : /google\./.test(ref) || utm === 'google' ? 'google' : /byereviews\.com\/blog\//.test(ref) || (ref && new URL(ref).host === location.host && ref.includes('/blog/')) ? 'blog' : !ref || new URL(ref).host === location.host ? 'direct' : 'other';
         ss.setItem('br_src', src);
+        ss.setItem('br_land', location.pathname);
       }
+      const land = ss.getItem('br_land') || '';
       const region = ((navigator.language || '').split('-')[1] || '').toUpperCase();
-      fetch('/order.php?a=track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid, ev, src, region, ...(extra || {}) }), keepalive: true }).catch(() => {});
+      fetch('/order.php?a=track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid, ev, src, region, land, ...(extra || {}) }), keepalive: true }).catch(() => {});
     } catch (e) {}
   }
 
@@ -81,7 +84,7 @@
   componentDidUpdate() {
     const st = this.state;
     if (st.view === 'order') this.track('visit');
-    if (st.view === 'order' && st.step !== this._lastStep) { this._lastStep = st.step; if (st.step >= 3) this.track('review'); if (st.step >= 4) this.track('contact'); }
+    if (st.view === 'order' && st.step !== this._lastStep) { this._lastStep = st.step; const sel = { sel: this.selectedList().length + (st.reviews || []).filter(r => this.valid(r)).length }; if (st.step >= 3) this.track('review', sel); if (st.step >= 4) this.track('contact', sel); }
     const v = this.state.view;
     if (v === this._lastView) return;
     this._lastView = v;
@@ -197,7 +200,7 @@
         const msg = { too_many_requests: 'Too many orders from your connection – please try again later.', no_reviews: 'Please add at least one review with text.', invalid_email: 'Please enter a valid email address.' }[r.error] || 'Something went wrong – please try again or email info@byereviews.com.';
         return this.setState({ submitting: false, submitError: msg, tried: true });
       }
-      this.track('submit');
+      this.track('submit', { sel: this.selectedList().length + (s.reviews || []).filter(r => this.valid(r)).length });
       try { sessionStorage.setItem('br_done', JSON.stringify({ orderId: r.orderId, newAccount: !!r.newAccount, email: s.email, at: Date.now() })); } catch (e) {}
       // Google Ads conversion (only if the Google tag is on the page)
       try { if (window.gtag && window.BR_ADS_CONVERSION) window.gtag('event', 'conversion', { send_to: window.BR_ADS_CONVERSION, transaction_id: r.orderId }); } catch (e) {}
@@ -316,10 +319,10 @@
     const look = { removed: ['✓ Removed', '#151515', '#FFFFFF', '#151515'], progress: ['In progress', '#FFFFFF', '#151515', '#151515'], submitted: ['Submitted', '#EFEFEF', '#555', '#EFEFEF'], cancelled: ['Not eligible', '#FFFFFF', '#8A8A8A', '#D2D2D2'], stopped: ['Cancelled', '#FFFFFF', '#8A8A8A', '#D2D2D2'] };
     const many = all.length > 1;
     const items = [].concat(...all.map(x => x.reviews.map(r => {
-      const st = stMap[r.status] || 'submitted', price = r.tier === 'older' ? 125 : 90, m = look[st], pd = isPaid(x);
+      const st = stMap[r.status] || 'submitted', bulk = !!(x.invoice && x.invoice.bulk), price = bulk ? 50 : r.tier === 'older' ? 125 : 90, m = look[st], pd = isPaid(x);
       return { initial: (r.author || 'R')[0], name: r.author || 'Review', stars: r.stars || '–',
         when: (r.stars ? this.whenFor(r.days) : (r.tier === 'older' ? 'older than 4 weeks' : 'last 4 weeks')) + (many ? ' · ' + x.id : ''),
-        text: r.text || r.link || 'Review link', st, price, orderId: x.id, paid: pd,
+        text: r.text || r.link || 'Review link', st, price, bulk, orderId: x.id, paid: pd,
         textCol: st === 'removed' ? '#9E9E9E' : st === 'cancelled' ? '#8A8A8A' : '#333', deco: st === 'removed' ? 'line-through' : 'none',
         status: m[0], badgeBg: m[1], badgeFg: m[2], badgeBd: m[3],
         priceNote: (r.updatedAt && new Date(r.updatedAt).toDateString() === new Date().toDateString() ? '● Updated today · ' : '') + (st === 'removed' ? (pd ? 'Paid ' + fmt(price) : fmt(price) + ' due') : st === 'cancelled' || st === 'stopped' ? 'Cancelled · free' : fmt(price) + ' if removed') };
@@ -329,7 +332,7 @@
     const invOrders = open.length ? open : withRemovals, invIds = invOrders.map(x => x.id);
     const invItems = removed.filter(i => invIds.includes(i.orderId));
     const sum = k => invOrders.reduce((t, x) => t + (Number(x.invoice[k]) || 0), 0);
-    const due = open.reduce((t, x) => t + (Number(x.invoice.total) || 0), 0), disc = sum('discount'), rate = Math.max(0, ...invOrders.map(x => x.invoice.rate || 0));
+    const due = open.reduce((t, x) => t + (Number(x.invoice.total) || 0), 0), disc = invOrders.filter(x => !x.invoice.bulk).reduce((t, x) => t + (Number(x.invoice.discount) || 0), 0), rate = Math.max(0, ...invOrders.filter(x => !x.invoice.bulk).map(x => x.invoice.rate || 0)), anyBulk = invOrders.some(x => x.invoice.bulk);
     const dates = k => all.map(x => (x.timeline || {})[k]).filter(Boolean).sort();
     const tl = { received: all.map(x => x.createdAt).sort()[0], review: dates('review')[0], removed: dates('removed').pop(), paid: dates('paid').pop() };
     const fd = iso => iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
@@ -353,7 +356,7 @@
       pOrderId: '', pBiz: o.business.name || 'Your business', pFirst: (s.customer.name || '').split(' ')[0] || 'there', pEmail: s.customer.email,
       pRemoved: removed.length, pTotal: items.filter(i => i.st !== 'cancelled' && i.st !== 'stopped').length, pProgress: inProg,
       pRatingBefore: rb != null ? Number(rb).toFixed(1) : '–', pRatingNow: rn != null ? Number(rn).toFixed(1) : '–',
-      pDue: fmt(due), pPayLabel: due > 0 ? 'Due now' + (rate > 0 ? ' · incl. volume discount' : '') : 'Nothing due' + (removed.length ? '' : ' yet'),
+      pDue: fmt(due), pPayLabel: due > 0 ? 'Due now' + (anyBulk ? ' · bulk price' : rate > 0 ? ' · incl. volume discount' : '') : 'Nothing due' + (removed.length ? '' : ' yet'),
       pCanPay: payable.length > 0, pPaid: paid, payNow: pay,
       pSteps: [['Order received', fd(tl.received)], ['In review', phase >= 2 ? fd(tl.review || tl.received) : '—'], ['Removed', phase >= 3 ? fd(tl.removed) : '—'], ['Paid', phase >= 4 ? fd(tl.paid) : '—']]
         .map(([label, date], i) => ({ label, date, bar: i < phase ? '#151515' : '#E4E4E4', fg: i < phase ? '#151515' : '#8A8A8A' })),
@@ -367,7 +370,7 @@
       pActive: items.filter(isA), pDone: items.filter(isD), pActiveCount: items.filter(isA).length, pDoneCount: items.filter(isD).length,
       pActiveEmpty: !items.some(isA), pDoneEmpty: !items.some(isD),
       pHasInvoice: invItems.length > 0, pInvoiceNo: invIds.map(id => 'INV-' + id.replace('BR-', '')).join(', '), pDueDate: fd(tl.removed),
-      pLines: invItems.map(i => ({ label: i.name + ' · ' + (i.price === 90 ? '≤ 4 weeks' : '> 4 weeks'), amount: fmt(i.price) })),
+      pLines: invItems.map(i => ({ label: i.name + ' · ' + (i.bulk ? 'bulk price (10+)' : i.price === 90 ? '≤ 4 weeks' : '> 4 weeks'), amount: fmt(i.price) })),
       pHasDisc: disc > 0, pDiscPct: Math.round(rate * 100) + '%', pDiscAmt: '– ' + fmt(disc), pInvTotal: fmt(sum('total')),
       pMsgs: msgs, sendSupport: send, onSupportKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } },
       pTabOverview: tab === 'overview', pTabSupport: tab === 'support', pShowChatFab: tab === 'overview', pUnread: unread, openSupport: () => goTab('support'),

@@ -9,6 +9,8 @@ const SITE_URL   = 'https://byereviews.com';
 
 const PRICE_RECENT = 90;   // review ≤ 4 weeks old
 const PRICE_OLDER  = 125;  // review older than 4 weeks
+const BULK_MIN   = 10;     // orders with this many submitted reviews …
+const BULK_PRICE = 50;     // … pay this flat price per removed review (any age, no further discount)
 
 const EU_COUNTRIES = ['Austria','Belgium','Bulgaria','Croatia','Cyprus','Czech Republic','Denmark','Estonia','Finland','France','Germany','Greece','Hungary','Ireland','Italy','Latvia','Lithuania','Luxembourg','Malta','Netherlands','Poland','Portugal','Romania','Slovakia','Slovenia','Spain','Sweden'];
 
@@ -115,18 +117,38 @@ function tier_price(string $tier): int {
     return $tier === 'older' ? PRICE_OLDER : PRICE_RECENT;
 }
 
-/** Totals for a list of reviews: ['n','recent','older','subtotal','rate','discount','total']. */
-function totals(array $reviews): array {
+/**
+ * Totals for a list of reviews: ['n','recent','older','subtotal','rate','discount','total','bulk','unit'].
+ * $submitted = how many reviews the customer submitted in the order (defaults to count($reviews)).
+ * From BULK_MIN submitted reviews every billed review costs BULK_PRICE (e.g. 10 submitted, 8 removed → 8 × 50);
+ * below that the volume discount (5/10/15 %) applies. 'discount' is always list price minus total.
+ */
+function totals(array $reviews, ?int $submitted = null): array {
+    $n = count($reviews);
     $recent = count(array_filter($reviews, fn($r) => ($r['tier'] ?? 'recent') !== 'older'));
-    $older = count($reviews) - $recent;
+    $older = $n - $recent;
     $sub = $recent * PRICE_RECENT + $older * PRICE_OLDER;
-    $rate = discount_rate(count($reviews));
-    $disc = (int)round($sub * $rate);
-    return ['n' => count($reviews), 'recent' => $recent, 'older' => $older, 'subtotal' => $sub, 'rate' => $rate, 'discount' => $disc, 'total' => $sub - $disc];
+    $bulk = ($submitted ?? $n) >= BULK_MIN;
+    if ($bulk) {
+        $total = $n * BULK_PRICE;
+        $rate = $sub ? 1 - $total / $sub : 0.0;
+    } else {
+        $rate = discount_rate($n);
+        $total = $sub - (int)round($sub * $rate);
+    }
+    return ['n' => $n, 'recent' => $recent, 'older' => $older, 'subtotal' => $sub, 'rate' => $rate, 'discount' => $sub - $total,
+        'total' => $total, 'bulk' => $bulk, 'unit' => $bulk ? BULK_PRICE : null];
 }
 
+/** Billable part of an order: removed reviews, priced with the order's submitted count. */
 function invoice(array $order): array {
-    return totals(array_values(array_filter($order['reviews'], fn($r) => $r['status'] === 'removed')));
+    return totals(array_values(array_filter($order['reviews'], fn($r) => $r['status'] === 'removed')), count($order['reviews']));
+}
+
+/** Label for the discount line, e.g. "Bulk price 10+ reviews ($50 each)" or "Volume discount 15%". */
+function discount_label(array $t, string $cur): string {
+    return !empty($t['bulk']) ? 'Bulk price ' . BULK_MIN . '+ reviews (' . money(BULK_PRICE, $cur) . ' each)'
+        : 'Volume discount ' . round($t['rate'] * 100) . '%';
 }
 
 // ---------- misc ----------

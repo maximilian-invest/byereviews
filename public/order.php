@@ -63,6 +63,7 @@ $routes = [
     'admin-delete' => 'action_admin_delete',
     'admin-settings' => 'action_admin_settings',
     'admin-analytics' => 'action_admin_analytics',
+    'admin-checks' => 'action_admin_checks',
     'admin-leads' => 'action_admin_leads',
     'admin-leads-run' => 'action_admin_leads_run',
     'admin-leads-step' => 'action_admin_leads_step',

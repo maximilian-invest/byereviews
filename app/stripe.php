@@ -73,9 +73,12 @@ function stripe_invoice(array $order): ?array {
     $inId = (string)$r['data']['id'];
     if (($r['data']['status'] ?? '') === 'draft') {   // fresh invoice (an idempotent replay returns the earlier one)
         $lines = [];
-        if ($inv['recent']) $lines[] = ['Review removal – posted within 4 weeks', PRICE_RECENT, $inv['recent']];
-        if ($inv['older']) $lines[] = ['Review removal – older than 4 weeks', PRICE_OLDER, $inv['older']];
-        if ($inv['discount'] > 0) $lines[] = ['Volume discount ' . round($inv['rate'] * 100) . '%', -$inv['discount'], 1];
+        if ($inv['bulk']) $lines[] = ['Review removal – bulk price (' . BULK_MIN . '+ reviews submitted)', BULK_PRICE, $inv['n']];
+        else {
+            if ($inv['recent']) $lines[] = ['Review removal – posted within 4 weeks', PRICE_RECENT, $inv['recent']];
+            if ($inv['older']) $lines[] = ['Review removal – older than 4 weeks', PRICE_OLDER, $inv['older']];
+            if ($inv['discount'] > 0) $lines[] = [discount_label($inv, $order['currency']), -$inv['discount'], 1];
+        }
         foreach ($lines as $i => [$desc, $unit, $qty]) {
             $li = stripe_request('POST', 'invoiceitems', ['customer' => $customer, 'invoice' => $inId, 'currency' => $cur,
                 'description' => $qty > 1 ? "$qty × $desc" : $desc, 'amount' => (int)round($unit * $qty * 100), 'metadata[order_id]' => $order['id']], "$key-line$i");
@@ -107,10 +110,13 @@ function stripe_checkout_url(array $order): ?string {
     $inv = invoice($order);
     if ($inv['total'] <= 0) return null;
     $cur = strtolower($order['currency']);
-    $factor = 1 - $inv['rate'];
+    $factor = $inv['bulk'] ? 1 : 1 - $inv['rate'];
     $lines = [];
-    if ($inv['recent']) $lines[] = ['Review removal (posted within 4 weeks)', PRICE_RECENT, $inv['recent']];
-    if ($inv['older']) $lines[] = ['Review removal (older than 4 weeks)', PRICE_OLDER, $inv['older']];
+    if ($inv['bulk']) $lines[] = ['Review removal (bulk price, ' . BULK_MIN . '+ reviews submitted)', BULK_PRICE, $inv['n']];
+    else {
+        if ($inv['recent']) $lines[] = ['Review removal (posted within 4 weeks)', PRICE_RECENT, $inv['recent']];
+        if ($inv['older']) $lines[] = ['Review removal (older than 4 weeks)', PRICE_OLDER, $inv['older']];
+    }
     $params = [
         'mode' => 'payment',
         'customer_email' => $order['customer']['email'],
@@ -122,7 +128,7 @@ function stripe_checkout_url(array $order): ?string {
     ];
     foreach ($lines as $i => [$name, $price, $qty]) {
         $params["line_items[$i][price_data][currency]"] = $cur;
-        $params["line_items[$i][price_data][product_data][name]"] = $name . ($inv['rate'] > 0 ? ' – ' . round($inv['rate'] * 100) . '% volume discount' : '');
+        $params["line_items[$i][price_data][product_data][name]"] = $name . (!$inv['bulk'] && $inv['rate'] > 0 ? ' – ' . round($inv['rate'] * 100) . '% volume discount' : '');
         $params["line_items[$i][price_data][unit_amount]"] = (int)round($price * $factor * 100);
         $params["line_items[$i][quantity]"] = $qty;
     }
@@ -153,7 +159,7 @@ function stripe_payment_link(array $order): ?array {
     if (stripe_key() === '') return null;
     $inv = invoice($order);
     if ($inv['total'] <= 0) return null;
-    $name = 'Google review removal – order ' . $order['id'] . ' (' . $inv['n'] . ' removed' . ($inv['rate'] > 0 ? ', ' . round($inv['rate'] * 100) . '% volume discount' : '') . ')';
+    $name = 'Google review removal – order ' . $order['id'] . ' (' . $inv['n'] . ' removed' . ($inv['bulk'] ? ', bulk price ' . money(BULK_PRICE, $order['currency']) . ' each' : ($inv['rate'] > 0 ? ', ' . round($inv['rate'] * 100) . '% volume discount' : '')) . ')';
     $price = stripe_request('POST', 'prices', ['currency' => strtolower($order['currency']), 'unit_amount' => (int)round($inv['total'] * 100), 'product_data[name]' => $name]);
     if ($price['code'] !== 200 || empty($price['data']['id'])) { log_event('stripe price failed ' . $price['code'] . ' ' . substr((string)$price['raw'], 0, 300)); return null; }
     $link = stripe_request('POST', 'payment_links', [

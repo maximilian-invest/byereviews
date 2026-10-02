@@ -52,6 +52,7 @@ button,input,textarea{font-family:inherit}
     <button onClick="{{ goOrders }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;background:{{ navOrdersBg }};color:{{ navOrdersFg }}">Orders</button>
     <button onClick="{{ goInbox }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px;background:{{ navInboxBg }};color:{{ navInboxFg }}">Inbox<sc-if value="{{ hasInboxBadge }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#D93025;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ inboxBadge }}</span></sc-if></button>
     <button onClick="{{ goLeads }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px;background:{{ navLeadBg }};color:{{ navLeadFg }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="{{ navLeadFg }}" stroke-width="2"></circle><path d="M16 16l4 4" stroke="{{ navLeadFg }}" stroke-width="2" stroke-linecap="round"></path></svg>Lead Finder</button>
+    <button onClick="{{ goChecks }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px;background:{{ navChkBg }};color:{{ navChkFg }}">Checks<sc-if value="{{ hasChkBadge }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;border-radius:9px;background:#D93025;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 5px">{{ chkBadge }}</span></sc-if></button>
     <button onClick="{{ goAnalytics }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;background:{{ navAnBg }};color:{{ navAnFg }}">Analytics</button>
     <button onClick="{{ goSettings }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;background:{{ navSetBg }};color:{{ navSetFg }}">Settings</button>
   </nav>
@@ -192,7 +193,7 @@ button,input,textarea{font-family:inherit}
         <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:20px;font-weight:600;letter-spacing:-.02em">Payment</span><span style="font-size:12px;font-weight:500;border-radius:9px;padding:5px 9px;background:{{ o.chipBg }};color:{{ o.chipFg }};border:1px solid {{ o.chipBd }}">{{ o.pay }}</span></div>
         <div style="display:flex;flex-direction:column;gap:8px;font-size:14px">
           <div style="display:flex;justify-content:space-between"><span style="color:#6B6B6B">{{ o.removedCount }} removed</span><span>{{ o.subtotal }}</span></div>
-          <div style="display:flex;justify-content:space-between"><span style="color:#6B6B6B">Volume discount {{ o.discPct }}</span><span>{{ o.discAmt }}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#6B6B6B">{{ o.discLabel }}</span><span>{{ o.discAmt }}</span></div>
           <div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;border-top:1px solid #F0F0F0"><span style="font-weight:600">Total</span><span style="font-size:32px;font-weight:600;letter-spacing:-.04em">{{ o.total }}</span></div>
         </div>
         <sc-if value="{{ o.payNothing }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#8A8A8A;background:#F4F4F4;border-radius:14px;padding:14px">Nothing to bill yet – mark reviews as removed first.</span></sc-if>
@@ -253,6 +254,50 @@ button,input,textarea{font-family:inherit}
 
 <sc-if value="{{ isInbox }}" hint-placeholder-val="{{ false }}">
 <dc-import name="Inbox" hint-size="100%,900px"></dc-import>
+</sc-if>
+<sc-if value="{{ isChecks }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Checks" style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:12px 4px 0">
+    <div style="display:flex;flex-direction:column;gap:6px"><h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:600;letter-spacing:-.045em;line-height:1">Checks</h1><span style="font-size:13px;color:#6B6B6B">Every business someone looked up on the order page · {{ chk.periodLabel }}</span></div>
+    <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px">
+      <sc-for list="{{ chk.ranges }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 13px;font-size:14px;font-weight:500;white-space:nowrap;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</button></sc-for>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+    <sc-for list="{{ chk.stats }}" as="k" hint-placeholder-count="4"><div style="background:#FFFFFF;border-radius:22px;padding:16px 18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:#6B6B6B">{{ k.label }}</span><span style="font-size:34px;font-weight:600;letter-spacing:-.04em;line-height:1;color:{{ k.col }}">{{ k.value }}</span></div></sc-for>
+  </div>
+  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px;min-width:0">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;background:#F4F4F4;border-radius:14px;padding:4px;gap:2px">
+        <sc-for list="{{ chk.filters }}" as="f" hint-placeholder-count="3"><button onClick="{{ f.go }}" style="border:0;cursor:pointer;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:500;white-space:nowrap;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }} <span style="opacity:.6">{{ f.n }}</span></button></sc-for>
+      </div>
+      <button onClick="{{ chk.toggleInt }}" style="border:1px solid #E4E4E4;cursor:pointer;background:#FFFFFF;color:#555;border-radius:12px;padding:8px 12px;font-size:13px;font-weight:500">{{ chk.intLabel }}</button>
+    </div>
+    <sc-if value="{{ chk.empty }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#8A8A8A;background:#F4F4F4;border-radius:14px;padding:16px">{{ chk.emptyText }}</span></sc-if>
+    <sc-if value="{{ chk.has }}" hint-placeholder-val="{{ true }}">
+    <div style="overflow-x:auto">
+      <div style="min-width:1180px;display:flex;flex-direction:column">
+        <div style="display:grid;grid-template-columns:minmax(200px,1.6fr) 110px 64px 70px 52px 70px 120px minmax(110px,1fr) minmax(130px,1.1fr) 92px 150px;gap:12px;padding:0 10px 10px;font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A"><span>COMPANY</span><span>COUNTRY</span><span>RATING</span><span>REVIEWS</span><span>1–3★</span><span>SELECTED</span><span>SOURCE</span><span>LANDING PAGE</span><span>REACHED STEP</span><span>WHEN</span><span></span></div>
+        <sc-for list="{{ chk.rows }}" as="c" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:minmax(200px,1.6fr) 110px 64px 70px 52px 70px 120px minmax(110px,1fr) minmax(130px,1.1fr) 92px 150px;gap:12px;align-items:center;padding:12px 10px;border-top:1px solid #F0F0F0;font-size:14px;border-radius:12px;background:{{ c.bg }}">
+            <span style="font-weight:600;display:flex;align-items:center;gap:8px;min-width:0"><sc-if value="{{ c.hot }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:8px;height:8px;border-radius:50%;background:#D93025;display:block"></span></sc-if><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ c.name }}">{{ c.name }}</span><sc-if value="{{ c.internal }}" hint-placeholder-val="{{ false }}"><span style="flex:none;font-size:11px;font-weight:500;background:#EFEFEF;color:#6B6B6B;border-radius:7px;padding:3px 6px">test</span></sc-if></span>
+            <span style="color:#555" title="{{ c.visitorTip }}">{{ c.country }}</span><span>{{ c.rating }}</span><span>{{ c.count }}</span><span>{{ c.low }}</span><span>{{ c.sel }}</span>
+            <span style="font-size:13px;color:#555">{{ c.src }}</span>
+            <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ c.land }}">{{ c.land }}</span>
+            <span style="font-size:13px;color:{{ c.stepCol }};font-weight:{{ c.stepW }}">{{ c.step }}</span>
+            <span style="font-size:13px;color:#6B6B6B" title="{{ c.whenFull }}">{{ c.when }}</span>
+            <div style="display:flex;gap:6px;justify-content:flex-end">
+              <sc-if value="{{ c.hasOrder }}" hint-placeholder-val="{{ false }}"><button onClick="{{ c.openOrder }}" style="border:0;cursor:pointer;background:#F4F4F4;color:#151515;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:500;white-space:nowrap">{{ c.orderId }}</button></sc-if>
+              <a href="{{ c.profile }}" target="_blank" rel="noopener" style="background:{{ c.btnBg }};color:{{ c.btnFg }};border-radius:10px;padding:8px 10px;font-size:12px;font-weight:500;text-align:center;white-space:nowrap">Google profile ↗</a>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+    <span style="font-size:12px;color:#8A8A8A;line-height:1.5"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#D93025;margin-right:6px"></span>Red = checked but no order. Country = the business, hover for the visitor's browser region. You get an email for every new check (once per business per 6 h, not for your own tests).</span>
+  </div>
+</section>
 </sc-if>
 <sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}">
 <dc-import name="LeadFinder" hint-size="100%,900px"></dc-import>
@@ -479,7 +524,7 @@ class Component extends DCLogic {
   fmt(n) { return '€' + n.toLocaleString('en-US'); }
   price(r) { return r.age === 'recent' ? 90 : 125; }
   rate(n) { return n >= 6 ? .15 : n >= 3 ? .10 : n === 2 ? .05 : 0; }
-  calc(o) { const rem = o.reviews.filter(r => r.status === 'removed'), sub = rem.reduce((a, r) => a + this.price(r), 0), rt = this.rate(rem.length), disc = Math.round(sub * rt); return { rem, sub, rt, disc, total: sub - disc }; }
+  calc(o) { const rem = o.reviews.filter(r => r.status === 'removed'), sub = rem.reduce((a, r) => a + this.price(r), 0), bulk = o.reviews.length >= 10, rt = bulk ? 0 : this.rate(rem.length), total = bulk ? rem.length * 50 : sub - Math.round(sub * rt), disc = sub - total; return { rem, sub, rt, disc, total, bulk, label: bulk ? 'Bulk price 10+ (' + this.fmt(50) + ' each)' : 'Volume discount ' + Math.round(rt * 100) + '%' }; }
   _designPayInfo(o) {
     const c = this.calc(o);
     if (o.payment.status === 'paid') return ['Paid', '#151515', '#FFFFFF', '#151515'];
@@ -639,7 +684,7 @@ class Component extends DCLogic {
         sendPw: () => this.toast('New password emailed to ' + od.cust.email),
         o: { ...od, company: od.biz.name, date: this.fmtD(od.date), pay: p[0], chipBg: p[1], chipFg: p[2], chipBd: p[3], headBg: p[1] === '#EEEEEE' ? '#FFFFFF' : p[1], headBd: p[3] === '#EEEEEE' ? '#D2D2D2' : p[3],
           removedCount: c.rem.length, reviewCount: od.reviews.filter(r => r.status !== 'not_eligible').length, hasOpen: open.length > 0,
-          subtotal: this.fmt(c.sub), discPct: Math.round(c.rt * 100) + '%', discAmt: '– ' + this.fmt(c.disc), total: this.fmt(c.total),
+          subtotal: this.fmt(c.sub), discPct: Math.round(c.rt * 100) + '%', discLabel: c.label, discAmt: '– ' + this.fmt(c.disc), total: this.fmt(c.total),
           payNothing: c.total === 0 && od.payment.status !== 'paid', payUnpaid: c.total > 0 && (od.payment.status === 'unpaid' || od.payment.status === 'none'), payLink: od.payment.status === 'link_sent', payPaid: od.payment.status === 'paid',
           link: od.payment.link, linkSentAt: od.payment.linkSentAt ? this.fmtD(od.payment.linkSentAt) : '', paidAt: od.payment.paidAt ? this.fmtD(od.payment.paidAt) : '',
           mailto: 'mailto:' + od.cust.email + '?subject=' + encodeURIComponent('Your order ' + od.id), waCustomer: 'https://wa.me/' + od.cust.phone.replace(/[^\d]/g, ''),
@@ -679,7 +724,7 @@ class Component extends DCLogic {
     const init = opts.body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(opts.body) } : { credentials: 'same-origin' };
     return fetch('/order.php?a=' + action + q, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
   }
-  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, stripeKeyDraft: '', stripeWhDraft: '', stripeSaving: false, anData: null, anLoading: false, adminEmail: '' });
+  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, stripeKeyDraft: '', stripeWhDraft: '', stripeSaving: false, anData: null, anLoading: false, adminEmail: '', chkData: null, chkRange: 90, chkFilter: 'all', chkHideInt: true, chkSeen: 0 });
 
   componentDidMount() {
     this._designDidMount();
@@ -687,15 +732,45 @@ class Component extends DCLogic {
       if (r.ok && r.authed) { this.setState({ screen: 'admin', authed: true, adminEmail: r.email }); this.load(true); }
       else this.setState({ screen: 'login', notConfigured: r.ok && !r.configured });
     });
-    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) { this.load(false); this.loadUnread(); } }, 20000);
+    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) { this.load(false); this.loadUnread(); this.loadChecks(); } }, 20000);
+    try { this.setState({ chkSeen: Number(localStorage.getItem('br_chk_seen')) || 0 }); } catch (e) {}
     window.addEventListener('hashchange', this.onHash = () => this.fromHash());
   }
   componentWillUnmount() { this._designWillUnmount(); clearInterval(this.poll); window.removeEventListener('hashchange', this.onHash); }
 
   loadAds() { this.api('admin-ads').then(r => { if (r.ok) this.setState({ ads: r.ads, adsStats: r.stats, adsFeed: r.feed }); }); }
+  loadChecks(range) {
+    const r0 = range !== undefined ? range : (this.state.chkRange ?? 90);
+    return this.api('admin-checks', { query: { range: r0 } }).then(r => { if (r.ok && (this.state.chkRange ?? 90) === r0) this.setState({ chkData: r }); });
+  }
+  markChecksSeen() { const t = Math.floor(Date.now() / 1000); this.setState({ chkSeen: t }); try { localStorage.setItem('br_chk_seen', String(t)); } catch (e) {} }
+  checks() {
+    const s = this.state, d = s.chkData, f = s.chkFilter || 'all';
+    const ranges = [[7, '7 days'], [30, '30 days'], [90, '90 days'], [0, 'All']].map(([v, label]) => ({ label, bg: (s.chkRange ?? 90) === v ? '#151515' : 'transparent', fg: (s.chkRange ?? 90) === v ? '#FFFFFF' : '#555',
+      go: () => { this.setState({ chkRange: v }); this.loadChecks(v); } }));
+    const all = d ? d.rows.filter(r => !(s.chkHideInt && r.internal)) : [];
+    const isHot = r => !r.orderId;
+    const list = all.filter(r => f === 'all' || (f === 'hot' ? isHot(r) : !isHot(r)));
+    const ago = t => { const m = Math.round((Date.now() / 1000 - t) / 60); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
+    const filters = [['all', 'All', all.length], ['hot', 'No order', all.filter(isHot).length], ['ordered', 'Ordered', all.filter(r => !isHot(r)).length]]
+      .map(([k, label, n]) => ({ label, n: String(n), bg: f === k ? '#151515' : 'transparent', fg: f === k ? '#FFFFFF' : '#555', go: () => this.setState({ chkFilter: k }) }));
+    const st = d ? d.stats : { total: 0, companies: 0, ordered: 0, hot: 0 };
+    return {
+      periodLabel: !d ? 'Loading…' : (s.chkRange ?? 90) ? 'last ' + s.chkRange + ' days' : 'all time', ranges, filters,
+      stats: [['Checks', st.total, '#151515'], ['Companies', st.companies, '#151515'], ['Ordered', st.ordered, '#151515'], ['No order yet', st.hot, st.hot ? '#D93025' : '#151515']].map(([label, v, col]) => ({ label, value: String(v), col })),
+      intLabel: s.chkHideInt ? 'Show my own tests' : 'Hide my own tests', toggleInt: () => this.setState({ chkHideInt: !s.chkHideInt }),
+      empty: !list.length, has: list.length > 0, emptyText: !d ? 'Loading…' : f === 'all' ? 'No profile checks in this period yet.' : 'Nothing in this filter.',
+      rows: list.map(r => ({ name: r.name, internal: r.internal, hot: isHot(r) && !r.internal, country: r.country || '—', visitorTip: 'Visitor region: ' + (r.visitor || 'unknown'),
+        rating: r.rating != null ? Number(r.rating).toFixed(1) + ' ★' : '—', count: String(r.count || 0), low: String(r.low || 0), sel: r.sel ? String(r.sel) : '—',
+        src: r.srcName, land: r.land || '—', step: r.reached, stepCol: r.orderId ? '#151515' : '#555', stepW: r.orderId ? 600 : 400,
+        when: ago(r.t), whenFull: new Date(r.first * 1000).toLocaleString('de-AT'), bg: isHot(r) && !r.internal ? '#FFF7F6' : 'transparent',
+        profile: r.mapsUrl, btnBg: isHot(r) ? '#151515' : '#F4F4F4', btnFg: isHot(r) ? '#FFFFFF' : '#151515',
+        hasOrder: !!r.orderId, orderId: r.orderId || '', openOrder: () => { if (s.orders.some(o => o.id === r.orderId)) { this.setState({ view: 'detail', openId: r.orderId, sel: {}, draft: '' }); window.scrollTo({ top: 0 }); } } }))
+    };
+  }
   loadUnread() { this.api('admin-inbox-unread').then(r => { if (r.ok && r.unread !== this.state.inboxUnread) this.setState({ inboxUnread: r.unread }); }); }
   load(first) {
-    if (first) { this.loadUnread(); this.loadAds(); }
+    if (first) { this.loadUnread(); this.loadAds(); this.loadChecks(); }
     return this.api('admin-orders').then(r => {
       if (!r.ok) { if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false }); return; }
       const st = r.settings || {};
@@ -713,9 +788,10 @@ class Component extends DCLogic {
     else if (h === 'settings') this.setState({ view: 'settings', openId: null });
     else if (h === 'leads') this.setState({ view: 'leads', openId: null });
     else if (h === 'inbox') this.setState({ view: 'inbox', openId: null });
+    else if (h === 'checks') { this.setState({ view: 'checks', openId: null }); this.loadChecks(); this.markChecksSeen(); }
   }
   componentDidUpdate() {
-    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : s.view === 'inbox' ? '#inbox' : '';
+    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : s.view === 'inbox' ? '#inbox' : s.view === 'checks' ? '#checks' : '';
     if (s.authed && this._hashReady && (location.hash || '') !== h) history.replaceState(null, '', location.pathname + h);
     if (s.view === 'analytics' && (s.range || 30) !== this._anRange) this.loadAnalytics();
   }
@@ -797,7 +873,7 @@ class Component extends DCLogic {
     const cList = (rest ? [...top, ['Other', rest]] : top).map(([label, v]) => [label, Math.round(v / cTotal * 100)]);
     const cMax = Math.max(1, ...cList.map(c => c[1]));
     const countries = cList.map(([label, p]) => ({ label, pct: p + '%', w: (p / cMax * 100) + '%' }));
-    const srcNames = { google: 'Google search', blog: 'Blog articles', direct: 'Direct', instagram: 'Instagram', other: 'Other' }, sTotal = sum(Object.values(d.sources)) || 1;
+    const srcNames = { ads: 'Google Ads', google: 'Google search', blog: 'Blog articles', direct: 'Direct', instagram: 'Instagram', other: 'Other' }, sTotal = sum(Object.values(d.sources)) || 1;
     const sources = Object.entries(d.sources).sort((x, y) => y[1] - x[1]).map(([kk, v]) => ({ label: srcNames[kk] || kk, n: v.toLocaleString('en-US'), pct: Math.round(v / sTotal * 100) + '%' }));
     const rv = [['Submitted', d.reviews.submitted, '#EEEEEE', '#D2D2D2'], ['In progress', d.reviews.in_progress, '#9E9E9E', '#9E9E9E'], ['Removed', d.reviews.removed, '#151515', '#151515'], ['Not eligible', d.reviews.not_eligible, '#D93025', '#D93025']];
     const rt = sum(rv.map(r => r[1])); let acc = 0;
@@ -823,6 +899,9 @@ class Component extends DCLogic {
       navInboxBg: s.view === 'inbox' ? '#151515' : 'transparent', navInboxFg: s.view === 'inbox' ? '#FFFFFF' : '#555', inboxBadge: s.inboxUnread ? String(s.inboxUnread) : '', hasInboxBadge: !!s.inboxUnread,
       doLogin: () => this.login(), onLoginKey: e => { if (e.key === 'Enter') this.login(); },
       logout: () => { this.api('admin-logout', { body: {} }); this.setState({ screen: 'login', authed: false, loginPass: '', orders: [], view: 'orders', openId: null }); },
+      goChecks: () => { this.setState({ view: 'checks', openId: null }); this.loadChecks(); this.markChecksSeen(); window.scrollTo({ top: 0 }); }, isChecks: s.view === 'checks', chk: this.checks(),
+      navChkBg: s.view === 'checks' ? '#151515' : 'transparent', navChkFg: s.view === 'checks' ? '#FFFFFF' : '#555',
+      ...(() => { const n = s.chkData ? s.chkData.rows.filter(r => !r.internal && !r.orderId && r.t > (s.chkSeen || 0)).length : 0; return { chkBadge: String(n), hasChkBadge: n > 0 && s.view !== 'checks' }; })(),
       goAnalytics: () => { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); window.scrollTo({ top: 0 }); },
       saveSettings: () => this.api('admin-settings', { body: { partnerNo: s.partnerNo, template: s.template, sender: s.sender } }).then(r => r.ok ? this.toast('Settings saved') : this.fail(r)),
       stripeLabel: s.stripe.connected ? 'Connected' : 'Not connected', stripeAcct: s.stripe.account ? s.stripe.account.slice(0, 5) + '…' + s.stripe.account.slice(-4) : 'paste key below',
@@ -875,7 +954,7 @@ class Component extends DCLogic {
           subtotal: money(c.sub), discAmt: '– ' + money(c.disc), total: money(c.total),
           mailto: 'mailto:' + od.cust.email + '?subject=' + encodeURIComponent('Your order ' + od.id), waCustomer: 'https://wa.me/' + (od.cust.phone || '').replace(/[^\d]/g, ''), hasPhone: !!(od.cust.phone || '').replace(/[^\d]/g, ''),
           paidVia: od.payment.via === 'manual' ? 'marked manually' : 'via Stripe' });
-        v.o.reviews = v.o.reviews.map(r => ({ ...r, price: money(r.age === 'recent' ? 90 : 125),
+        v.o.reviews = v.o.reviews.map(r => ({ ...r, price: money(od.reviews.length >= 10 ? 50 : r.age === 'recent' ? 90 : 125),
           canQuick: r.canQuick && r.status !== 'cancelled',
           textShown: !r.text ? (r.status === 'cancelled' ? 'Cancelled · ' : '') + 'Submitted by link – open it on Google' : (r.status === 'cancelled' ? 'Cancelled · ' : '') + r.textShown }));
       }

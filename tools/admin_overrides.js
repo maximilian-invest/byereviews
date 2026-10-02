@@ -5,7 +5,7 @@
     const init = opts.body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(opts.body) } : { credentials: 'same-origin' };
     return fetch('/order.php?a=' + action + q, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
   }
-  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, stripeKeyDraft: '', stripeWhDraft: '', stripeSaving: false, anData: null, anLoading: false, adminEmail: '' });
+  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, stripeKeyDraft: '', stripeWhDraft: '', stripeSaving: false, anData: null, anLoading: false, adminEmail: '', chkData: null, chkRange: 90, chkFilter: 'all', chkHideInt: true, chkSeen: 0 });
 
   componentDidMount() {
     this._designDidMount();
@@ -13,15 +13,45 @@
       if (r.ok && r.authed) { this.setState({ screen: 'admin', authed: true, adminEmail: r.email }); this.load(true); }
       else this.setState({ screen: 'login', notConfigured: r.ok && !r.configured });
     });
-    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) { this.load(false); this.loadUnread(); } }, 20000);
+    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) { this.load(false); this.loadUnread(); this.loadChecks(); } }, 20000);
+    try { this.setState({ chkSeen: Number(localStorage.getItem('br_chk_seen')) || 0 }); } catch (e) {}
     window.addEventListener('hashchange', this.onHash = () => this.fromHash());
   }
   componentWillUnmount() { this._designWillUnmount(); clearInterval(this.poll); window.removeEventListener('hashchange', this.onHash); }
 
   loadAds() { this.api('admin-ads').then(r => { if (r.ok) this.setState({ ads: r.ads, adsStats: r.stats, adsFeed: r.feed }); }); }
+  loadChecks(range) {
+    const r0 = range !== undefined ? range : (this.state.chkRange ?? 90);
+    return this.api('admin-checks', { query: { range: r0 } }).then(r => { if (r.ok && (this.state.chkRange ?? 90) === r0) this.setState({ chkData: r }); });
+  }
+  markChecksSeen() { const t = Math.floor(Date.now() / 1000); this.setState({ chkSeen: t }); try { localStorage.setItem('br_chk_seen', String(t)); } catch (e) {} }
+  checks() {
+    const s = this.state, d = s.chkData, f = s.chkFilter || 'all';
+    const ranges = [[7, '7 days'], [30, '30 days'], [90, '90 days'], [0, 'All']].map(([v, label]) => ({ label, bg: (s.chkRange ?? 90) === v ? '#151515' : 'transparent', fg: (s.chkRange ?? 90) === v ? '#FFFFFF' : '#555',
+      go: () => { this.setState({ chkRange: v }); this.loadChecks(v); } }));
+    const all = d ? d.rows.filter(r => !(s.chkHideInt && r.internal)) : [];
+    const isHot = r => !r.orderId;
+    const list = all.filter(r => f === 'all' || (f === 'hot' ? isHot(r) : !isHot(r)));
+    const ago = t => { const m = Math.round((Date.now() / 1000 - t) / 60); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
+    const filters = [['all', 'All', all.length], ['hot', 'No order', all.filter(isHot).length], ['ordered', 'Ordered', all.filter(r => !isHot(r)).length]]
+      .map(([k, label, n]) => ({ label, n: String(n), bg: f === k ? '#151515' : 'transparent', fg: f === k ? '#FFFFFF' : '#555', go: () => this.setState({ chkFilter: k }) }));
+    const st = d ? d.stats : { total: 0, companies: 0, ordered: 0, hot: 0 };
+    return {
+      periodLabel: !d ? 'Loading…' : (s.chkRange ?? 90) ? 'last ' + s.chkRange + ' days' : 'all time', ranges, filters,
+      stats: [['Checks', st.total, '#151515'], ['Companies', st.companies, '#151515'], ['Ordered', st.ordered, '#151515'], ['No order yet', st.hot, st.hot ? '#D93025' : '#151515']].map(([label, v, col]) => ({ label, value: String(v), col })),
+      intLabel: s.chkHideInt ? 'Show my own tests' : 'Hide my own tests', toggleInt: () => this.setState({ chkHideInt: !s.chkHideInt }),
+      empty: !list.length, has: list.length > 0, emptyText: !d ? 'Loading…' : f === 'all' ? 'No profile checks in this period yet.' : 'Nothing in this filter.',
+      rows: list.map(r => ({ name: r.name, internal: r.internal, hot: isHot(r) && !r.internal, country: r.country || '—', visitorTip: 'Visitor region: ' + (r.visitor || 'unknown'),
+        rating: r.rating != null ? Number(r.rating).toFixed(1) + ' ★' : '—', count: String(r.count || 0), low: String(r.low || 0), sel: r.sel ? String(r.sel) : '—',
+        src: r.srcName, land: r.land || '—', step: r.reached, stepCol: r.orderId ? '#151515' : '#555', stepW: r.orderId ? 600 : 400,
+        when: ago(r.t), whenFull: new Date(r.first * 1000).toLocaleString('de-AT'), bg: isHot(r) && !r.internal ? '#FFF7F6' : 'transparent',
+        profile: r.mapsUrl, btnBg: isHot(r) ? '#151515' : '#F4F4F4', btnFg: isHot(r) ? '#FFFFFF' : '#151515',
+        hasOrder: !!r.orderId, orderId: r.orderId || '', openOrder: () => { if (s.orders.some(o => o.id === r.orderId)) { this.setState({ view: 'detail', openId: r.orderId, sel: {}, draft: '' }); window.scrollTo({ top: 0 }); } } }))
+    };
+  }
   loadUnread() { this.api('admin-inbox-unread').then(r => { if (r.ok && r.unread !== this.state.inboxUnread) this.setState({ inboxUnread: r.unread }); }); }
   load(first) {
-    if (first) { this.loadUnread(); this.loadAds(); }
+    if (first) { this.loadUnread(); this.loadAds(); this.loadChecks(); }
     return this.api('admin-orders').then(r => {
       if (!r.ok) { if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false }); return; }
       const st = r.settings || {};
@@ -39,9 +69,10 @@
     else if (h === 'settings') this.setState({ view: 'settings', openId: null });
     else if (h === 'leads') this.setState({ view: 'leads', openId: null });
     else if (h === 'inbox') this.setState({ view: 'inbox', openId: null });
+    else if (h === 'checks') { this.setState({ view: 'checks', openId: null }); this.loadChecks(); this.markChecksSeen(); }
   }
   componentDidUpdate() {
-    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : s.view === 'inbox' ? '#inbox' : '';
+    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : s.view === 'inbox' ? '#inbox' : s.view === 'checks' ? '#checks' : '';
     if (s.authed && this._hashReady && (location.hash || '') !== h) history.replaceState(null, '', location.pathname + h);
     if (s.view === 'analytics' && (s.range || 30) !== this._anRange) this.loadAnalytics();
   }
@@ -123,7 +154,7 @@
     const cList = (rest ? [...top, ['Other', rest]] : top).map(([label, v]) => [label, Math.round(v / cTotal * 100)]);
     const cMax = Math.max(1, ...cList.map(c => c[1]));
     const countries = cList.map(([label, p]) => ({ label, pct: p + '%', w: (p / cMax * 100) + '%' }));
-    const srcNames = { google: 'Google search', blog: 'Blog articles', direct: 'Direct', instagram: 'Instagram', other: 'Other' }, sTotal = sum(Object.values(d.sources)) || 1;
+    const srcNames = { ads: 'Google Ads', google: 'Google search', blog: 'Blog articles', direct: 'Direct', instagram: 'Instagram', other: 'Other' }, sTotal = sum(Object.values(d.sources)) || 1;
     const sources = Object.entries(d.sources).sort((x, y) => y[1] - x[1]).map(([kk, v]) => ({ label: srcNames[kk] || kk, n: v.toLocaleString('en-US'), pct: Math.round(v / sTotal * 100) + '%' }));
     const rv = [['Submitted', d.reviews.submitted, '#EEEEEE', '#D2D2D2'], ['In progress', d.reviews.in_progress, '#9E9E9E', '#9E9E9E'], ['Removed', d.reviews.removed, '#151515', '#151515'], ['Not eligible', d.reviews.not_eligible, '#D93025', '#D93025']];
     const rt = sum(rv.map(r => r[1])); let acc = 0;
@@ -149,6 +180,9 @@
       navInboxBg: s.view === 'inbox' ? '#151515' : 'transparent', navInboxFg: s.view === 'inbox' ? '#FFFFFF' : '#555', inboxBadge: s.inboxUnread ? String(s.inboxUnread) : '', hasInboxBadge: !!s.inboxUnread,
       doLogin: () => this.login(), onLoginKey: e => { if (e.key === 'Enter') this.login(); },
       logout: () => { this.api('admin-logout', { body: {} }); this.setState({ screen: 'login', authed: false, loginPass: '', orders: [], view: 'orders', openId: null }); },
+      goChecks: () => { this.setState({ view: 'checks', openId: null }); this.loadChecks(); this.markChecksSeen(); window.scrollTo({ top: 0 }); }, isChecks: s.view === 'checks', chk: this.checks(),
+      navChkBg: s.view === 'checks' ? '#151515' : 'transparent', navChkFg: s.view === 'checks' ? '#FFFFFF' : '#555',
+      ...(() => { const n = s.chkData ? s.chkData.rows.filter(r => !r.internal && !r.orderId && r.t > (s.chkSeen || 0)).length : 0; return { chkBadge: String(n), hasChkBadge: n > 0 && s.view !== 'checks' }; })(),
       goAnalytics: () => { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); window.scrollTo({ top: 0 }); },
       saveSettings: () => this.api('admin-settings', { body: { partnerNo: s.partnerNo, template: s.template, sender: s.sender } }).then(r => r.ok ? this.toast('Settings saved') : this.fail(r)),
       stripeLabel: s.stripe.connected ? 'Connected' : 'Not connected', stripeAcct: s.stripe.account ? s.stripe.account.slice(0, 5) + '…' + s.stripe.account.slice(-4) : 'paste key below',
@@ -201,7 +235,7 @@
           subtotal: money(c.sub), discAmt: '– ' + money(c.disc), total: money(c.total),
           mailto: 'mailto:' + od.cust.email + '?subject=' + encodeURIComponent('Your order ' + od.id), waCustomer: 'https://wa.me/' + (od.cust.phone || '').replace(/[^\d]/g, ''), hasPhone: !!(od.cust.phone || '').replace(/[^\d]/g, ''),
           paidVia: od.payment.via === 'manual' ? 'marked manually' : 'via Stripe' });
-        v.o.reviews = v.o.reviews.map(r => ({ ...r, price: money(r.age === 'recent' ? 90 : 125),
+        v.o.reviews = v.o.reviews.map(r => ({ ...r, price: money(od.reviews.length >= 10 ? 50 : r.age === 'recent' ? 90 : 125),
           canQuick: r.canQuick && r.status !== 'cancelled',
           textShown: !r.text ? (r.status === 'cancelled' ? 'Cancelled · ' : '') + 'Submitted by link – open it on Google' : (r.status === 'cancelled' ? 'Cancelled · ' : '') + r.textShown }));
       }

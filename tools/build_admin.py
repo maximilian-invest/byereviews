@@ -99,6 +99,64 @@ for old, new in [('  componentDidMount() {', '  _designDidMount() {'), ('  compo
 rep("orders: this.seed(),", "orders: [],")
 rep("const co = s.orders.find(o => o.id === s.custId) || s.orders[0];",
     "const co = s.orders.find(o => o.id === s.custId) || s.orders[0] || { id: '', biz: { name: '' }, cust: { name: ' ', email: '' }, reviews: [], payment: { status: 'none' }, msgs: [] };")
+# bulk price (app/lib.php BULK_MIN / BULK_PRICE): from 10 submitted reviews every removed review costs 50
+rep("calc(o) { const rem = o.reviews.filter(r => r.status === 'removed'), sub = rem.reduce((a, r) => a + this.price(r), 0), rt = this.rate(rem.length), disc = Math.round(sub * rt); return { rem, sub, rt, disc, total: sub - disc }; }",
+    "calc(o) { const rem = o.reviews.filter(r => r.status === 'removed'), sub = rem.reduce((a, r) => a + this.price(r), 0), bulk = o.reviews.length >= 10, rt = bulk ? 0 : this.rate(rem.length), total = bulk ? rem.length * 50 : sub - Math.round(sub * rt), disc = sub - total;"
+    " return { rem, sub, rt, disc, total, bulk, label: bulk ? 'Bulk price 10+ (' + this.fmt(50) + ' each)' : 'Volume discount ' + Math.round(rt * 100) + '%' }; }")
+rep('<span style="color:#6B6B6B">Volume discount {{ o.discPct }}</span>', '<span style="color:#6B6B6B">{{ o.discLabel }}</span>')
+rep("discPct: Math.round(c.rt * 100) + '%', discAmt:", "discPct: Math.round(c.rt * 100) + '%', discLabel: c.label, discAmt:")
+
+# Checks: every Google profile looked up on the order page (app/analytics.php checks_data, ?a=admin-checks)
+rep('    <button onClick="{{ goAnalytics }}"',
+    '    <button onClick="{{ goChecks }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px;background:{{ navChkBg }};color:{{ navChkFg }}">Checks'
+    '<sc-if value="{{ hasChkBadge }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;border-radius:9px;background:#D93025;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 5px">{{ chkBadge }}</span></sc-if></button>\n'
+    '    <button onClick="{{ goAnalytics }}"')
+rep('<sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}">', '''<sc-if value="{{ isChecks }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Checks" style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:12px 4px 0">
+    <div style="display:flex;flex-direction:column;gap:6px"><h1 style="margin:0;font-size:clamp(34px,4vw,52px);font-weight:600;letter-spacing:-.045em;line-height:1">Checks</h1><span style="font-size:13px;color:#6B6B6B">Every business someone looked up on the order page · {{ chk.periodLabel }}</span></div>
+    <div style="display:flex;background:#FFFFFF;border-radius:16px;padding:4px;gap:2px">
+      <sc-for list="{{ chk.ranges }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.go }}" style="border:0;cursor:pointer;border-radius:12px;padding:9px 13px;font-size:14px;font-weight:500;white-space:nowrap;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</button></sc-for>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+    <sc-for list="{{ chk.stats }}" as="k" hint-placeholder-count="4"><div style="background:#FFFFFF;border-radius:22px;padding:16px 18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:#6B6B6B">{{ k.label }}</span><span style="font-size:34px;font-weight:600;letter-spacing:-.04em;line-height:1;color:{{ k.col }}">{{ k.value }}</span></div></sc-for>
+  </div>
+  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(16px,2.2vw,24px);display:flex;flex-direction:column;gap:14px;min-width:0">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;background:#F4F4F4;border-radius:14px;padding:4px;gap:2px">
+        <sc-for list="{{ chk.filters }}" as="f" hint-placeholder-count="3"><button onClick="{{ f.go }}" style="border:0;cursor:pointer;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:500;white-space:nowrap;background:{{ f.bg }};color:{{ f.fg }}">{{ f.label }} <span style="opacity:.6">{{ f.n }}</span></button></sc-for>
+      </div>
+      <button onClick="{{ chk.toggleInt }}" style="border:1px solid #E4E4E4;cursor:pointer;background:#FFFFFF;color:#555;border-radius:12px;padding:8px 12px;font-size:13px;font-weight:500">{{ chk.intLabel }}</button>
+    </div>
+    <sc-if value="{{ chk.empty }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#8A8A8A;background:#F4F4F4;border-radius:14px;padding:16px">{{ chk.emptyText }}</span></sc-if>
+    <sc-if value="{{ chk.has }}" hint-placeholder-val="{{ true }}">
+    <div style="overflow-x:auto">
+      <div style="min-width:1180px;display:flex;flex-direction:column">
+        <div style="display:grid;grid-template-columns:minmax(200px,1.6fr) 110px 64px 70px 52px 70px 120px minmax(110px,1fr) minmax(130px,1.1fr) 92px 150px;gap:12px;padding:0 10px 10px;font-family:'Geist Mono',monospace;font-size:11px;color:#8A8A8A"><span>COMPANY</span><span>COUNTRY</span><span>RATING</span><span>REVIEWS</span><span>1–3★</span><span>SELECTED</span><span>SOURCE</span><span>LANDING PAGE</span><span>REACHED STEP</span><span>WHEN</span><span></span></div>
+        <sc-for list="{{ chk.rows }}" as="c" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:minmax(200px,1.6fr) 110px 64px 70px 52px 70px 120px minmax(110px,1fr) minmax(130px,1.1fr) 92px 150px;gap:12px;align-items:center;padding:12px 10px;border-top:1px solid #F0F0F0;font-size:14px;border-radius:12px;background:{{ c.bg }}">
+            <span style="font-weight:600;display:flex;align-items:center;gap:8px;min-width:0"><sc-if value="{{ c.hot }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:8px;height:8px;border-radius:50%;background:#D93025;display:block"></span></sc-if><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ c.name }}">{{ c.name }}</span><sc-if value="{{ c.internal }}" hint-placeholder-val="{{ false }}"><span style="flex:none;font-size:11px;font-weight:500;background:#EFEFEF;color:#6B6B6B;border-radius:7px;padding:3px 6px">test</span></sc-if></span>
+            <span style="color:#555" title="{{ c.visitorTip }}">{{ c.country }}</span><span>{{ c.rating }}</span><span>{{ c.count }}</span><span>{{ c.low }}</span><span>{{ c.sel }}</span>
+            <span style="font-size:13px;color:#555">{{ c.src }}</span>
+            <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ c.land }}">{{ c.land }}</span>
+            <span style="font-size:13px;color:{{ c.stepCol }};font-weight:{{ c.stepW }}">{{ c.step }}</span>
+            <span style="font-size:13px;color:#6B6B6B" title="{{ c.whenFull }}">{{ c.when }}</span>
+            <div style="display:flex;gap:6px;justify-content:flex-end">
+              <sc-if value="{{ c.hasOrder }}" hint-placeholder-val="{{ false }}"><button onClick="{{ c.openOrder }}" style="border:0;cursor:pointer;background:#F4F4F4;color:#151515;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:500;white-space:nowrap">{{ c.orderId }}</button></sc-if>
+              <a href="{{ c.profile }}" target="_blank" rel="noopener" style="background:{{ c.btnBg }};color:{{ c.btnFg }};border-radius:10px;padding:8px 10px;font-size:12px;font-weight:500;text-align:center;white-space:nowrap">Google profile ↗</a>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+    <span style="font-size:12px;color:#8A8A8A;line-height:1.5"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#D93025;margin-right:6px"></span>Red = checked but no order. Country = the business, hover for the visitor's browser region. You get an email for every new check (once per business per 6 h, not for your own tests).</span>
+  </div>
+</section>
+</sc-if>
+<sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}">''')
+
 overrides = (ROOT / 'tools' / 'admin_overrides.js').read_text(encoding='utf-8')
 idx = s.rindex('\n}\n</script>')
 s = s[:idx] + '\n' + overrides + s[idx:]

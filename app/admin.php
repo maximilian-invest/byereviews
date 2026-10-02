@@ -294,6 +294,12 @@ function action_admin_analytics(): void {
     json_out(['ok' => true] + analytics_data(in_array($range, [7, 30, 90], true) ? $range : 0));
 }
 
+function action_admin_checks(): void {
+    admin_required();
+    $range = (int)($_GET['range'] ?? 90);
+    json_out(['ok' => true] + checks_data(in_array($range, [7, 30, 90], true) ? $range : 0));
+}
+
 function action_admin_cancel(): void {
     admin_required();
     $d = json_body();
