@@ -227,6 +227,15 @@ INTENTS = {
 }
 
 
+APP_NAV = '<nav><a href="/">Home</a> · <a href="/order/">Free case review</a> · <a href="/blog/">Guides</a> · <a href="/login/">Log in</a></nav>'
+APP_LINKS = ('<p><a href="/fake-review-removal/">Fake reviews</a> · <a href="/remove-bad-google-reviews/">Unfair 1-star reviews</a> · '
+             '<a href="/review-removal-service/">Pricing &amp; service</a> · <a href="/imprint.html">Contact</a> · <a href="/terms.html">Terms</a> · <a href="/privacy.html">Privacy</a></p>')
+APP_FALLBACK = {
+    'order/index.html': '<h1>Submit your Google reviews for a free check</h1><p>Find your business, select the reviews you believe break Google\'s content policies, and we tell you within 24 hours which ones qualify. The order form needs JavaScript; you can also email the review links to <a href="mailto:info@byereviews.com">info@byereviews.com</a>.</p>',
+    'login/index.html': '<h1>Log in to your byereviews account</h1><p>Follow the status of every review you submitted. Logging in needs JavaScript. Forgot your password or no account yet? Email <a href="mailto:info@byereviews.com">info@byereviews.com</a>.</p>',
+}
+
+
 def esc(t):
     return t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
 
@@ -288,6 +297,8 @@ for path, (canonical, robots) in pages.items():
     html = html.replace('__PRELOAD__\n', HERO_PRELOAD if (path in HOME_LIKE or path in INTENTS) else '', 1)
     if snap and (path in HOME_LIKE or path in INTENTS):
         html = html.replace('<!--PRERENDER-->', snap, 1)
+    elif path in APP_FALLBACK:  # no-JS fallback for app pages (crawlers otherwise see an empty page: no H1, no links)
+        html = html.replace('<!--PRERENDER-->', '<div id="prerender">' + APP_NAV + APP_FALLBACK[path] + APP_LINKS + '</div><!--/prerender-->', 1)
     if path in INTENTS:
         html = intent_page(html, INTENTS[path])
     out.write_text(html, encoding='utf-8')
