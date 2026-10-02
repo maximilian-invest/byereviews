@@ -98,7 +98,7 @@ assert n >= 5, n
 
 # footer + legal links
 rep('<a href="#">Imprint</a><a href="#">Terms</a><a href="#">Right of Withdrawal</a><a href="#">Privacy</a>',
-    '<a href="mailto:info@byereviews.com">info@byereviews.com</a><a href="/imprint.html">Contact</a><a href="/terms.html">Terms</a><a href="/withdrawal.html">Right of Withdrawal</a><a href="/privacy.html">Privacy</a><a href="/blog/">Guides</a>')
+    '<a href="/fake-review-removal/">Fake reviews</a><a href="/remove-bad-google-reviews/">Unfair 1-star reviews</a><a href="/review-removal-service/">Pricing &amp; service</a><a href="mailto:info@byereviews.com">info@byereviews.com</a><a href="/imprint.html">Contact</a><a href="/terms.html">Terms</a><a href="/withdrawal.html">Right of Withdrawal</a><a href="/privacy.html">Privacy</a><a href="/blog/">Guides</a>')
 rep('Not affiliated with Google.</span>', 'Not affiliated with Google.</span>\n    <span style="font-size:14px;color:#6B6B6B">Questions? <a href="mailto:info@byereviews.com" style="text-decoration:underline">info@byereviews.com</a></span>')
 rep('<a href="#" style="text-decoration:underline">Terms</a>', '<a href="/terms.html" target="_blank" rel="noopener" style="text-decoration:underline">Terms</a>')
 rep('<a href="#" style="text-decoration:underline">Right of Withdrawal</a>', '<a href="/withdrawal.html" target="_blank" rel="noopener" style="text-decoration:underline">Right of Withdrawal</a>')
@@ -168,9 +168,12 @@ overrides = (ROOT / 'tools' / 'site_overrides.js').read_text(encoding='utf-8')
 idx = s.rindex('\n}\n</script>')
 s = s[:idx] + '\n' + overrides + s[idx:]
 
-# inert template: the browser must not fetch the template's videos/images/iframe before the runtime renders
-rep('<x-dc>', '<x-dc><template>')
-rep('</x-dc>', '</template></x-dc>')
+# inert template: the browser must not fetch the template's videos/images/iframe before the runtime renders.
+# A <script type="text/x-dc-template"> instead of <template>: crawlers that parse <template> content (Ahrefs)
+# otherwise report the app's unrendered {{ m.href }} links as 404s and every hidden screen's <h1>.
+assert '</script' not in s[s.index('<x-dc>'):s.index('</x-dc>')]
+rep('<x-dc>', '<x-dc><script type="text/x-dc-template">')
+rep('</x-dc>', '</script></x-dc>')
 
 assert 'cdn.openart.ai' not in s and 'fonts.googleapis' not in s and 'href="#"' not in s.split('data-dc-script')[0], 'leftover external/dead link'
 
@@ -195,8 +198,8 @@ HOME_LIKE = ('index.html', 'pricing/index.html', 'how-it-works/index.html', 'faq
 # Only claims we can back: policy-violating reviews only, no success guarantee, prices as on /pricing/.
 INTENTS = {
     'fake-review-removal/index.html': dict(
-        title='Fake Google Review Removal – Pay Only Once It\'s Removed | byereviews',
-        desc='Fake account, no real visit, a competitor posing as a customer? We report fake Google reviews through Google\'s official channels. $90 per removed review, nothing upfront.',
+        title='Fake Google Reviews: Free Check, Pay on Success | byereviews',
+        desc='Fake Google review on your profile? Free check within 24h. We dispute fake and spam reviews through Google\'s official process. No upfront fees.',
         grey='Fake Google review on your profile?', white='We get it removed.',
         sub='Fake accounts, people who never visited, competitors posing as customers: all of it breaks Google\'s policies. We document each case and report it through the official channels. You pay $90 only once the review is actually gone.',
         h2a='How to spot a fake review.', h2b='We check every one for free.',
@@ -204,8 +207,8 @@ INTENTS = {
                ('Throwaway account', 'A new profile with one review, no photo and no history, often posted in a wave with others. A classic spam pattern.'),
                ('Competitor or ex-employee', 'Reviews from people with a conflict of interest are against Google\'s rules, even when they sound like a customer.')]),
     'remove-bad-google-reviews/index.html': dict(
-        title='Remove Bad Google Reviews – No Removal, No Fee | byereviews',
-        desc='Many 1-star reviews break Google\'s rules: off-topic rants, hate, conflicts of interest, reviews meant for someone else. Free check in 24h, pay only for reviews that are removed.',
+        title='Unfair Google Review? Check If It Breaks Policy | byereviews',
+        desc='Not every bad review can go, but many break Google\'s rules. Free check: we tell you honestly which qualify. You only pay if a review is taken down.',
         grey='Unfair 1-star review?', white='Get it removed.',
         sub='Not every bad review can go, but many break Google\'s rules: off-topic rants, insults, conflicts of interest, reviews meant for another business. We check yours for free and pursue removal of the ones that qualify. You pay only for what\'s actually removed.',
         h2a='Which bad reviews qualify.', h2b='And which don\'t.',
@@ -213,8 +216,8 @@ INTENTS = {
                ('Insults, hate, harassment', 'Personal attacks on you or your staff, profanity, discrimination or threats violate Google\'s content policy.'),
                ('Honest criticism stays', 'A fair review of a real visit is protected, even if it hurts. We tell you upfront, and you never pay for reviews we can\'t remove.')]),
     'review-removal-service/index.html': dict(
-        title='Google Review Removal Service – $90 per Removed Review | byereviews',
-        desc='Google review removal with the price on the page: $90 per removed review (posted within 4 weeks), $125 for older ones. No deposit, no retainer, no sales call.',
+        title='Google Review Dispute Service – Pay on Success | byereviews',
+        desc='Policy-based Google review disputes for businesses. Transparent per-review pricing, no deposit, no retainer. Free case review within 24 hours.',
         grey='Google review removal service.', white='Pay only for what\'s gone.',
         sub='The price is on the page: $90 per removed review posted within the last 4 weeks, $125 for older ones, up to 15% off for several. No deposit, no retainer, no sales call. Order online in about 2 minutes.',
         h2a='Why businesses choose us.', h2b='No quote, no call, no risk.',
@@ -229,6 +232,7 @@ def esc(t):
 
 
 def intent_page(html, it):
+    assert len(it['title']) <= 60 and len(it['desc']) <= 155, (it['title'], len(it['title']), len(it['desc']))
     a = lambda t: esc(t).replace('&quot;', '"')
     html = html.replace('<title>byereviews – Remove fake &amp; unfair Google reviews</title>', f'<title>{esc(it["title"])}</title>', 1)
     html = html.replace('<meta property="og:title" content="byereviews – Remove fake &amp; unfair Google reviews">', f'<meta property="og:title" content="{esc(it["title"])}">', 1)
@@ -259,7 +263,7 @@ def intent_page(html, it):
 
 pages = {
     'index.html': ('/', ''),
-    'order/index.html': ('/order/', ''),
+    'order/index.html': ('/order/', '<meta name="robots" content="noindex, follow">\n'),
     'pricing/index.html': ('/', ''),
     'how-it-works/index.html': ('/', ''),
     'faq/index.html': ('/', ''),
@@ -278,13 +282,13 @@ for path, (canonical, robots) in pages.items():
     out = PUBLIC / path
     out.parent.mkdir(parents=True, exist_ok=True)
     html = s.replace('__CANONICAL__', canonical).replace('__ROBOTS__', robots)
+    html = html.replace('<meta property="og:url" content="https://byereviews.com/">', f'<meta property="og:url" content="https://byereviews.com{canonical}">', 1)
     # hero poster = LCP element on landing-page URLs: fetch it before the runtime renders the hero
     html = html.replace('__FAQLD__', FAQ_LD if (path == 'index.html' or path in INTENTS) else '', 1)
     html = html.replace('__PRELOAD__\n', HERO_PRELOAD if (path in HOME_LIKE or path in INTENTS) else '', 1)
     if snap and (path in HOME_LIKE or path in INTENTS):
         html = html.replace('<!--PRERENDER-->', snap, 1)
     if path in INTENTS:
-        html = html.replace('<meta property="og:url" content="https://byereviews.com/">', f'<meta property="og:url" content="https://byereviews.com{canonical}">', 1)
         html = intent_page(html, INTENTS[path])
     out.write_text(html, encoding='utf-8')
 print('built', ', '.join(pages))

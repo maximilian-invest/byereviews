@@ -121,7 +121,7 @@ def footer():
     <span>Removal of individual false, unfair or policy-violating Google reviews. Not affiliated with Google.</span>
     <span>Questions? <a href="mailto:info@byereviews.com" style="text-decoration:underline">info@byereviews.com</a></span>
   </div>
-  <div class="r"><a href="mailto:info@byereviews.com">info@byereviews.com</a><a href="/imprint.html">Contact</a><a href="/terms.html">Terms</a><a href="/withdrawal.html">Right of Withdrawal</a><a href="/privacy.html">Privacy</a></div>
+  <div class="r"><a href="/fake-review-removal/">Fake reviews</a><a href="/remove-bad-google-reviews/">Unfair 1-star reviews</a><a href="/review-removal-service/">Pricing &amp; service</a><a href="mailto:info@byereviews.com">info@byereviews.com</a><a href="/imprint.html">Contact</a><a href="/terms.html">Terms</a><a href="/withdrawal.html">Right of Withdrawal</a><a href="/privacy.html">Privacy</a></div>
 </footer>
 <a class="mbar" href="{CTA_HREF}"><span><span>Free review audit</span><small>Answer within 24 hours</small></span><span class="ico w">{ARROW('#151515')}</span></a>
 </div></div>
@@ -270,13 +270,16 @@ def build_post(p):
 '''
     out = PUBLIC / 'blog' / p['slug'] / 'index.html'
     out.parent.mkdir(parents=True, exist_ok=True)
-    title = f'{p["title"]} – byereviews'
-    out.write_text(head(title, p['lead'][:300], url(p), cover(p), schema) + body + footer(), encoding='utf-8')
+    # <title> / meta description stay within SERP limits (≤60 / ≤155 chars); the H1 keeps the full headline
+    title = p.get('seo_title') or f'{p["title"]} – byereviews'
+    desc = p.get('meta') or p['lead']
+    assert len(title) <= 60 and len(desc) <= 155, (p['slug'], len(title), len(desc))
+    out.write_text(head(title, desc, url(p), cover(p), schema) + body + footer(), encoding='utf-8')
 
 
 def build_sitemap():
     urls = [('/', 'weekly', '1.0'), ('/fake-review-removal/', 'monthly', '0.9'), ('/remove-bad-google-reviews/', 'monthly', '0.9'), ('/review-removal-service/', 'monthly', '0.9'), ('/blog/', 'weekly', '0.8')] + [(url(p), 'monthly', '0.9' if p['n'] <= 2 else '0.7') for p in posts] \
-        + [('/terms.html', 'yearly', '0.2'), ('/withdrawal.html', 'yearly', '0.2')]
+        + [('/imprint.html', 'yearly', '0.3'), ('/terms.html', 'yearly', '0.2'), ('/withdrawal.html', 'yearly', '0.2'), ('/privacy.html', 'yearly', '0.2')]
     items = ''.join(f'  <url><loc>{SITE}{u}</loc><lastmod>{updated_iso}</lastmod><changefreq>{c}</changefreq><priority>{pr}</priority></url>\n' for u, c, pr in urls)
     (PUBLIC / 'sitemap.xml').write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{items}</urlset>\n', encoding='utf-8')
 

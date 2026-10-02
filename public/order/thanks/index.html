@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="byereviews">
 <meta property="og:title" content="byereviews – Remove fake &amp; unfair Google reviews">
 <meta property="og:description" content="No cure, no pay: you only pay for reviews that are actually removed.">
-<meta property="og:url" content="https://byereviews.com/">
+<meta property="og:url" content="https://byereviews.com/order/">
 <meta property="og:image" content="https://byereviews.com/assets/media/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="628">
@@ -34,7 +34,7 @@ window.__resources = {
 </head>
 <body>
 <!--PRERENDER-->
-<x-dc><template>
+<x-dc><script type="text/x-dc-template">
 <helmet>
 <link href="/assets/fonts/fonts.css" rel="stylesheet">
 <style>
@@ -960,14 +960,14 @@ input,textarea,select,button{font-family:inherit}
     <span style="font-size:14px;color:#6B6B6B">Questions? <a href="mailto:info@byereviews.com" style="text-decoration:underline">info@byereviews.com</a></span>
   </div>
   <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:14px">
-    <a href="mailto:info@byereviews.com">info@byereviews.com</a><a href="/imprint.html">Contact</a><a href="/terms.html">Terms</a><a href="/withdrawal.html">Right of Withdrawal</a><a href="/privacy.html">Privacy</a><a href="/blog/">Guides</a>
+    <a href="/fake-review-removal/">Fake reviews</a><a href="/remove-bad-google-reviews/">Unfair 1-star reviews</a><a href="/review-removal-service/">Pricing &amp; service</a><a href="mailto:info@byereviews.com">info@byereviews.com</a><a href="/imprint.html">Contact</a><a href="/terms.html">Terms</a><a href="/withdrawal.html">Right of Withdrawal</a><a href="/privacy.html">Privacy</a><a href="/blog/">Guides</a>
   </div>
 </footer>
 
 </div>
 </div>
 </sc-if>
-</template></x-dc>
+</script></x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   newReview() { return { id: Math.random().toString(36).slice(2), value: '', name: '', age: 'recent', status: 'idle', preview: null }; }
