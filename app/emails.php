@@ -140,7 +140,16 @@ function mail_status_update(array $order, array $changed): void {
 }
 
 /** C3 – removed reviews + payment link. */
-function mail_payment_link(array $order, string $link): void {
+/** Pay button target: always the order's current payment link (created on first click, still valid after the link changes). */
+function pay_url(array $order): string {
+    return SITE_URL . '/order.php?a=pay&order=' . rawurlencode($order['id']) . '&t=' . rawurlencode((string)($order['payToken'] ?? ''));
+}
+
+/**
+ * "Reviews removed – please pay" email: removed reviews, total, Pay now button (→ Stripe Payment Link) and a
+ * dashboard button. $others = reviews from the same batch whose status changed to something else.
+ */
+function mail_payment_link(array $order, string $link = '', array $others = []): void {
     $c = $order['customer']; $cur = $order['currency'];
     $rem = array_values(array_filter($order['reviews'], fn($r) => $r['status'] === 'removed'));
     $inv = invoice($order); $n = count($rem);
@@ -149,10 +158,13 @@ function mail_payment_link(array $order, string $link): void {
         . m_p('Hi ' . eh(first_name($c['name'])) . ', we\'ve removed the following from ' . eh($order['business']['name'] ?: $c['company']) . '\'s Google profile:')
         . m_reviews($rem, fn($r) => eh(money(tier_price($r['tier']), $cur)), true)
         . m_box(array_merge($inv['rate'] > 0 ? [['Volume discount ' . round($inv['rate'] * 100) . '%', '– ' . eh(money($inv['discount'], $cur))]] : [],
-            [['Total due today', eh(money($inv['total'], $cur)), true]]))
-        . email_button($link, 'Pay now', true)
-        . '<p style="margin:14px 0 0;text-align:center"><a href="' . SITE_URL . '/dashboard/" style="font-size:14px;color:#6B6B6B;text-decoration:underline">View in dashboard</a></p>';
-    send_branded($c['email'], "$n review" . ($n === 1 ? '' : 's') . ' removed – ' . money($inv['total'], $cur) . ' due', $inner, '// order ' . $order['id'], 'Secure checkout via Stripe – Apple Pay or card.');
+            [['Total due', eh(money($inv['total'], $cur)), true]]))
+        . m_p('Pay securely by card, Apple Pay, Google Pay, PayPal or the other methods available in your country.', 'font-size:14px;color:#6B6B6B')
+        . email_button(pay_url($order), 'Pay now', true)
+        . '<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:10px 0 4px"><tr><td style="border:1px solid #D2D2D2;border-radius:16px">'
+        . '<a href="' . SITE_URL . '/dashboard/" style="display:block;text-align:center;padding:14px 22px;font-family:' . MAIL_FONT . ';font-size:15px;font-weight:600;color:#151515;text-decoration:none">Open dashboard &nbsp;→</a></td></tr></table>'
+        . ($others ? m_p('Other updates on this order:', 'margin-top:22px') . m_reviews($others, fn($r) => m_chip($r['status'])) : '');
+    send_branded($c['email'], "$n review" . ($n === 1 ? '' : 's') . ' removed – ' . money($inv['total'], $cur) . ' due', $inner, '// order ' . $order['id'], 'Secure checkout via Stripe – card, Apple Pay, PayPal & more.');
 }
 
 function mail_paid(array $order): void {
@@ -161,8 +173,10 @@ function mail_paid(array $order): void {
     $amount = $order['payment']['amount'] ?? $inv['total'];
     $inner = m_h1('Paid –', 'thank you.')
         . m_p('Hi ' . eh(first_name($c['name'])) . ', we\'ve received your payment for order ' . eh($order['id']) . '.')
-        . m_box([['Amount', eh(money($amount, $order['currency'])), true], ['Date', eh(date('j M Y'))]])
-        . email_button(SITE_URL . '/dashboard/', 'View in dashboard');
+        . m_box(array_merge([['Amount', eh(money($amount, $order['currency'])), true], ['Date', eh(date('j M Y'))]],
+            !empty($order['payment']['invoiceNumber']) ? [['Invoice', eh($order['payment']['invoiceNumber'])]] : []))
+        . email_button(SITE_URL . '/dashboard/', 'View in dashboard')
+        . (!empty($order['payment']['invoicePdf']) ? '<p style="margin:14px 0 0;text-align:center"><a href="' . eh($order['payment']['invoicePdf']) . '" style="font-size:14px;color:#6B6B6B;text-decoration:underline">Download invoice (PDF)</a></p>' : '');
     send_branded($c['email'], "Payment received – order {$order['id']}", $inner, '// order ' . $order['id'], 'Your profile is cleaner – thanks for your payment.');
 }
 

@@ -29,9 +29,10 @@
   }
 
   // ---------- routing: / · /order/ · /login/ · /dashboard/ ----------
-  paths = { home: '/', order: '/order/', success: '/order/', login: '/login/', forgot: '/login/', reset: '/login/', portal: '/dashboard/' };
+  paths = { home: '/', order: '/order/', success: '/order/thanks/', login: '/login/', forgot: '/login/', reset: '/login/', portal: '/dashboard/' };
   viewFromPath() {
     const p = location.pathname;
+    if (p.startsWith('/order/thanks')) return 'success';
     if (p.startsWith('/order')) return 'order';
     if (p.startsWith('/login')) return 'login';
     if (p.startsWith('/dashboard')) return 'portal';
@@ -43,12 +44,22 @@
     try { if (!sessionStorage.getItem('br_src')) { this.track('__init'); } } catch (e) {}
     const hash = (location.hash || '').slice(1);
     let v = this.viewFromPath();
+    // /order/thanks/ (conversion URL for Google Ads): only with a just-submitted order in this tab, otherwise back to the form
+    if (v === 'success') {
+      let done = null;
+      try { done = JSON.parse(sessionStorage.getItem('br_done') || 'null'); } catch (e) {}
+      if (done && done.orderId) this.setState({ submitted: true, orderId: done.orderId, newAccount: !!done.newAccount, orderedAt: done.at, loginEmail: done.email, confettiKey: Date.now() });
+      else { v = 'order'; history.replaceState(null, '', '/order/'); }
+    }
     if (v === 'home' && hash === 'order') v = 'order';
     if (v === 'home' && hash === 'login') v = 'login';
     const want = v;
     this._lastView = v === 'portal' ? 'login' : v;
     this.setState({ view: this._lastView });
     if (v === 'home' && /^[a-z]+$/.test(hash)) setTimeout(() => this.scrollToId(hash), 80);
+    // /pricing/, /how-it-works/, /faq/, /results/ = the landing page opened at that section (own URLs for Google Ads sitelinks)
+    const sec = { '/pricing/': 'pricing', '/how-it-works/': 'how', '/faq/': 'faq', '/results/': 'cases' }[location.pathname];
+    if (v === 'home' && sec) setTimeout(() => this.scrollToId(sec), 250);
     this.onHashNav = () => { const h = (location.hash || '').slice(1); if (h === 'order' || h === 'login') this.setState({ view: h }); else if (/^[a-z]+$/.test(h)) this.setState({ view: 'home' }, () => setTimeout(() => this.scrollToId(h), 60)); };
     window.addEventListener('hashchange', this.onHashNav);
     this.onPop = () => { const pv = this.viewFromPath(); const nv = pv === 'portal' && !this.state.portalIn ? 'login' : pv; this._lastView = nv; this.setState({ view: nv, menuOpen: false }); };
@@ -75,7 +86,10 @@
     if (v === this._lastView) return;
     this._lastView = v;
     const path = this.paths[v] || '/';
-    if ((location.pathname !== path || location.hash) && !(v === 'reset' && location.pathname === path)) history.pushState(null, '', path);
+    if ((location.pathname !== path || location.hash) && !(v === 'reset' && location.pathname === path)) {
+      history.pushState(null, '', path);
+      try { if (window.gtag) window.gtag('event', 'page_view', { page_location: location.href, page_path: path }); } catch (e) {} // single-page app: report the new URL
+    }
     const titles = { order: 'Remove a Google review', login: 'Log in', forgot: 'Forgot your password?', reset: 'Set a new password', portal: 'Your dashboard', success: 'Order received' };
     document.title = titles[v] ? titles[v] + ' – byereviews' : this.homeTitle || document.title;
   }
@@ -155,6 +169,16 @@
     this.emailT = setTimeout(() => this.api('check-email', { query: { email } }).then(r => { if (this.state.email === email) this.setState({ emailKnown: !!(r.ok && r.exists) }); }), 450);
   }
 
+  // Google Ads click ID + UTM tags from the landing URL. Kept in memory only (no cookie, no storage):
+  // the order is submitted in the same single-page session. The server stores it only if enabled in the admin.
+  adClick = (() => {
+    try {
+      const q = new URLSearchParams(location.search), a = {};
+      ['gclid', 'gbraid', 'wbraid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term'].forEach(k => { const v = q.get(k); if (v) a[k] = v.slice(0, 300); });
+      return Object.keys(a).length ? { ...a, landing: location.pathname } : null;
+    } catch (e) { return null; }
+  })();
+
   // ---------- submit ----------
   submitOrder() {
     const s = this.state;
@@ -165,7 +189,8 @@
     ];
     const body = { agree: !!s.agree, reviews,
       business: { placeId: s.biz && s.biz.id || '', name: s.biz && s.biz.name || s.company || '', query: s.bizQuery || '', profileUrl: s.profileUrl || '' },
-      contact: { name: s.name, email: s.email, company: s.company, phone: s.phone, street: s.street, city: s.city, country: s.country } };
+      contact: { name: s.name, email: s.email, company: s.company, phone: s.phone, street: s.street, city: s.city, country: s.country },
+      ...(this.adClick ? { ads: this.adClick } : {}) };
     this.setState({ submitting: true, submitError: '' });
     this.api('order', { body }).then(r => {
       if (!r.ok) {
@@ -173,6 +198,9 @@
         return this.setState({ submitting: false, submitError: msg, tried: true });
       }
       this.track('submit');
+      try { sessionStorage.setItem('br_done', JSON.stringify({ orderId: r.orderId, newAccount: !!r.newAccount, email: s.email, at: Date.now() })); } catch (e) {}
+      // Google Ads conversion (only if the Google tag is on the page)
+      try { if (window.gtag && window.BR_ADS_CONVERSION) window.gtag('event', 'conversion', { send_to: window.BR_ADS_CONVERSION, transaction_id: r.orderId }); } catch (e) {}
       this.setState({ submitting: false, submitted: true, view: 'success', confettiKey: Date.now(), orderId: r.orderId, newAccount: !!r.newAccount, orderedAt: Date.now(), loginEmail: s.email });
       window.scrollTo({ top: 0 });
     });

@@ -39,10 +39,14 @@ __ROBOTS__<link rel="icon" type="image/png" href="/assets/favicon.png">
 <meta property="og:title" content="byereviews – Remove fake &amp; unfair Google reviews">
 <meta property="og:description" content="No cure, no pay: you only pay for reviews that are actually removed.">
 <meta property="og:url" content="https://byereviews.com/">
-<meta property="og:image" content="https://byereviews.com/assets/media/hero-desktop-v2-poster.webp">
+<meta property="og:image" content="https://byereviews.com/assets/media/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://byereviews.com/#org","name":"byereviews","url":"https://byereviews.com/","logo":"https://byereviews.com/assets/byereviews-logo.png","email":"info@byereviews.com"},{"@type":"WebSite","name":"byereviews","url":"https://byereviews.com/","publisher":{"@id":"https://byereviews.com/#org"}},{"@type":"Service","name":"Google review removal","provider":{"@id":"https://byereviews.com/#org"},"areaServed":["US","GB","CA","AU","EU"],"offers":[{"@type":"Offer","name":"Review posted within the last 4 weeks","price":"90","priceCurrency":"USD"},{"@type":"Offer","name":"Review older than 4 weeks","price":"125","priceCurrency":"USD"}]}]}</script>
-<style>html.js #prerender{display:none}html:not(.js) x-dc{display:none!important}</style>
+__PRELOAD__
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://byereviews.com/#org","name":"byereviews","url":"https://byereviews.com/","logo":"https://byereviews.com/assets/byereviews-logo.png","email":"info@byereviews.com"},{"@type":"WebSite","name":"byereviews","url":"https://byereviews.com/","publisher":{"@id":"https://byereviews.com/#org"}},{"@type":"Service","name":"Google review removal","provider":{"@id":"https://byereviews.com/#org"},"areaServed":["US","GB","CA","AU","EU"],"offers":[{"@type":"Offer","name":"Removal of a review posted within the last 4 weeks","price":"90","priceCurrency":"USD","url":"https://byereviews.com/pricing/","description":"Charged only once the review is removed. No upfront payment, no retainer."},{"@type":"Offer","name":"Removal of a review older than 4 weeks","price":"125","priceCurrency":"USD","url":"https://byereviews.com/pricing/","description":"Charged only once the review is removed. No upfront payment, no retainer."}],"serviceType":"Google review removal","description":"Removal of fake, spam, off-topic and otherwise policy-violating Google reviews through the official Google reporting and legal-removal channels. Pay per removed review."}]}</script>
+__FAQLD__<style>html.js #prerender{display:none}html:not(.js) x-dc{display:none!important}</style>
 <script>
 document.documentElement.classList.add('js');
 window.__resources = {
@@ -63,12 +67,12 @@ rep('<link rel="preconnect" href="https://fonts.googleapis.com">\n<link href="ht
 # self-hosted media
 rep('assets/video/hero-desktop.mp4', '/assets/media/hero-desktop-v2.mp4')
 rep('assets/video/hero-mobile.mp4', '/assets/media/hero-mobile-v2.mp4')
-rep('assets/video/hero-desktop-poster.webp', '/assets/media/hero-desktop-v2-poster.webp')
-rep('assets/video/hero-mobile-poster.webp', '/assets/media/hero-mobile-v2-poster.webp')
+rep('assets/video/hero-desktop-poster.webp', '/assets/media/hero-desktop-poster-v3.webp')
+rep('assets/video/hero-mobile-poster.webp', '/assets/media/hero-mobile-poster-v3.webp')
 rep("assets/img/step-1-pick.png", "/assets/media/image-1.webp")
 rep("assets/img/step-2-check.png", "/assets/media/image-2.webp")
 rep("assets/img/step-3-pay.png", "/assets/media/image-3.webp")
-s = s.replace('src="assets/byereviews-logo.png"', 'src="/assets/byereviews-logo.png"')
+s = s.replace('src="assets/byereviews-logo.png"', 'src="/assets/byereviews-logo-72.png"')  # 3x of the 24px max display height
 
 # real links instead of href="#"
 rep('<a href="#" onClick="{{ goHome }}" style="display:flex;align-items:center;padding:8px 14px 8px 8px">', '<a href="/" onClick="{{ goHome }}" style="display:flex;align-items:center;padding:8px 14px 8px 8px">')
@@ -94,7 +98,7 @@ assert n >= 5, n
 
 # footer + legal links
 rep('<a href="#">Imprint</a><a href="#">Terms</a><a href="#">Right of Withdrawal</a><a href="#">Privacy</a>',
-    '<a href="mailto:info@byereviews.com">info@byereviews.com</a><a href="/imprint.html">Contact</a><a href="/terms.html">Terms</a><a href="/withdrawal.html">Right of Withdrawal</a><a href="/privacy.html">Privacy</a><a href="/blog/">Guides</a>')
+    '<a href="/fake-review-removal/">Fake reviews</a><a href="/remove-bad-google-reviews/">Unfair 1-star reviews</a><a href="/review-removal-service/">Pricing &amp; service</a><a href="mailto:info@byereviews.com">info@byereviews.com</a><a href="/imprint.html">Contact</a><a href="/terms.html">Terms</a><a href="/withdrawal.html">Right of Withdrawal</a><a href="/privacy.html">Privacy</a><a href="/blog/">Guides</a>')
 rep('Not affiliated with Google.</span>', 'Not affiliated with Google.</span>\n    <span style="font-size:14px;color:#6B6B6B">Questions? <a href="mailto:info@byereviews.com" style="text-decoration:underline">info@byereviews.com</a></span>')
 rep('<a href="#" style="text-decoration:underline">Terms</a>', '<a href="/terms.html" target="_blank" rel="noopener" style="text-decoration:underline">Terms</a>')
 rep('<a href="#" style="text-decoration:underline">Right of Withdrawal</a>', '<a href="/withdrawal.html" target="_blank" rel="noopener" style="text-decoration:underline">Right of Withdrawal</a>')
@@ -164,22 +168,138 @@ overrides = (ROOT / 'tools' / 'site_overrides.js').read_text(encoding='utf-8')
 idx = s.rindex('\n}\n</script>')
 s = s[:idx] + '\n' + overrides + s[idx:]
 
+# inert template: the browser must not fetch the template's videos/images/iframe before the runtime renders.
+# A <script type="text/x-dc-template"> instead of <template>: crawlers that parse <template> content (Ahrefs)
+# otherwise report the app's unrendered {{ m.href }} links as 404s and every hidden screen's <h1>.
+assert '</script' not in s[s.index('<x-dc>'):s.index('</x-dc>')]
+rep('<x-dc>', '<x-dc><script type="text/x-dc-template">')
+rep('</x-dc>', '</script></x-dc>')
+
 assert 'cdn.openart.ai' not in s and 'fonts.googleapis' not in s and 'href="#"' not in s.split('data-dc-script')[0], 'leftover external/dead link'
+
+import json as _json
+# FAQ JSON-LD from the design's FAQ list (the same text the page shows)
+_src = SRC.read_text(encoding='utf-8')
+_block = _src[_src.index('      faqs: ['):_src.index('].map((f, i) => ({ ...f, open: s.faqOpen')]
+_faqs = []
+for _m in re.finditer(r"\{ q: '((?:[^'\\]|\\.)*)', a: (?:'((?:[^'\\]|\\.)*)'|`([^`]*)`) \}", _block):
+    _a = (_m.group(2) or _m.group(3)).replace("\\'", "'").replace('${this.fmt(90)}', '$90').replace('${this.fmt(125)}', '$125')
+    _faqs.append({'@type': 'Question', 'name': _m.group(1).replace("\\'", "'"), 'acceptedAnswer': {'@type': 'Answer', 'text': _a}})
+assert len(_faqs) >= 5 and '${' not in _json.dumps(_faqs), _faqs
+FAQ_LD = ('<script type="application/ld+json">'
+          + _json.dumps({'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': _faqs}, ensure_ascii=False).replace('</', '<\\/')
+          + '</script>\n')
+
+HERO_PRELOAD = ('<link rel="preload" as="image" href="/assets/media/hero-mobile-poster-v3.webp" media="(max-width: 759px)" fetchpriority="high">\n'
+                '<link rel="preload" as="image" href="/assets/media/hero-desktop-poster-v3.webp" media="(min-width: 760px)" fetchpriority="high">\n')
+HOME_LIKE = ('index.html', 'pricing/index.html', 'how-it-works/index.html', 'faq/index.html', 'results/index.html')
+
+# Intent landing pages for Google Ads ad groups: same page, hero + first section match the search.
+# Only claims we can back: policy-violating reviews only, no success guarantee, prices as on /pricing/.
+INTENTS = {
+    'fake-review-removal/index.html': dict(
+        title='Fake Google Reviews: Free Check, Pay on Success | byereviews',
+        desc='Fake Google review on your profile? Free check within 24h. We dispute fake and spam reviews through Google\'s official process. No upfront fees.',
+        grey='Fake Google review on your profile?', white='We get it removed.',
+        sub='Fake accounts, people who never visited, competitors posing as customers: all of it breaks Google\'s policies. We document each case and report it through the official channels. You pay $90 only once the review is actually gone.',
+        h2a='How to spot a fake review.', h2b='We check every one for free.',
+        cards=[('No real visit', 'The reviewer was never your customer: no booking, no order, no record. Google removes reviews that aren\'t based on a real experience.'),
+               ('Throwaway account', 'A new profile with one review, no photo and no history, often posted in a wave with others. A classic spam pattern.'),
+               ('Competitor or ex-employee', 'Reviews from people with a conflict of interest are against Google\'s rules, even when they sound like a customer.')]),
+    'remove-bad-google-reviews/index.html': dict(
+        title='Unfair Google Review? Check If It Breaks Policy | byereviews',
+        desc='Not every bad review can go, but many break Google\'s rules. Free check: we tell you honestly which qualify. You only pay if a review is taken down.',
+        grey='Unfair 1-star review?', white='Get it removed.',
+        sub='Not every bad review can go, but many break Google\'s rules: off-topic rants, insults, conflicts of interest, reviews meant for another business. We check yours for free and pursue removal of the ones that qualify. You pay only for what\'s actually removed.',
+        h2a='Which bad reviews qualify.', h2b='And which don\'t.',
+        cards=[('Off-topic or wrong business', 'Rants about politics, the city or the parking situation, or a review meant for someone else. Not about your business, so not allowed.'),
+               ('Insults, hate, harassment', 'Personal attacks on you or your staff, profanity, discrimination or threats violate Google\'s content policy.'),
+               ('Honest criticism stays', 'A fair review of a real visit is protected, even if it hurts. We tell you upfront, and you never pay for reviews we can\'t remove.')]),
+    'review-removal-service/index.html': dict(
+        title='Google Review Dispute Service – Pay on Success | byereviews',
+        desc='Policy-based Google review disputes for businesses. Transparent per-review pricing, no deposit, no retainer. Free case review within 24 hours.',
+        grey='Google review removal service.', white='Pay only for what\'s gone.',
+        sub='The price is on the page: $90 per removed review posted within the last 4 weeks, $125 for older ones, up to 15% off for several. No deposit, no retainer, no sales call. Order online in about 2 minutes.',
+        h2a='Why businesses choose us.', h2b='No quote, no call, no risk.',
+        cards=[('Price shown upfront', 'Most removal services only quote after a call. Ours is fixed per review and on this page, including the volume discount.'),
+               ('No deposit, no retainer', 'Nothing is charged when you order. You get a payment link only for reviews that are actually removed.'),
+               ('Free check within 24h', 'We assess every review against Google\'s policies and tell you honestly which ones qualify before any work starts.')]),
+}
+
+
+APP_NAV = '<nav><a href="/">Home</a> · <a href="/order/">Free case review</a> · <a href="/blog/">Guides</a> · <a href="/login/">Log in</a></nav>'
+APP_LINKS = ('<p><a href="/fake-review-removal/">Fake reviews</a> · <a href="/remove-bad-google-reviews/">Unfair 1-star reviews</a> · '
+             '<a href="/review-removal-service/">Pricing &amp; service</a> · <a href="/imprint.html">Contact</a> · <a href="/terms.html">Terms</a> · <a href="/privacy.html">Privacy</a></p>')
+APP_FALLBACK = {
+    'order/index.html': '<h1>Submit your Google reviews for a free check</h1><p>Find your business, select the reviews you believe break Google\'s content policies, and we tell you within 24 hours which ones qualify. The order form needs JavaScript; you can also email the review links to <a href="mailto:info@byereviews.com">info@byereviews.com</a>.</p>',
+    'login/index.html': '<h1>Log in to your byereviews account</h1><p>Follow the status of every review you submitted. Logging in needs JavaScript. Forgot your password or no account yet? Email <a href="mailto:info@byereviews.com">info@byereviews.com</a>.</p>',
+}
+
+
+def esc(t):
+    return t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
+
+
+def intent_page(html, it):
+    assert len(it['title']) <= 60 and len(it['desc']) <= 155, (it['title'], len(it['title']), len(it['desc']))
+    a = lambda t: esc(t).replace('&quot;', '"')
+    html = html.replace('<title>byereviews – Remove fake &amp; unfair Google reviews</title>', f'<title>{esc(it["title"])}</title>', 1)
+    html = html.replace('<meta property="og:title" content="byereviews – Remove fake &amp; unfair Google reviews">', f'<meta property="og:title" content="{esc(it["title"])}">', 1)
+    html = re.sub(r'<meta name="description" content="[^"]*">', lambda m: f'<meta name="description" content="{esc(it["desc"])}">', html, count=1)
+    html = re.sub(r'<meta property="og:description" content="[^"]*">', lambda m: f'<meta property="og:description" content="{esc(it["desc"])}">', html, count=1)
+    # hero text (template + prerender snapshot)
+    n0 = html.count('One fake review is costing you customers.')
+    html = html.replace('>One fake review is costing you customers.</span>', f'>{a(it["grey"])}</span>')
+    html, n1 = re.subn(r'>Get it removed\.</span>(\s*</h1>)', lambda m: f'>{a(it["white"])}</span>{m.group(1)}<p class="br-sub" style="margin:0;font-size:clamp(17px,1.5vw,20px);line-height:1.45;color:#CFCFCF;max-width:620px;text-wrap:pretty">{a(it["sub"])}</p>', html)
+    assert n0 >= 1 and n1 == n0, (n0, n1)
+    cards = ''.join(f'''
+    <div style="background:{'#151515' if i == 2 else '#FFFFFF'};color:{'#fff' if i == 2 else '#151515'};border-radius:28px;padding:clamp(22px,2.6vw,30px);display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:'Geist Mono',monospace;font-size:13px;color:{'#8A8A8A' if i == 2 else '#6B6B6B'}">0{i + 1}</span>
+      <h3 style="margin:0;font-size:24px;font-weight:500;letter-spacing:-.02em">{a(t)}</h3>
+      <p style="margin:0;font-size:16px;line-height:1.5;color:{'#B5B5B5' if i == 2 else '#555'};text-wrap:pretty">{a(d)}</p>
+    </div>''' for i, (t, d) in enumerate(it['cards']))
+    section = f'''<section data-screen-label="Intent" style="padding:clamp(56px,8vw,96px) clamp(6px,2.6vw,36px) clamp(8px,1vw,16px);display:flex;flex-direction:column;gap:clamp(28px,4vw,48px)">
+  <h2 style="margin:0;font-weight:500;font-size:clamp(36px,4.4vw,64px);line-height:1;letter-spacing:-.04em;max-width:900px"><span style="color:#9E9E9E">{a(it["h2a"])}</span> {a(it["h2b"])}</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:16px">{cards}
+  </div>
+</section>
+
+'''
+    html, n2 = re.subn(r'<section[^>]*\bid="how"', lambda m: section + m.group(0), html)
+    assert n2 == n0, n2
+    return html
+
 
 pages = {
     'index.html': ('/', ''),
-    'order/index.html': ('/order/', ''),
+    'order/index.html': ('/order/', '<meta name="robots" content="noindex, follow">\n'),
+    'pricing/index.html': ('/', ''),
+    'how-it-works/index.html': ('/', ''),
+    'faq/index.html': ('/', ''),
+    'results/index.html': ('/', ''),
+    **{k: ('/' + k[:-len('index.html')], '') for k in INTENTS},
+    'order/thanks/index.html': ('/order/', '<meta name="robots" content="noindex, nofollow">\n'),
     'login/index.html': ('/login/', '<meta name="robots" content="noindex, follow">\n'),
     'dashboard/index.html': ('/dashboard/', '<meta name="robots" content="noindex, nofollow">\n'),
 }
+# the homepage snapshot (made by tools/prerender.js) is reused for every landing-page URL
+home = (PUBLIC / 'index.html').read_text(encoding='utf-8') if (PUBLIC / 'index.html').exists() else ''
+snap = re.search(r'<div id="prerender">.*?</div><!--/prerender-->', home, flags=re.S)
+if snap:  # hidden for JS visitors: its images must not download (display:none doesn't stop <img>)
+    snap = re.sub(r'<img(?![^>]*\bloading=)', '<img loading="lazy"', snap.group(0))
 for path, (canonical, robots) in pages.items():
     out = PUBLIC / path
     out.parent.mkdir(parents=True, exist_ok=True)
     html = s.replace('__CANONICAL__', canonical).replace('__ROBOTS__', robots)
-    prev = out.read_text(encoding='utf-8') if out.exists() else ''
-    # keep an existing prerender snapshot (made by tools/prerender.js)
-    snap = re.search(r'<div id="prerender">.*?</div><!--/prerender-->', prev, flags=re.S)
-    if snap and path == 'index.html':
-        html = html.replace('<!--PRERENDER-->', snap.group(0), 1)
+    html = html.replace('<meta property="og:url" content="https://byereviews.com/">', f'<meta property="og:url" content="https://byereviews.com{canonical}">', 1)
+    # hero poster = LCP element on landing-page URLs: fetch it before the runtime renders the hero
+    html = html.replace('__FAQLD__', FAQ_LD if (path == 'index.html' or path in INTENTS) else '', 1)
+    html = html.replace('__PRELOAD__\n', HERO_PRELOAD if (path in HOME_LIKE or path in INTENTS) else '', 1)
+    if snap and (path in HOME_LIKE or path in INTENTS):
+        html = html.replace('<!--PRERENDER-->', snap, 1)
+    elif path in APP_FALLBACK:  # no-JS fallback for app pages (crawlers otherwise see an empty page: no H1, no links)
+        html = html.replace('<!--PRERENDER-->', '<div id="prerender">' + APP_NAV + APP_FALLBACK[path] + APP_LINKS + '</div><!--/prerender-->', 1)
+    if path in INTENTS:
+        html = intent_page(html, INTENTS[path])
     out.write_text(html, encoding='utf-8')
 print('built', ', '.join(pages))

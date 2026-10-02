@@ -5,7 +5,7 @@
     const init = opts.body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(opts.body) } : { credentials: 'same-origin' };
     return fetch('/order.php?a=' + action + q, init).then(r => r.json().catch(() => ({ ok: false, error: 'bad_response' }))).catch(() => ({ ok: false, error: 'network' }));
   }
-  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, anData: null, anLoading: false, adminEmail: '' });
+  state = Object.assign({}, this.state, { screen: 'boot', orders: [], loginEmail: '', loginPass: '', partnerNo: '', sender: '', template: '', stripe: { connected: false, account: '' }, stripeKeyDraft: '', stripeWhDraft: '', stripeSaving: false, anData: null, anLoading: false, adminEmail: '' });
 
   componentDidMount() {
     this._designDidMount();
@@ -13,12 +13,15 @@
       if (r.ok && r.authed) { this.setState({ screen: 'admin', authed: true, adminEmail: r.email }); this.load(true); }
       else this.setState({ screen: 'login', notConfigured: r.ok && !r.configured });
     });
-    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) this.load(false); }, 20000);
+    this.poll = setInterval(() => { if (this.state.authed && !document.hidden) { this.load(false); this.loadUnread(); } }, 20000);
     window.addEventListener('hashchange', this.onHash = () => this.fromHash());
   }
   componentWillUnmount() { this._designWillUnmount(); clearInterval(this.poll); window.removeEventListener('hashchange', this.onHash); }
 
+  loadAds() { this.api('admin-ads').then(r => { if (r.ok) this.setState({ ads: r.ads, adsStats: r.stats, adsFeed: r.feed }); }); }
+  loadUnread() { this.api('admin-inbox-unread').then(r => { if (r.ok && r.unread !== this.state.inboxUnread) this.setState({ inboxUnread: r.unread }); }); }
   load(first) {
+    if (first) { this.loadUnread(); this.loadAds(); }
     return this.api('admin-orders').then(r => {
       if (!r.ok) { if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false }); return; }
       const st = r.settings || {};
@@ -35,9 +38,10 @@
     else if (h === 'analytics') { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); }
     else if (h === 'settings') this.setState({ view: 'settings', openId: null });
     else if (h === 'leads') this.setState({ view: 'leads', openId: null });
+    else if (h === 'inbox') this.setState({ view: 'inbox', openId: null });
   }
   componentDidUpdate() {
-    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : '';
+    const s = this.state, h = s.view === 'detail' && s.openId ? '#' + s.openId : s.view === 'analytics' ? '#analytics' : s.view === 'settings' ? '#settings' : s.view === 'leads' ? '#leads' : s.view === 'inbox' ? '#inbox' : '';
     if (s.authed && this._hashReady && (location.hash || '') !== h) history.replaceState(null, '', location.pathname + h);
     if (s.view === 'analytics' && (s.range || 30) !== this._anRange) this.loadAnalytics();
   }
@@ -48,7 +52,7 @@
   }
   replaceOrder(o) { if (o) this.setState(s => ({ orders: s.orders.map(x => x.id === o.id ? o : x) })); }
   fail(r, fallback) {
-    const m = { stripe_not_configured: 'Stripe is not connected – add the Stripe key on the server', stripe_failed: 'Stripe error – please try again', nothing_billable: 'Nothing to bill yet', not_authed: 'Session expired – please sign in again', invalid_sender: 'Invalid sender email' }[r.error];
+    const m = { stripe_not_configured: 'Stripe is not connected – paste the Stripe key in Settings', stripe_key_invalid: 'That is not a Stripe secret or restricted key (sk_… / rk_…)', stripe_key_rejected: 'Stripe rejected this key', stripe_key_permissions: 'Key works but lacks permissions – it needs Payment Links, Products and Prices (write)', stripe_webhook_invalid: 'Webhook secret must start with whsec_', nothing_to_save: 'Paste a key or webhook secret first', stripe_failed: 'Stripe error – please try again', nothing_billable: 'Nothing to bill yet', not_authed: 'Session expired – please sign in again', invalid_sender: 'Invalid sender email' }[r.error];
     this.toast(m || fallback || 'Something went wrong');
     if (r.error === 'not_authed') this.setState({ screen: 'login', authed: false });
   }
@@ -141,12 +145,32 @@
     Object.assign(v, {
       isLogin: s.screen === 'login', isAdmin: s.screen === 'admin', isCustDash: false, isEmail: false,
       adminInitial: (s.adminEmail || 'A')[0].toUpperCase(),
+      goInbox: () => { this.setState({ view: 'inbox', openId: null }); window.scrollTo({ top: 0 }); }, isInbox: s.view === 'inbox',
+      navInboxBg: s.view === 'inbox' ? '#151515' : 'transparent', navInboxFg: s.view === 'inbox' ? '#FFFFFF' : '#555', inboxBadge: s.inboxUnread ? String(s.inboxUnread) : '', hasInboxBadge: !!s.inboxUnread,
       doLogin: () => this.login(), onLoginKey: e => { if (e.key === 'Enter') this.login(); },
       logout: () => { this.api('admin-logout', { body: {} }); this.setState({ screen: 'login', authed: false, loginPass: '', orders: [], view: 'orders', openId: null }); },
       goAnalytics: () => { this.setState({ view: 'analytics', openId: null }); this.loadAnalytics(); window.scrollTo({ top: 0 }); },
       saveSettings: () => this.api('admin-settings', { body: { partnerNo: s.partnerNo, template: s.template, sender: s.sender } }).then(r => r.ok ? this.toast('Settings saved') : this.fail(r)),
-      stripeLabel: s.stripe.connected ? 'Connected' : 'Not connected', stripeAcct: s.stripe.account ? s.stripe.account.slice(0, 5) + '…' + s.stripe.account.slice(-4) : 'add key on server', stripeDot: s.stripe.connected ? '#151515' : '#D93025',
-      loginHint: s.notConfigured ? 'Admin login is not configured on the server yet.' : ''
+      stripeLabel: s.stripe.connected ? 'Connected' : 'Not connected', stripeAcct: s.stripe.account ? s.stripe.account.slice(0, 5) + '…' + s.stripe.account.slice(-4) : 'paste key below',
+      stripeNoWebhook: !!s.stripe.connected && !s.stripe.webhook, stripeKeyDraft: s.stripeKeyDraft, stripeWhDraft: s.stripeWhDraft,
+      stripeKeyPh: s.stripe.connected ? 'New secret / restricted key (optional)' : 'Secret or restricted key (sk_live_… / rk_live_…)',
+      stripeWhPh: s.stripe.webhook ? 'New webhook signing secret (optional)' : 'Webhook signing secret (whsec_…)',
+      stripeSaveLabel: s.stripeSaving ? 'Checking…' : 'Save Stripe keys',
+      onStripeKey: e => this.setState({ stripeKeyDraft: e.target.value }), onStripeWh: e => this.setState({ stripeWhDraft: e.target.value }),
+      saveStripe: () => { if (s.stripeSaving) return; this.setState({ stripeSaving: true });
+        this.api('admin-stripe', { body: { secretKey: s.stripeKeyDraft.trim(), webhookSecret: s.stripeWhDraft.trim() } }).then(r => {
+          this.setState({ stripeSaving: false });
+          if (!r.ok) return this.fail(r);
+          this.setState({ stripe: r.stripe, stripeKeyDraft: '', stripeWhDraft: '' }); this.toast(r.stripe.connected ? 'Stripe connected' : 'Saved – but Stripe is not reachable yet'); }); }, stripeDot: s.stripe.connected ? '#151515' : '#D93025',
+      loginHint: s.notConfigured ? 'Admin login is not configured on the server yet.' : '',
+      adsSwBg: s.ads && s.ads.clickIds ? '#151515' : '#D2D2D2', adsSwJust: s.ads && s.ads.clickIds ? 'flex-end' : 'flex-start',
+      adsToggle: () => { const on = !(s.ads && s.ads.clickIds);
+        this.api('admin-ads', { body: { clickIds: on } }).then(r => r.ok ? (this.setState({ ads: r.ads, adsStats: r.stats, adsFeed: r.feed }), this.toast(on ? 'Click IDs are stored with new orders' : 'Click IDs off')) : this.fail(r)); },
+      adsText: s.ads && s.ads.clickIds
+        ? 'On: when someone orders after clicking an ad, the Google click ID (gclid) is stored with the order. No cookies, nothing stored in the browser. Upload the CSVs in Google Ads → Goals → Conversions → Uploads (conversion actions "' + s.ads.orderName + '" and "' + s.ads.paidName + '", source: clicks).'
+        : 'Off. Turn on to store the Google click ID (gclid) with orders that come from an ad – cookie-free – and export them as offline conversions for Google Ads. Mention it in the privacy policy before turning it on.',
+      adsFeed: !!s.adsFeed, adsFeedOrder: s.adsFeed ? 'Orders: ' + s.adsFeed.order : '', adsFeedPaid: s.adsFeed ? 'Payments: ' + s.adsFeed.paid : '', adsFeedPw: s.adsFeed ? s.adsFeed.password : '',
+      adsStatsText: s.adsStats ? s.adsStats.orders + ' orders from ad clicks · ' + s.adsStats.paid + ' paid · ' + (Math.round(s.adsStats.value * 100) / 100) + ' paid value' + (s.adsStats.lastFeed ? ' · last Google fetch ' + new Date(s.adsStats.lastFeed.at).toLocaleString() + ': ' + s.adsStats.lastFeed.result : '') : ''
     });
     if (od) {
       const busy = fnName => { if (this._busy) return true; this._busy = fnName; setTimeout(() => { this._busy = null; }, 1500); return false; };

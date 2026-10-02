@@ -28,8 +28,13 @@
     const { props, preview } = parseDataProps(
       scriptEl?.getAttribute("data-props") ?? null
     );
+    // <x-dc><template>…</template></x-dc> or <x-dc><script type="text/x-dc-template">…</script></x-dc>: inert template,
+    // so the browser doesn't fetch its media before render (the script form also hides it from crawlers)
+    const only = dc.children.length === 1 ? dc.firstElementChild : null;
+    const tpl = only && only.tagName === "TEMPLATE" ? only : null;
+    const tplScript = only && only.tagName === "SCRIPT" && only.type === "text/x-dc-template" ? only : null;
     return {
-      template: dc.innerHTML,
+      template: tplScript ? tplScript.textContent : tpl ? tpl.innerHTML : dc.innerHTML,
       js: scriptEl ? scriptEl.textContent || "" : "",
       props,
       preview
@@ -40,7 +45,7 @@
     if (!openMatch) return null;
     const close = src.lastIndexOf("</x-dc>");
     if (close === -1 || close < openMatch.index) return null;
-    const template = src.slice(openMatch.index + openMatch[0].length, close);
+    const template = src.slice(openMatch.index + openMatch[0].length, close).replace(/^\s*<template>([\s\S]*)<\/template>\s*$/, "$1").replace(/^\s*<script type="text\/x-dc-template">([\s\S]*)<\/script>\s*$/, "$1");
     const doc = new DOMParser().parseFromString(src, "text/html");
     const scriptEl = doc.querySelector("script[data-dc-script]");
     const { props, preview } = parseDataProps(

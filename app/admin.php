@@ -5,6 +5,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/api.php';
 require_once __DIR__ . '/analytics.php';
 require_once __DIR__ . '/leads.php';
+require_once __DIR__ . '/inbox.php';
+require_once __DIR__ . '/ads.php';
 
 const NOTIFY_DELAY = 60; // seconds: status changes within this window go out as one email
 
@@ -54,8 +56,14 @@ function queue_notification(string $orderId, array $reviewIds): void {
     });
 }
 
-/** Sends queued status emails whose last change is older than NOTIFY_DELAY. Called on every request (cheap glob). */
-function flush_notifications(bool $force = false): void {
+/**
+ * Sends queued status emails whose last change is older than NOTIFY_DELAY. Called on every request (cheap glob).
+ * If a review in the batch was marked removed and the order has an unpaid amount, the customer gets the payment
+ * email instead (removed reviews + total + Pay now button → Stripe Payment Link, created here). Returns the ids of
+ * orders that got a payment email.
+ */
+function flush_notifications(bool $force = false): array {
+    $paymentMails = [];
     foreach (glob(data_dir('notify') . '/*.json') ?: [] as $f) {
         $n = json_decode((string)file_get_contents($f), true);
         if (!is_array($n) || (!$force && ($n['last'] ?? 0) > time() - NOTIFY_DELAY)) continue;
@@ -63,8 +71,30 @@ function flush_notifications(bool $force = false): void {
         $o = store_get('order', basename($f, '.json'));
         if (!$o) continue;
         $changed = array_values(array_filter($o['reviews'], fn($r) => in_array($r['id'], $n['ids'], true)));
-        if ($changed) mail_status_update($o, $changed);
+        if (!$changed) continue;
+        $newlyRemoved = array_filter($changed, fn($r) => $r['status'] === 'removed');
+        if ($newlyRemoved && ($o['payment']['status'] ?? '') !== 'paid' && invoice($o)['total'] > 0 && ($o['status'] ?? '') !== 'cancelled') {
+            $o = ensure_payment_link($o);
+            mail_payment_link($o, (string)($o['payment']['link'] ?? ''), array_values(array_filter($changed, fn($r) => $r['status'] !== 'removed')));
+            $paymentMails[] = $o['id'];
+        } else {
+            mail_status_update($o, $changed);
+        }
     }
+    return $paymentMails;
+}
+
+/** Makes sure the order has a current Payment Link (Stripe, or the manual link) and marks it as sent. */
+function ensure_payment_link(array $o): array {
+    if (($o['payment']['status'] ?? '') === 'link_sent' && !empty($o['payment']['link'])) return $o;
+    $link = stripe_payment_link($o);
+    if (!$link && !empty($o['payment']['manualLink'])) $link = ['url' => $o['payment']['manualLink'], 'id' => ''];
+    if (!$link) { log_event("payment link for {$o['id']} not created yet (Stripe not configured or failed) – created on the customer's first click"); return $o; }
+    return store_update('order', $o['id'], function (?array $x) use ($link) {
+        if (!$x) return null;
+        $x['payment'] = array_merge($x['payment'], ['status' => 'link_sent', 'link' => $link['url'], 'linkId' => $link['id'], 'linkSentAt' => date('c')]);
+        return $x;
+    }) ?? $o;
 }
 
 // ---------- actions ----------
@@ -131,14 +161,14 @@ function action_admin_status(): void {
             // the invoice changed: an open payment link no longer matches → back to unpaid, new link needed
             if (($o['payment']['status'] ?? '') === 'link_sent' && ($wasRemoved || $st === 'removed')) {
                 $oldLink = (string)($o['payment']['linkId'] ?? '');
-                $o['payment'] = ['status' => 'unpaid', 'manualLink' => $o['payment']['manualLink'] ?? ''];
+                $o['payment'] = ['status' => 'unpaid', 'manualLink' => $o['payment']['manualLink'] ?? '', 'invoiceRound' => ($o['payment']['invoiceRound'] ?? 0) + 1];
             }
             if (($o['payment']['status'] ?? '') === 'paid' && $st === 'removed') { $o['payment']['status'] = 'unpaid'; $o['payment']['note'] = 'Re-opened: new removal after an earlier payment'; }
         }
         unset($r);
         return $o;
     });
-    if ($oldLink !== '') stripe_deactivate_link($oldLink);
+    if ($oldLink !== '') stripe_cancel_payment($oldLink);
     queue_notification($id, [$rid]);
     json_out(['ok' => true, 'order' => admin_order_view($o)]);
 }
@@ -187,14 +217,15 @@ function action_admin_paylink(): void {
     } else {
         $link = stripe_payment_link($o);
         if (!$link && !empty($o['payment']['manualLink'])) $link = ['url' => $o['payment']['manualLink'], 'id' => ''];
-        if (!$link) fail(503, (string)config('stripe_secret_key', '') === '' ? 'stripe_not_configured' : 'stripe_failed');
+        if (!$link) fail(503, stripe_key() === '' ? 'stripe_not_configured' : 'stripe_failed');
     }
     $o = admin_order_update($id, function (array $o) use ($link) {
-        $o['payment'] = array_merge($o['payment'], ['status' => 'link_sent', 'link' => $link['url'], 'linkId' => $link['id'], 'linkSentAt' => date('c')]);
+        $o['payment'] = array_merge($o['payment'], ['status' => 'link_sent', 'link' => $link['url'], 'linkId' => $link['id'], 'linkSentAt' => date('c')],
+            !empty($link['number']) ? ['invoiceNumber' => $link['number'], 'invoicePdf' => $link['pdf'] ?? ''] : []);
         return $o;
     });
-    flush_notifications(true); // status emails first, then the payment email
-    mail_payment_link($o, $link['url']);
+    $sent = flush_notifications(true); // queued status emails first – they may already contain the payment request
+    if (!in_array($id, $sent, true)) mail_payment_link($o, $link['url']);
     json_out(['ok' => true, 'order' => admin_order_view($o)]);
 }
 
@@ -232,6 +263,31 @@ function action_admin_settings(): void {
     json_out(['ok' => true]);
 }
 
+/** Admin → Settings → Stripe: save the secret/restricted key and the webhook signing secret (stored outside the web root's
+ *  reach in the data dir, never returned to the browser). The key is checked against Stripe before it is saved. */
+function action_admin_stripe(): void {
+    admin_required();
+    $d = json_body();
+    $cur = store_get('settings', 'stripe') ?? [];
+    $key = trim((string)($d['secretKey'] ?? ''));
+    $wh = trim((string)($d['webhookSecret'] ?? ''));
+    if ($key !== '') {
+        if (!preg_match('/^(sk|rk)_(live|test)_[A-Za-z0-9]{20,}$/', $key)) fail(400, 'stripe_key_invalid');
+        $t = http_json('GET', 'https://api.stripe.com/v1/payment_links?limit=1', ['Authorization: Bearer ' . $key], null, 20);
+        if ($t['code'] !== 200) fail(400, $t['code'] === 401 ? 'stripe_key_rejected' : 'stripe_key_permissions');
+        $cur['secretKey'] = $key;
+    }
+    if ($wh !== '') {
+        if (!preg_match('/^whsec_[A-Za-z0-9+\/=]{20,}$/', $wh)) fail(400, 'stripe_webhook_invalid');
+        $cur['webhookSecret'] = $wh;
+    }
+    if ($key === '' && $wh === '') fail(400, 'nothing_to_save');
+    $cur['updatedAt'] = date('c');
+    store_put('settings', 'stripe', $cur);
+    log_event('stripe keys updated in admin' . ($key !== '' ? ' (key)' : '') . ($wh !== '' ? ' (webhook secret)' : ''));
+    json_out(['ok' => true, 'stripe' => stripe_status()]);
+}
+
 function action_admin_analytics(): void {
     admin_required();
     $range = (int)($_GET['range'] ?? 30);
@@ -258,7 +314,7 @@ function action_admin_delete(): void {
     $d = json_body();
     $id = clean($d['order'] ?? '', 20);
     $o = store_get('order', $id) ?? fail(404, 'order_not_found');
-    if (!empty($o['payment']['linkId']) && ($o['payment']['status'] ?? '') === 'link_sent') stripe_deactivate_link($o['payment']['linkId']);
+    if (!empty($o['payment']['linkId']) && ($o['payment']['status'] ?? '') === 'link_sent') stripe_cancel_payment($o['payment']['linkId']);
     $o['deletedAt'] = date('c');
     $o['deleteReason'] = clean($d['reason'] ?? '', 1000);
     store_put('deleted', $id, $o);

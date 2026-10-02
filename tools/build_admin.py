@@ -32,7 +32,8 @@ rep('<html>\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="widt
 window.__resources = {
   "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "/assets/vendor/react.production.min.js",
   "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "/assets/vendor/react-dom.production.min.js",
-  "./LeadFinder.dc.html": "/admin/LeadFinder.dc.html"
+  "./LeadFinder.dc.html": "/admin/LeadFinder.dc.html",
+  "./Inbox.dc.html": "/admin/Inbox.dc.html"
 };
 </script>
 <script src="/support.js"></script>''')
@@ -50,10 +51,20 @@ s, n = re.subn(r'\s*<button onClick="\{\{ simulatePaid \}\}"[^>]*>Simulate Strip
 assert n == 1
 
 rep('<a href="#" onClick="{{ goOrders }}"', '<a href="/admin/" onClick="{{ goOrders }}"')
+# Inbox (design/Inbox.dc.html, own component): nav item with unread badge + view
+rep('color:{{ navOrdersFg }}">Orders</button>', 'color:{{ navOrdersFg }}">Orders</button>\n    <button onClick="{{ goInbox }}" style="border:0;cursor:pointer;border-radius:14px;padding:10px 14px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px;background:{{ navInboxBg }};color:{{ navInboxFg }}">Inbox<sc-if value="{{ hasInboxBadge }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#D93025;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ inboxBadge }}</span></sc-if></button>')
+rep('<sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}">', '<sc-if value="{{ isInbox }}" hint-placeholder-val="{{ false }}">\n<dc-import name="Inbox" hint-size="100%,900px"></dc-import>\n</sc-if>\n<sc-if value="{{ isLeads }}" hint-placeholder-val="{{ false }}">')
 rep('justify-content:center;font-size:14px">M</span>{{ logoutLabel }}', 'justify-content:center;font-size:14px">{{ adminInitial }}</span>{{ logoutLabel }}')
 rep('<span style="font-size:12px;color:#B5B5B5">{{ o.paidAt }} · via Stripe</span>', '<span style="font-size:12px;color:#B5B5B5">{{ o.paidAt }} · {{ o.paidVia }}</span>')
 rep('''<span style="width:10px;height:10px;border-radius:50%;background:#151515;display:block"></span><span style="font-size:15px;font-weight:500;flex:1">Connected</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">acct_…8F2k</span>''',
     '''<span style="width:10px;height:10px;border-radius:50%;background:{{ stripeDot }};display:block"></span><span style="font-size:15px;font-weight:500;flex:1">{{ stripeLabel }}</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ stripeAcct }}</span>''')
+# Stripe keys are pasted here by the owner (stored server-side in settings/stripe.json, never shown again)
+rep("""{{ stripeAcct }}</span></div></div>""", """{{ stripeAcct }}</span></div>
+      <sc-if value="{{ stripeNoWebhook }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#D93025;line-height:1.45">Webhook secret missing – payments won't be marked as paid automatically.</span></sc-if>
+      <input type="password" autocomplete="off" spellcheck="false" value="{{ stripeKeyDraft }}" onChange="{{ onStripeKey }}" placeholder="{{ stripeKeyPh }}" style="border:0;background:#F4F4F4;border-radius:14px;padding:14px 16px;font-size:14px;outline:none;font-family:'Geist Mono',monospace">
+      <input type="password" autocomplete="off" spellcheck="false" value="{{ stripeWhDraft }}" onChange="{{ onStripeWh }}" placeholder="{{ stripeWhPh }}" style="border:0;background:#F4F4F4;border-radius:14px;padding:14px 16px;font-size:14px;outline:none;font-family:'Geist Mono',monospace">
+      <span style="font-size:12px;color:#6B6B6B;line-height:1.5">Webhook URL: <span style="font-family:'Geist Mono',monospace;user-select:all">https://byereviews.com/order.php?a=stripe-webhook</span> · events checkout.session.completed + checkout.session.async_payment_succeeded</span>
+      <button onClick="{{ saveStripe }}" style="align-self:flex-start;height:44px;border:0;cursor:pointer;background:#151515;color:#fff;border-radius:14px;padding:0 18px;font-size:14px;font-weight:600">{{ stripeSaveLabel }}</button></div>""")
 rep('<button onClick="{{ doLogin }}" style="height:56px;', '<sc-if value="{{ loginHint }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#6B6B6B">{{ loginHint }}</span></sc-if>\n    <button onClick="{{ doLogin }}" style="height:56px;')
 rep('<input value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" placeholder="Email"', '<input type="email" autocomplete="username" value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" placeholder="Email"')
 rep('<input type="password" value="{{ loginPass }}"', '<input type="password" autocomplete="current-password" value="{{ loginPass }}"')
@@ -93,6 +104,27 @@ idx = s.rindex('\n}\n</script>')
 s = s[:idx] + '\n' + overrides + s[idx:]
 
 assert 'fonts.googleapis' not in s and 'PROTOTYPE' not in s
+# Settings: Google Ads conversions (cookie-free click IDs + CSV export for offline conversion import, app/ads.php)
+rep('  <button onClick="{{ saveSettings }}" style="align-self:flex-start;height:54px;', """  <div style="background:#FFFFFF;border-radius:28px;padding:clamp(18px,2.4vw,26px);display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span style="font-size:18px;font-weight:600">Google Ads conversions</span>
+      <button onClick="{{ adsToggle }}" aria-label="Store Google Ads click IDs" style="flex:none;width:52px;height:30px;border:0;cursor:pointer;border-radius:15px;padding:3px;background:{{ adsSwBg }};display:flex;justify-content:{{ adsSwJust }}"><span style="width:24px;height:24px;border-radius:50%;background:#fff;display:block"></span></button>
+    </div>
+    <span style="font-size:14px;line-height:1.5;color:#555">{{ adsText }}</span>
+    <span style="font-family:'Geist Mono',monospace;font-size:12px;color:#6B6B6B">{{ adsStatsText }}</span>
+    <sc-if value="{{ adsFeed }}" hint-placeholder-val="{{ false }}"><div style="background:#F4F4F4;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.5">
+      <span style="font-weight:600">Automatic upload (Google Ads → Goals → Conversions → Uploads → Schedules → HTTPS)</span>
+      <span style="font-family:'Geist Mono',monospace;font-size:12px;word-break:break-all">{{ adsFeedOrder }}</span>
+      <span style="font-family:'Geist Mono',monospace;font-size:12px;word-break:break-all">{{ adsFeedPaid }}</span>
+      <span style="font-family:'Geist Mono',monospace;font-size:12px;word-break:break-all">user: googleads · password: {{ adsFeedPw }}</span>
+    </div></sc-if>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a href="/order.php?a=admin-ads-export&amp;kind=order" style="background:#F4F4F4;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500;color:#151515">Download order conversions (CSV)</a>
+      <a href="/order.php?a=admin-ads-export&amp;kind=paid" style="background:#F4F4F4;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500;color:#151515">Download payment conversions (CSV)</a>
+    </div>
+  </div>
+  <button onClick="{{ saveSettings }}" style="align-self:flex-start;height:54px;""")
+
 out = ROOT / 'public' / 'admin' / 'index.html'
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(s, encoding='utf-8')
@@ -149,3 +181,6 @@ s = s[:idx] + '\n' + overrides + s[idx:]
 assert 'fonts.googleapis' not in s and 'STATE</span>' not in s
 (ROOT / 'public' / 'admin' / 'LeadFinder.dc.html').write_text(s, encoding='utf-8')
 print('built public/admin/LeadFinder.dc.html')
+
+(ROOT / 'public' / 'admin' / 'Inbox.dc.html').write_text((ROOT / 'design' / 'Inbox.dc.html').read_text(encoding='utf-8'), encoding='utf-8')
+print('built public/admin/Inbox.dc.html')

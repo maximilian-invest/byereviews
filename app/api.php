@@ -165,6 +165,7 @@ function action_order(): void {
         'payToken' => bin2hex(random_bytes(16)),
         'ip' => client_ip(),
     ];
+    if (ads_settings()['clickIds'] && ($ads = ads_capture($d))) $order['ads'] = $ads; // Google Ads click ID (Admin → Settings)
 
     $password = null;
     $newAccount = false;
@@ -236,7 +237,16 @@ function action_pay(): void {
     $tokenOk = $o && !empty($o['payToken']) && hash_equals($o['payToken'], (string)($_GET['t'] ?? ''));
     if (!$o || (!$owner && !$tokenOk)) { header('Location: /login/'); exit; }
     if (($o['payment']['status'] ?? '') === 'paid' || invoice($o)['total'] <= 0) { header('Location: /dashboard/'); exit; }
-    $url = (($o['payment']['status'] ?? '') === 'link_sent' && !empty($o['payment']['link'])) ? $o['payment']['link'] : (stripe_checkout_url($o) ?? ($o['payment']['manualLink'] ?? null));
+    $url = (($o['payment']['status'] ?? '') === 'link_sent' && !empty($o['payment']['link'])) ? $o['payment']['link'] : null;
+    if (!$url && ($link = stripe_payment_link($o))) {   // first click on "Pay": create the order's Payment Link once and keep it
+        store_update('order', $o['id'], function (?array $x) use ($link) {
+            if (!$x) return null;
+            $x['payment'] = array_merge($x['payment'], ['status' => 'link_sent', 'link' => $link['url'], 'linkId' => $link['id'], 'linkSentAt' => date('c')]);
+            return $x;
+        });
+        $url = $link['url'];
+    }
+    $url = $url ?: ($o['payment']['manualLink'] ?? null);
     if (!$url) {
         header('Content-Type: text/plain; charset=utf-8');
         echo "Online payment isn't available right now. We'll email you a payment link – or write to " . TEAM_EMAIL . '.';
@@ -250,18 +260,54 @@ function action_stripe_webhook(): void {
     $payload = (string)file_get_contents('php://input');
     $event = stripe_verify_webhook($payload, $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '');
     if (!$event) fail(400, 'bad_signature');
-    if (($event['type'] ?? '') === 'checkout.session.completed' && ($event['data']['object']['payment_status'] ?? '') === 'paid') {
+    // Invoicing API (current): invoice.paid → order paid
+    if (($event['type'] ?? '') === 'invoice.paid') {
+        $obj = $event['data']['object'];
+        $id = (string)($obj['metadata']['order_id'] ?? '');
+        $justPaid = false;
+        $o = $id === '' ? null : store_update('order', $id, function (?array $o) use ($obj, &$justPaid) {
+            if (!$o || ($o['payment']['status'] ?? '') === 'paid') return $o;
+            $o['payment'] = array_merge($o['payment'], ['status' => 'paid', 'paidAt' => date('c'), 'amount' => ($obj['amount_paid'] ?? 0) / 100,
+                'invoiceId' => $obj['id'] ?? '', 'invoiceNumber' => $obj['number'] ?? ($o['payment']['invoiceNumber'] ?? ''),
+                'invoicePdf' => $obj['invoice_pdf'] ?? ($o['payment']['invoicePdf'] ?? ''), 'via' => 'Stripe']);
+            $o['timeline']['paid'] = date('c');
+            $justPaid = true;
+            return $o;
+        });
+        if ($o && $justPaid) {
+            log_event("order $id paid via stripe invoice " . ($obj['number'] ?? ''));
+            mail_paid($o);
+        }
+    }
+    // Checkout Sessions / Payment Links (older orders)
+    // delayed methods (bank transfer, SEPA/ACH debit) arrive later as async_payment_succeeded
+    if (in_array($event['type'] ?? '', ['checkout.session.completed', 'checkout.session.async_payment_succeeded'], true) && ($event['data']['object']['payment_status'] ?? '') === 'paid') {
         $obj = $event['data']['object'];
         $id = (string)($obj['metadata']['order_id'] ?? '');
         if ($id === '' && !empty($obj['payment_link'])) foreach (store_list('order') as $x) if (($x['payment']['linkId'] ?? '') === $obj['payment_link']) { $id = $x['id']; break; }
-        $o = store_update('order', $id, function (?array $o) use ($event) {
-            if (!$o) return null;
-            $o['payment'] = array_merge($o['payment'], ['status' => 'paid', 'paidAt' => date('c'), 'amount' => ($event['data']['object']['amount_total'] ?? 0) / 100, 'stripeSession' => $event['data']['object']['id'] ?? '']);
+        $justPaid = false;
+        $o = store_update('order', $id, function (?array $o) use ($event, &$justPaid) {
+            if (!$o || ($o['payment']['status'] ?? '') === 'paid') return $o;
+            $obj = $event['data']['object'];
+            $o['payment'] = array_merge($o['payment'], ['status' => 'paid', 'paidAt' => date('c'), 'amount' => ($obj['amount_total'] ?? 0) / 100, 'stripeSession' => $obj['id'] ?? '',
+                'invoiceId' => is_string($obj['invoice'] ?? null) ? $obj['invoice'] : '']);
             $o['timeline']['paid'] = date('c');
             $o['payment']['via'] = 'Stripe';
+            $justPaid = true;
             return $o;
         });
-        if ($o) { log_event("order $id paid via stripe"); mail_paid($o); }
+        if ($o && $justPaid) {
+            // Payment Links create a post-payment invoice (invoice_creation): fetch number + PDF for the paid email
+            if (!empty($o['payment']['invoiceId'])) {
+                $inv = stripe_request('GET', 'invoices/' . rawurlencode($o['payment']['invoiceId']));
+                if ($inv['code'] === 200) $o = store_update('order', $id, function (?array $x) use ($inv) {
+                    if ($x) $x['payment'] += ['invoiceNumber' => (string)($inv['data']['number'] ?? ''), 'invoicePdf' => (string)($inv['data']['invoice_pdf'] ?? '')];
+                    return $x;
+                }) ?? $o;
+            }
+            log_event("order $id paid via stripe");
+            mail_paid($o);
+        }
     }
     json_out(['ok' => true]);
 }
