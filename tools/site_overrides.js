@@ -175,6 +175,10 @@
   }
   heroVals() {
     const s = this.state, st = s.bizStatus;
+    if (!this._heroScroll) {
+      this._heroScroll = () => { const el = document.getElementById('hero-biz'), past = !el || el.getBoundingClientRect().bottom < 0; if (past !== !!this.state.heroPast) this.setState({ heroPast: past }); };
+      window.addEventListener('scroll', this._heroScroll, { passive: true });
+    }
     const list = st === 'found' && s.biz ? [s.biz] : (s.places || []);
     return {
       heroBtn: (s.vw || 1200) < 420 ? 'Check' : 'Check free',
@@ -184,6 +188,7 @@
       heroChoose: (st === 'choose' || st === 'found') && list.length > 0,
       heroPlaces: list.slice(0, 5).map(p => ({ initial: (p.name || '?')[0], name: p.name, meta: st === 'found' ? 'Continue with this profile' : (p.meta || p.address || ''), go: () => this.heroPick(p) })),
       heroNotFound: st === 'notfound',
+      mobileSticky: (s.vw || 1200) < 760 && s.view === 'home' && !!s.heroPast,
       heroNfText: s.searchError ? 'Search is unavailable right now.' : 'No Google profile found.',
       heroManual: e => { if (e && e.preventDefault) e.preventDefault(); clearTimeout(this.bizT); this.setState({ view: 'order', bizStatus: 'manual', biz: null, selected: {}, showManual: true, step: 2, tried: false }); window.scrollTo({ top: 0 }); }
     };

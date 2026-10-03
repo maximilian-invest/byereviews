@@ -100,9 +100,8 @@ rep('''    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
       </button>
       <span style="font-size:15px;color:#B5B5B5">No upfront payment</span>
     </div>''', '''    <div style="display:flex;flex-direction:column;gap:10px;width:min(600px,100%)">
-      <label for="hero-biz" style="font-size:15px;color:#CFCFCF">Free check: find your business and pick the reviews that break Google's rules.</label>
       <div style="display:flex;align-items:center;gap:6px;background:#FFFFFF;border-radius:22px;padding:6px">
-        <input id="hero-biz" value="{{ bizQuery }}" onChange="{{ onBizQuery }}" onKeyDown="{{ onHeroKey }}" placeholder="Your business name" autocomplete="off" style="flex:1;min-width:0;border:0;outline:none;background:transparent;color:#151515;font-size:17px;padding:14px 14px">
+        <input id="hero-biz" value="{{ bizQuery }}" onChange="{{ onBizQuery }}" onKeyDown="{{ onHeroKey }}" placeholder="Your business name" aria-label="Your business name" autocomplete="off" style="flex:1;min-width:0;border:0;outline:none;background:transparent;color:#151515;font-size:17px;padding:14px 14px">
         <button onClick="{{ heroFind }}" aria-label="Find my business" style="flex:none;height:56px;border:0;cursor:pointer;background:#151515;color:#FFFFFF;border-radius:17px;padding:0 20px;font-size:16px;font-weight:500;display:flex;align-items:center;gap:10px">{{ heroBtn }}<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
       </div>
       <sc-if value="{{ heroLoading }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#CFCFCF;padding:4px 6px">Searching Google…</span></sc-if>
@@ -118,8 +117,12 @@ rep('''    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
         </div>
       </sc-if>
       <sc-if value="{{ heroNotFound }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#CFCFCF;padding:4px 6px">{{ heroNfText }} <a href="/order/" onClick="{{ heroManual }}" style="color:#FFFFFF;text-decoration:underline;text-underline-offset:3px">Add reviews by link instead</a></span></sc-if>
-      <span style="font-size:14px;color:#B5B5B5;padding:0 6px">No upfront payment · You only pay if a review is taken down</span>
+      <span style="font-size:14px;color:#B5B5B5;padding:0 6px">Free check · No upfront payment · Pay only if a review is taken down</span>
     </div>''')
+
+# mobile: the fixed bottom CTA only appears once the hero search is scrolled out of view
+rep('<sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">\n  <button onClick="{{ goOrder }}" style="position:fixed;',
+    '<sc-if value="{{ mobileSticky }}" hint-placeholder-val="{{ false }}">\n  <button onClick="{{ goOrder }}" style="position:fixed;')
 
 # every "Remove a review" button becomes a real link to /order/
 s, n = re.subn(r'<button onClick="\{\{ goOrder \}\}"(.*?)>(.*?)</button>', r'<a href="/order/" onClick="{{ goOrder }}"\1>\2</a>', s, flags=re.S)
@@ -168,6 +171,9 @@ rep(*FAQ_COST)
 
 # no unverified rating claims
 s, n = re.subn(r'\s*<span[^>]*>Trustpilot ★ 4\.9</span>', '', s)
+assert n == 1, n
+# hero: the badge pills go (the trust line under the search field says it once)
+s, n = re.subn(r'\n    <div style="display:flex;gap:10px;flex-wrap:wrap">\s*<span[^>]*>No cure, no pay</span>\s*<span[^>]*>Profile stays intact</span>\s*</div>', '', s)
 assert n == 1, n
 
 # success page: no demo email preview
@@ -256,7 +262,7 @@ INTENTS = {
         title='Fake Google Reviews: Free Check, Pay on Success | byereviews',
         desc='Fake Google review on your profile? Free check within 24h. We dispute fake and spam reviews through Google\'s official process. No upfront fees.',
         grey='Fake Google review on your profile?', white='We get it removed.',
-        sub='Fake accounts, people who never visited, competitors posing as customers: all of it breaks Google\'s policies. We document each case and report it through the official channels. You pay $90 only once the review is actually gone.',
+        sub='Fake accounts, people who never visited, competitors posing as customers: all of it breaks Google\'s policies.',
         h2a='How to spot a fake review.', h2b='We check every one for free.',
         cards=[('No real visit', 'The reviewer was never your customer: no booking, no order, no record. Google removes reviews that aren\'t based on a real experience.'),
                ('Throwaway account', 'A new profile with one review, no photo and no history, often posted in a wave with others. A classic spam pattern.'),
@@ -265,7 +271,7 @@ INTENTS = {
         title='Unfair Google Review? Check If It Breaks Policy | byereviews',
         desc='Not every bad review can go, but many break Google\'s rules. Free check: we tell you honestly which qualify. You only pay if a review is taken down.',
         grey='Unfair 1-star review?', white='Get it removed.',
-        sub='Not every bad review can go, but many break Google\'s rules: off-topic rants, insults, conflicts of interest, reviews meant for another business. We check yours for free and pursue removal of the ones that qualify. You pay only for what\'s actually removed.',
+        sub='Not every bad review can go, but many break Google\'s rules. We check yours for free.',
         h2a='Which bad reviews qualify.', h2b='And which don\'t.',
         cards=[('Off-topic or wrong business', 'Rants about politics, the city or the parking situation, or a review meant for someone else. Not about your business, so not allowed.'),
                ('Insults, hate, harassment', 'Personal attacks on you or your staff, profanity, discrimination or threats violate Google\'s content policy.'),
@@ -274,7 +280,7 @@ INTENTS = {
         title='Google Review Dispute Service – Pay on Success | byereviews',
         desc='Policy-based Google review disputes for businesses. Transparent per-review pricing, no deposit, no retainer. Free case review within 24 hours.',
         grey='Google review removal service.', white='Pay only for what\'s gone.',
-        sub='The price is on the page: $90 per removed review posted within the last 4 weeks, $125 for older ones, a flat $50 each from 10 reviews. No deposit, no retainer, no sales call. Order online in about 2 minutes.',
+        sub='Fixed price per review, no deposit, no sales call. You pay only for what\'s actually removed.',
         h2a='Why businesses choose us.', h2b='No quote, no call, no risk.',
         cards=[('Price shown upfront', 'Most removal services only quote after a call. Ours is fixed per review and on this page, including volume and bulk prices.'),
                ('No deposit, no retainer', 'Nothing is charged when you order. You get a payment link only for reviews that are actually removed.'),
