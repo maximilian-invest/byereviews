@@ -92,9 +92,38 @@ rep('<a href="#" onClick="{{ acc.goLogin }}"', '<a href="/login/" onClick="{{ ac
 s, n = re.subn(r'<button onClick="\{\{ acc\.(openResetLink|expireLink) \}\}"[^>]*>[^<]*</button>', '', s)
 assert n == 2, n
 
+# hero: business search right on the landing page → picking a profile opens step 02 (reviews) directly
+rep('''    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+      <button onClick="{{ goOrder }}" style="display:flex;align-items:center;gap:22px;background:#FFFFFF;color:#151515;border:0;border-radius:22px;padding:6px 30px 6px 6px;cursor:pointer;font-size:18px;font-weight:500">
+        <span style="width:64px;height:56px;background:#151515;border-radius:17px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        Remove a review
+      </button>
+      <span style="font-size:15px;color:#B5B5B5">No upfront payment</span>
+    </div>''', '''    <div style="display:flex;flex-direction:column;gap:10px;width:min(600px,100%)">
+      <label for="hero-biz" style="font-size:15px;color:#CFCFCF">Free check: find your business and pick the reviews that break Google's rules.</label>
+      <div style="display:flex;align-items:center;gap:6px;background:#FFFFFF;border-radius:22px;padding:6px">
+        <input id="hero-biz" value="{{ bizQuery }}" onChange="{{ onBizQuery }}" onKeyDown="{{ onHeroKey }}" placeholder="Your business name" autocomplete="off" style="flex:1;min-width:0;border:0;outline:none;background:transparent;color:#151515;font-size:17px;padding:14px 14px">
+        <button onClick="{{ heroFind }}" aria-label="Find my business" style="flex:none;height:56px;border:0;cursor:pointer;background:#151515;color:#FFFFFF;border-radius:17px;padding:0 20px;font-size:16px;font-weight:500;display:flex;align-items:center;gap:10px">{{ heroBtn }}<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+      </div>
+      <sc-if value="{{ heroLoading }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#CFCFCF;padding:4px 6px">Searching Google…</span></sc-if>
+      <sc-if value="{{ heroChoose }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.96);border-radius:20px;padding:8px;color:#151515">
+          <sc-for list="{{ heroPlaces }}" as="hp" hint-placeholder-count="3">
+            <button onClick="{{ hp.go }}" style="width:100%;text-align:left;border:0;cursor:pointer;background:transparent;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:12px;color:#151515">
+              <span style="width:38px;height:38px;border-radius:11px;background:#151515;color:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500">{{ hp.initial }}</span>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ hp.name }}</span><span style="font-size:12px;color:#6B6B6B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ hp.meta }}</span></span>
+              <span style="flex:none;font-size:13px;font-weight:500;background:#F0F0F0;border-radius:10px;padding:7px 10px">Select</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ heroNotFound }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#CFCFCF;padding:4px 6px">{{ heroNfText }} <a href="/order/" onClick="{{ heroManual }}" style="color:#FFFFFF;text-decoration:underline;text-underline-offset:3px">Add reviews by link instead</a></span></sc-if>
+      <span style="font-size:14px;color:#B5B5B5;padding:0 6px">No upfront payment · You only pay if a review is taken down</span>
+    </div>''')
+
 # every "Remove a review" button becomes a real link to /order/
 s, n = re.subn(r'<button onClick="\{\{ goOrder \}\}"(.*?)>(.*?)</button>', r'<a href="/order/" onClick="{{ goOrder }}"\1>\2</a>', s, flags=re.S)
-assert n >= 5, n
+assert n >= 4, n
 
 # footer + legal links
 rep('<a href="#">Imprint</a><a href="#">Terms</a><a href="#">Right of Withdrawal</a><a href="#">Privacy</a>',

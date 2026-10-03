@@ -2,7 +2,7 @@
 // First-party funnel tracking (no cookies, no IP stored) + analytics for the admin panel.
 declare(strict_types=1);
 
-const FUNNEL = ['visit' => 'Visited order page', 'search' => 'Started search', 'profile' => 'Selected profile', 'review' => 'Selected ≥ 1 review',
+const FUNNEL = ['land' => 'Visited site', 'visit' => 'Opened order form', 'search' => 'Started search', 'profile' => 'Selected profile', 'review' => 'Selected ≥ 1 review',
     'contact' => 'Entered contact', 'submit' => 'Submitted order', 'paid' => 'Paid'];
 
 function track_event(array $e): void {
@@ -209,7 +209,7 @@ function analytics_data(int $days): array {
         if ($e['ev'] !== 'profile' || empty($e['place']['id'])) continue;
         $k = $e['sid'] . '|' . $e['place']['id'];
         if (isset($recent[$k])) continue;
-        $recent[$k] = $e + ['reached' => $steps[$maxStep[$e['sid']] ?? 2]];
+        $recent[$k] = $e + ['reached' => $steps[$maxStep[$e['sid']] ?? 3]];
         if (count($recent) >= 12) break;
     }
 

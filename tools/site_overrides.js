@@ -45,6 +45,7 @@
     this._designDidMount();
     const pre = document.getElementById('prerender'); if (pre) pre.remove();
     try { if (!sessionStorage.getItem('br_src')) { this.track('__init'); } } catch (e) {}
+    this.track('land');
     const hash = (location.hash || '').slice(1);
     let v = this.viewFromPath();
     // /order/thanks/ (conversion URL for Google Ads): only with a just-submitted order in this tab, otherwise back to the form
@@ -149,7 +150,7 @@
       this.setState({ bizStatus: 'loading' });
       const session = this.acSession; this.acSession = null;
       return this.api('place', { query: { id: p.id, session: session || '' } }).then(r => {
-        if (!r.ok) return this.setState({ bizStatus: 'notfound', searchError: true });
+        if (!r.ok) return this.setState({ bizStatus: 'notfound', searchError: true, ...(this.state.view === 'order' && this.state.step === 2 ? { step: 1, reviewsStatus: 'idle' } : {}) });
         this.pickPlace(r.place, (list || this.state.places || []).map(x => x.id === p.id ? r.place : x));
       });
     }
@@ -159,6 +160,28 @@
       this.setState(r.ok ? { placeReviews: r.reviews || [], reviewsStatus: 'done', reviewsComplete: !!r.complete } : { placeReviews: [], reviewsStatus: 'error', reviewsComplete: false, showManual: true });
       this.track('profile', { place: { id: p.id, name: p.name, country: p.country, rating: p.rating, count: p.reviewCount, mapsUrl: p.mapsUrl, low: (r.reviews || []).filter(x => x.stars <= 3 && x.text).length } });
     });
+  }
+  // hero search on the landing pages: picking a profile jumps straight to step 02 (reviews)
+  heroPick(p) {
+    const same = this.state.bizStatus === 'found' && this.state.biz && this.state.biz.id === p.id;
+    this.setState({ view: 'order', step: 2, menuOpen: false, tried: false, ...(same ? {} : { reviewsStatus: 'loading', placeReviews: [], selected: {} }) });
+    window.scrollTo({ top: 0 });
+    if (!same) this.pickPlace(p);
+  }
+  heroVals() {
+    const s = this.state, st = s.bizStatus;
+    const list = st === 'found' && s.biz ? [s.biz] : (s.places || []);
+    return {
+      heroBtn: (s.vw || 1200) < 420 ? 'Check' : 'Check free',
+      heroFind: () => { const q = (s.bizQuery || '').trim(); if (!q) { const el = document.getElementById('hero-biz'); if (el) el.focus(); return; } this.findBiz(); },
+      onHeroKey: e => { if (e.key === 'Enter') { e.preventDefault(); if (st === 'choose' && list.length === 1) this.heroPick(list[0]); else this.findBiz(); } },
+      heroLoading: st === 'loading' && s.view === 'home',
+      heroChoose: (st === 'choose' || st === 'found') && list.length > 0,
+      heroPlaces: list.slice(0, 5).map(p => ({ initial: (p.name || '?')[0], name: p.name, meta: st === 'found' ? 'Continue with this profile' : (p.meta || p.address || ''), go: () => this.heroPick(p) })),
+      heroNotFound: st === 'notfound',
+      heroNfText: s.searchError ? 'Search is unavailable right now.' : 'No Google profile found.',
+      heroManual: e => { if (e && e.preventDefault) e.preventDefault(); clearTimeout(this.bizT); this.setState({ view: 'order', bizStatus: 'manual', biz: null, selected: {}, showManual: true, step: 2, tried: false }); window.scrollTo({ top: 0 }); }
+    };
   }
   poolReviews() { return (this.state.placeReviews || []).map(r => ({ id: r.id, name: r.name, stars: r.stars, days: r.days, text: r.text, link: r.link })); }
 
@@ -416,7 +439,8 @@
       hasAlts: s.bizStatus === 'found' && (s.places || []).length > 1,
       altLabel: 'Not your business? Show all ' + (s.places || []).length + ' matches',
       showAllMatches: () => this.setState({ bizStatus: 'choose', biz: null, selected: {}, placeReviews: [], reviewsStatus: 'idle' }),
-      bizNfTitle: s.searchError ? 'Search is unavailable right now' : 'No profile found'
+      bizNfTitle: s.searchError ? 'Search is unavailable right now' : 'No profile found',
+      ...this.heroVals()
     });
     const real = this.realPortal();
     if (real) {
