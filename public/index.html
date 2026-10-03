@@ -172,7 +172,7 @@ window.__resources = {
   <h2 data-dc-tpl="193" style="margin: 0px; font-weight: 500; font-size: clamp(36px, 4.4vw, 64px); line-height: 1; letter-spacing: -0.04em; max-width: 900px;"><span data-dc-tpl="194" style="color: rgb(158, 158, 158);">Thousands of reviews</span> deleted.</h2>
   <div data-dc-tpl="195" style="display: flex; flex-direction: column; gap: 12px;">
   <div data-dc-tpl="196" style="overflow: hidden; margin: 0px calc(-1 * clamp(6px, 2.6vw, 36px)); padding: 0px clamp(6px, 2.6vw, 36px); mask-image: linear-gradient(90deg, transparent, rgb(0, 0, 0) 6%, rgb(0, 0, 0) 94%, transparent);">
-    <div data-dc-tpl="197" style="display: flex; gap: 12px; width: max-content; align-items: stretch; will-change: transform; transform: translateX(-5.25px);">
+    <div data-dc-tpl="197" style="display: flex; gap: 12px; width: max-content; align-items: stretch; will-change: transform; transform: translateX(-4.9px);">
     
       <div data-dc-tpl="199" style="flex: 0 0 auto; width: min(300px, 74vw); background: rgb(255, 255, 255); border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
         <div data-dc-tpl="200" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;"><span data-dc-tpl="201" style="font-family: &quot;Geist Mono&quot;, monospace; font-size: 12px; color: rgb(107, 107, 107); line-height: 1.4;"><span class="sc-interp">Restaurant · Chicago</span></span><span data-dc-tpl="202" style="flex: 0 0 auto; font-size: 12px; background: rgb(239, 239, 239); border-radius: 9px; padding: 5px 9px;"><span class="sc-interp">Fake account</span></span></div>
@@ -393,7 +393,7 @@ window.__resources = {
     </div>
   </div>
   <div data-dc-tpl="209" style="overflow: hidden; margin: 0px calc(-1 * clamp(6px, 2.6vw, 36px)); padding: 0px clamp(6px, 2.6vw, 36px); mask-image: linear-gradient(90deg, transparent, rgb(0, 0, 0) 6%, rgb(0, 0, 0) 94%, transparent);">
-    <div data-dc-tpl="210" style="display: flex; gap: 12px; width: max-content; align-items: stretch; will-change: transform; transform: translateX(-3733.8px);">
+    <div data-dc-tpl="210" style="display: flex; gap: 12px; width: max-content; align-items: stretch; will-change: transform; transform: translateX(-3734.08px);">
     
       <div data-dc-tpl="212" style="flex: 0 0 auto; width: min(300px, 74vw); background: rgb(255, 255, 255); border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
         <div data-dc-tpl="213" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;"><span data-dc-tpl="214" style="font-family: &quot;Geist Mono&quot;, monospace; font-size: 12px; color: rgb(107, 107, 107); line-height: 1.4;"><span class="sc-interp">Bakery · Amsterdam</span></span><span data-dc-tpl="215" style="flex: 0 0 auto; font-size: 12px; background: rgb(239, 239, 239); border-radius: 9px; padding: 5px 9px;"><span class="sc-interp">Fake account</span></span></div>
@@ -614,7 +614,7 @@ window.__resources = {
     </div>
   </div>
   <div data-dc-tpl="222" style="overflow: hidden; margin: 0px calc(-1 * clamp(6px, 2.6vw, 36px)); padding: 0px clamp(6px, 2.6vw, 36px); mask-image: linear-gradient(90deg, transparent, rgb(0, 0, 0) 6%, rgb(0, 0, 0) 94%, transparent);">
-    <div data-dc-tpl="223" style="display: flex; gap: 12px; width: max-content; align-items: stretch; will-change: transform; transform: translateX(-6.3px);">
+    <div data-dc-tpl="223" style="display: flex; gap: 12px; width: max-content; align-items: stretch; will-change: transform; transform: translateX(-5.88px);">
     
       <div data-dc-tpl="225" style="flex: 0 0 auto; width: min(300px, 74vw); background: rgb(255, 255, 255); border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
         <div data-dc-tpl="226" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;"><span data-dc-tpl="227" style="font-family: &quot;Geist Mono&quot;, monospace; font-size: 12px; color: rgb(107, 107, 107); line-height: 1.4;"><span class="sc-interp">IT services · Frankfurt</span></span><span data-dc-tpl="228" style="flex: 0 0 auto; font-size: 12px; background: rgb(239, 239, 239); border-radius: 9px; padding: 5px 9px;"><span class="sc-interp">Competitor</span></span></div>
@@ -2364,7 +2364,12 @@ class Component extends DCLogic {
   }
   componentDidMount() {
     this._designDidMount();
-    const pre = document.getElementById('prerender'); if (pre) pre.remove();
+    const pre = document.getElementById('prerender');
+    // text typed into the static snapshot's hero search before the app took over is carried over
+    const preIn = pre && pre.querySelector('#hero-biz'), preQ = preIn ? preIn.value : '', preFocus = !!preIn && document.activeElement === preIn;
+    if (pre) pre.remove();
+    if (preQ.trim()) this.onBizType(preQ);
+    if (preFocus) setTimeout(() => { const el = document.getElementById('hero-biz'); if (el) { el.focus(); const n = (el.value || '').length; try { el.setSelectionRange(n, n); } catch (e) {} } }, 0);
     try { if (!sessionStorage.getItem('br_src')) { this.track('__init'); } } catch (e) {}
     this.track('land');
     const hash = (location.hash || '').slice(1);

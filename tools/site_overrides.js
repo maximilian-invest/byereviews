@@ -43,7 +43,12 @@
   }
   componentDidMount() {
     this._designDidMount();
-    const pre = document.getElementById('prerender'); if (pre) pre.remove();
+    const pre = document.getElementById('prerender');
+    // text typed into the static snapshot's hero search before the app took over is carried over
+    const preIn = pre && pre.querySelector('#hero-biz'), preQ = preIn ? preIn.value : '', preFocus = !!preIn && document.activeElement === preIn;
+    if (pre) pre.remove();
+    if (preQ.trim()) this.onBizType(preQ);
+    if (preFocus) setTimeout(() => { const el = document.getElementById('hero-biz'); if (el) { el.focus(); const n = (el.value || '').length; try { el.setSelectionRange(n, n); } catch (e) {} } }, 0);
     try { if (!sessionStorage.getItem('br_src')) { this.track('__init'); } } catch (e) {}
     this.track('land');
     const hash = (location.hash || '').slice(1);
